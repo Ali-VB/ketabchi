@@ -37,7 +37,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <SidebarHeader>
             <Link href="/" className="flex items-center gap-2 p-2">
               <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-                <Logo className="text-primary"/>
+                <Logo />
               </Button>
               <div className="grow overflow-hidden">
                 <p className="font-semibold font-headline">کتابچی</p>

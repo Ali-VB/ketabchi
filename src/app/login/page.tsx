@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { BookOpen } from 'lucide-react';
+import { Logo } from '@/components/logo';
 
 export default function LoginPage() {
   return (
@@ -11,7 +11,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4">
-            <BookOpen className="h-12 w-12 text-primary" />
+            <Logo className="h-12 w-12" />
           </div>
           <CardTitle className="text-3xl font-headline">ورود به کتابچی</CardTitle>
           <CardDescription>برای ادامه، ایمیل و رمز عبور خود را وارد کنید.</CardDescription>
