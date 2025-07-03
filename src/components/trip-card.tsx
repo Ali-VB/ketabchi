@@ -1,7 +1,7 @@
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { CalendarDays, Package, Plane } from 'lucide-react';
+import { CalendarDays, Package, Plane, Send } from 'lucide-react';
 import type { Trip } from '@/lib/types';
 
 interface TripCardProps {
@@ -56,6 +56,7 @@ export function TripCard({ trip }: TripCardProps) {
         </div>
         <Button size="sm">
           تماس
+          <Send className="ms-2 h-4 w-4" />
         </Button>
       </CardFooter>
     </Card>

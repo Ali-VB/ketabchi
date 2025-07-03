@@ -1,7 +1,7 @@
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { CalendarDays, MapPin } from 'lucide-react';
+import { CalendarDays, MapPin, Send } from 'lucide-react';
 import type { BookRequest } from '@/lib/types';
 
 interface RequestCardProps {
@@ -50,6 +50,7 @@ export function RequestCard({ request }: RequestCardProps) {
         </div>
         <Button size="sm">
           تماس
+          <Send className="ms-2 h-4 w-4" />
         </Button>
       </CardFooter>
     </Card>
