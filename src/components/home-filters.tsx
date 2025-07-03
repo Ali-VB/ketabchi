@@ -5,11 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Calendar as CalendarIcon, MapPin, Search } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
 export function HomeFilters() {
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [date, setDate] = useState<Date | undefined>();
+
+  useEffect(() => {
+    setDate(new Date());
+  }, []);
 
   return (
     <div className="sticky top-[55px] z-40 border-b bg-background/80 py-4 backdrop-blur">
