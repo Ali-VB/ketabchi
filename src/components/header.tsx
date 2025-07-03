@@ -1,13 +1,13 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { BookOpen } from 'lucide-react';
+import { Logo } from './logo';
 
 export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-14 items-center">
         <Link href="/" className="flex items-center gap-2 font-semibold" prefetch={false}>
-          <BookOpen className="h-6 w-6 text-primary" />
+          <Logo className="h-8 w-8" />
           <span className="text-xl font-headline font-bold">کتابچی</span>
         </Link>
         <nav className="ms-auto hidden items-center gap-2 md:flex">

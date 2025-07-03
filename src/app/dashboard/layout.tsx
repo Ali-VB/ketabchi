@@ -15,8 +15,9 @@ import {
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Bell, BookOpen, ChevronDown, Home, LogOut, Mail, Package, Plane, Settings, User, Users } from 'lucide-react';
+import { Bell, ChevronDown, Home, LogOut, Mail, Package, Plane, Settings, User, Users } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Logo } from '@/components/logo';
 
 const menuItems = [
   { href: '/dashboard', label: 'داشبورد', icon: Home },
@@ -36,7 +37,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <SidebarHeader>
             <Link href="/" className="flex items-center gap-2 p-2">
               <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-                <BookOpen className="text-primary"/>
+                <Logo className="text-primary"/>
               </Button>
               <div className="grow overflow-hidden">
                 <p className="font-semibold font-headline">کتابچی</p>
