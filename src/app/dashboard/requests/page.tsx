@@ -8,8 +8,8 @@ import { NewRequestForm } from "@/components/new-request-form";
 import { useState } from "react";
 
 const mockUserRequests: BookRequest[] = [
-  { id: '1', title: 'صد سال تنهایی', to_city: 'تهران', deadline: '۱۴۰۳/۰۶/۰۱', user: { name: 'شهریار', avatar: 'https://placehold.co/40x40.png' } },
-  { id: '2', title: 'جنایت و مکافات', to_city: 'مشهد', deadline: '۱۴۰۳/۰۶/۱۰', user: { name: 'شهریار', avatar: 'https://placehold.co/40x40.png' } },
+  { id: '1', title: 'صد سال تنهایی', to_city: 'تهران', deadline: '2024-09-22', user: { name: 'شهریار', avatar: 'https://placehold.co/40x40.png' } },
+  { id: '2', title: 'جنایت و مکافات', to_city: 'مشهد', deadline: '2024-10-01', user: { name: 'شهریار', avatar: 'https://placehold.co/40x40.png' } },
 ];
 
 export default function MyRequestsPage() {

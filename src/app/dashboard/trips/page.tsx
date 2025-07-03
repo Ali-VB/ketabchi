@@ -8,7 +8,7 @@ import { NewTripForm } from "@/components/new-trip-form";
 import { useState } from "react";
 
 const mockUserTrips: Trip[] = [
-  { id: '1', from_city: 'استانبول', to_city: 'تهران', date: '۱۴۰۳/۰۶/۰۵', capacity: 4, user: { name: 'شهریار', avatar: 'https://placehold.co/40x40.png' } },
+  { id: '1', from_city: 'تهران', to_city: 'مونترال', date: '2024-09-25', capacity: 4, user: { name: 'شهریار', avatar: 'https://placehold.co/40x40.png' } },
 ];
 
 export default function MyTripsPage() {
