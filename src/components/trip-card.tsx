@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { CalendarDays, Package, Plane, Send } from 'lucide-react';
 import type { Trip } from '@/lib/types';
+import { Badge } from './ui/badge';
 
 interface TripCardProps {
   trip: Trip;
@@ -25,14 +26,14 @@ const formatGregorianToPersian = (dateString: string) => {
 export function TripCard({ trip }: TripCardProps) {
   return (
     <Card className="flex flex-col overflow-hidden transition-shadow duration-300 hover:shadow-lg h-full">
-      <CardContent className="p-4 space-y-3">
-        <h3 className="font-bold font-headline text-accent">اعلام سفر</h3>
-        <div className="space-y-2 text-sm text-muted-foreground">
+      <CardContent className="p-4 space-y-3 flex-1">
+        <Badge variant='secondary' className='bg-accent/10 text-accent'>اعلام سفر</Badge>
+        <div className="space-y-2 text-sm text-muted-foreground pt-2">
             <div className="flex items-center gap-2">
                 <Plane className="h-4 w-4" />
-                <span>
+                <span className='font-semibold text-foreground'>
                     {trip.from_city}
-                    <span className="mx-1">→</span>
+                    <span className="mx-1 font-normal text-muted-foreground">→</span>
                     {trip.to_city}
                 </span>
             </div>
@@ -46,8 +47,8 @@ export function TripCard({ trip }: TripCardProps) {
             </div>
         </div>
       </CardContent>
-       <CardFooter className="flex items-center justify-between p-4 mt-auto border-t bg-muted/30">
-        <Button size="sm" className="bg-accent text-accent-foreground hover:bg-accent/90">
+       <CardFooter className="flex items-center justify-between p-4 border-t bg-muted/30">
+        <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
           <Send className="me-2 h-4 w-4" />
           ارسال پیام
         </Button>

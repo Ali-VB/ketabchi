@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { CalendarDays, MapPin, Send } from 'lucide-react';
 import type { BookRequest } from '@/lib/types';
+import { Badge } from '@/components/ui/badge';
 
 interface RequestCardProps {
   request: BookRequest;
@@ -25,8 +26,9 @@ const formatGregorianToPersian = (dateString: string) => {
 export function RequestCard({ request }: RequestCardProps) {
   return (
     <Card className="flex flex-col overflow-hidden transition-shadow duration-300 hover:shadow-lg h-full">
-      <CardContent className="p-4 space-y-3">
-        <h3 className="font-bold font-headline text-primary">درخواست کتاب</h3>
+      <CardContent className="p-4 space-y-3 flex-1">
+        <Badge variant="secondary" className="bg-primary/10 text-primary">درخواست کتاب</Badge>
+        <h2 className="text-xl font-bold font-headline">{request.title}</h2>
         <div className="space-y-2 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <MapPin className="h-4 w-4" />
@@ -40,8 +42,8 @@ export function RequestCard({ request }: RequestCardProps) {
           </div>
         </div>
       </CardContent>
-      <CardFooter className="flex items-center justify-between p-4 mt-auto border-t bg-muted/30">
-        <Button size="sm" className="bg-accent text-accent-foreground hover:bg-accent/90">
+      <CardFooter className="flex items-center justify-between p-4 border-t bg-muted/30">
+        <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
           <Send className="me-2 h-4 w-4" />
           ارسال پیام
         </Button>
