@@ -58,6 +58,10 @@ export function NewTripForm({ setDialogOpen, isHeroForm = false }: { setDialogOp
                   </PopoverContent>
                 </Popover>
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="capacity_hero">ظرفیت خالی (به کیلو)</Label>
+              <Input id="capacity_hero" type="number" placeholder="مثال: ۵" dir="rtl" />
+            </div>
             <div className="flex justify-end pt-2">
               <Button type="submit" size="lg" className="w-full text-base font-bold">ثبت سفر</Button>
             </div>
@@ -108,7 +112,7 @@ export function NewTripForm({ setDialogOpen, isHeroForm = false }: { setDialogOp
       </div>
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="capacity" className="text-right">
-          ظرفیت (کیلوگرم)
+          ظرفیت خالی (به کیلو)
         </Label>
         <Input id="capacity" type="number" placeholder="مثال: 5" className="col-span-3" dir="rtl" />
       </div>
