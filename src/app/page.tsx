@@ -1,5 +1,5 @@
 import { Header } from '@/components/header';
-import { HomeFilters } from '@/components/home-filters';
+import { HeroSection } from '@/components/hero-section';
 import { RequestCard } from '@/components/request-card';
 import { TripCard } from '@/components/trip-card';
 import type { BookRequest, Trip } from '@/lib/types';
@@ -30,7 +30,7 @@ export default function Home() {
     <div className="flex min-h-screen flex-col">
       <Header />
       <main className="flex-1">
-        <HomeFilters />
+        <HeroSection />
         <section className="container py-8 md:py-12">
           <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {allItems.map((item) =>
