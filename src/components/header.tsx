@@ -10,7 +10,7 @@ export function Header() {
           <Logo className="h-12 w-12" />
           <div>
             <h1 className="text-xl font-headline font-bold">کتابچی</h1>
-            <p className="text-xs text-muted-foreground">با هر پرواز کتابی می‌اید</p>
+            <p className="text-xs text-muted-foreground">با هر پرواز کتابی می‌آید</p>
           </div>
         </div>
         <nav className="ms-auto hidden items-center gap-2 md:flex">

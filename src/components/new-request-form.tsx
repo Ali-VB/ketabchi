@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
 
-export function NewRequestForm({ setDialogOpen }: { setDialogOpen: (open: boolean) => void }) {
+export function NewRequestForm({ setDialogOpen, isHeroForm = false }: { setDialogOpen: (open: boolean) => void; isHeroForm?: boolean }) {
   const [date, setDate] = useState<Date>();
   const { toast } = useToast();
 
@@ -25,35 +25,27 @@ export function NewRequestForm({ setDialogOpen }: { setDialogOpen: (open: boolea
   }
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-4 py-4">
-      <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="title" className="text-right">
-          عنوان کتاب
-        </Label>
-        <Input id="title" placeholder="مثال: شازده کوچولو" className="col-span-3" />
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="title">عنوان کتاب</Label>
+        <Input id="title" placeholder="مثال: شازده کوچولو" className="bg-muted/50" />
       </div>
-      <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="author" className="text-right">
-          نویسنده
-        </Label>
-        <Input id="author" placeholder="مثال: آنتوان دو سنت-اگزوپری" className="col-span-3" />
+      <div className="space-y-2">
+        <Label htmlFor="author">نویسنده</Label>
+        <Input id="author" placeholder="مثال: آنتوان دو سنت-اگزوپری" className="bg-muted/50" />
       </div>
-       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="to_city" className="text-right">
-          شهر مقصد
-        </Label>
-        <Input id="to_city" placeholder="مثال: تهران" className="col-span-3" />
+       <div className="space-y-2">
+        <Label htmlFor="to_city">شهر مقصد</Label>
+        <Input id="to_city" placeholder="مثال: تهران" className="bg-muted/50" />
       </div>
-       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="deadline" className="text-right">
-          تاریخ مورد نیاز
-        </Label>
+       <div className="space-y-2">
+        <Label htmlFor="deadline">تاریخ مورد نیاز</Label>
         <Popover>
           <PopoverTrigger asChild>
             <Button
               variant={"outline"}
               className={cn(
-                "col-span-3 justify-start text-right font-normal",
+                "w-full justify-start text-right font-normal bg-muted/50",
                 !date && "text-muted-foreground"
               )}
             >
@@ -71,14 +63,14 @@ export function NewRequestForm({ setDialogOpen }: { setDialogOpen: (open: boolea
           </PopoverContent>
         </Popover>
       </div>
-      <div className="grid grid-cols-4 items-start gap-4">
-        <Label htmlFor="description" className="text-right pt-2">
-          توضیحات
-        </Label>
-        <Textarea id="description" placeholder="اطلاعات تکمیلی مانند نسخه، ترجمه و..." className="col-span-3" />
-      </div>
+      {!isHeroForm && (
+        <div className="space-y-2">
+          <Label htmlFor="description">توضیحات</Label>
+          <Textarea id="description" placeholder="اطلاعات تکمیلی مانند نسخه، ترجمه و..." className="bg-muted/50"/>
+        </div>
+      )}
       <div className="flex justify-end pt-2">
-         <Button type="submit">ثبت درخواست</Button>
+         <Button type="submit" size={isHeroForm ? "lg" : "default"} className={cn(isHeroForm && "w-full text-base font-bold")}>ثبت درخواست</Button>
       </div>
     </form>
   );
