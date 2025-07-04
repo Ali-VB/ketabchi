@@ -25,18 +25,20 @@ export function NewRequestForm({ setDialogOpen, isHeroForm = false }: { setDialo
   }
 
   return (
-    <form onSubmit={handleSubmit} className={cn('space-y-4', isHeroForm && 'space-y-3')}>
+    <form onSubmit={handleSubmit} className={cn('space-y-4 text-right', isHeroForm && 'space-y-3')}>
       <div className="space-y-2">
         <Label htmlFor="title">عنوان کتاب</Label>
-        <Input id="title" placeholder="مثال: شازده کوچولو" />
+        <Input id="title" placeholder="مثال: شازده کوچولو" dir="rtl" />
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="author">نویسنده</Label>
-        <Input id="author" placeholder="مثال: آنتوان دو سنت-اگزوپری" />
-      </div>
+      {!isHeroForm && (
+        <div className="space-y-2">
+          <Label htmlFor="author">نویسنده</Label>
+          <Input id="author" placeholder="مثال: آنتوان دو سنت-اگزوپری" dir="rtl" />
+        </div>
+      )}
        <div className="space-y-2">
         <Label htmlFor="to_city">شهر مقصد</Label>
-        <Input id="to_city" placeholder="مثال: تهران" />
+        <Input id="to_city" placeholder="مثال: تهران" dir="rtl" />
       </div>
        <div className="space-y-2">
         <Label htmlFor="deadline">تاریخ مورد نیاز</Label>
@@ -64,10 +66,22 @@ export function NewRequestForm({ setDialogOpen, isHeroForm = false }: { setDialo
         </Popover>
       </div>
       {!isHeroForm && (
-        <div className="space-y-2">
-          <Label htmlFor="description">توضیحات</Label>
-          <Textarea id="description" placeholder="اطلاعات تکمیلی مانند نسخه، ترجمه و..." />
-        </div>
+        <>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="quantity">تعداد کتاب‌ها</Label>
+              <Input id="quantity" type="number" defaultValue="1" dir="rtl" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="weight">وزن تقریبی (کیلوگرم)</Label>
+              <Input id="weight" type="number" step="0.1" placeholder="۰.۵" dir="rtl" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="description">توضیحات</Label>
+            <Textarea id="description" placeholder="اطلاعات تکمیلی مانند نسخه، ترجمه و..." dir="rtl" />
+          </div>
+        </>
       )}
       <div className="flex justify-end pt-2">
          <Button type="submit" size={isHeroForm ? "lg" : "default"} className={cn(isHeroForm && "w-full text-base font-bold")}>ثبت درخواست</Button>
