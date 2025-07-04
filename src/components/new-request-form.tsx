@@ -65,18 +65,18 @@ export function NewRequestForm({ setDialogOpen, isHeroForm = false }: { setDialo
           </PopoverContent>
         </Popover>
       </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="quantity">تعداد کتاب‌ها</Label>
+          <Input id="quantity" type="number" defaultValue="1" dir="rtl" />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="weight">وزن تقریبی (کیلوگرم)</Label>
+          <Input id="weight" type="number" step="0.1" placeholder="۰.۵" dir="rtl" />
+        </div>
+      </div>
       {!isHeroForm && (
         <>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="quantity">تعداد کتاب‌ها</Label>
-              <Input id="quantity" type="number" defaultValue="1" dir="rtl" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="weight">وزن تقریبی (کیلوگرم)</Label>
-              <Input id="weight" type="number" step="0.1" placeholder="۰.۵" dir="rtl" />
-            </div>
-          </div>
           <div className="space-y-2">
             <Label htmlFor="description">توضیحات</Label>
             <Textarea id="description" placeholder="اطلاعات تکمیلی مانند نسخه، ترجمه و..." dir="rtl" />
