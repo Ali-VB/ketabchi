@@ -26,10 +26,6 @@ export function NewRequestForm({ setDialogOpen, isHeroForm = false }: { setDialo
 
   return (
     <form onSubmit={handleSubmit} className={cn('space-y-4 text-right', isHeroForm && 'space-y-3')}>
-      <div className="space-y-2">
-        <Label htmlFor="title">عنوان کتاب</Label>
-        <Input id="title" placeholder="مثال: شازده کوچولو" dir="rtl" />
-      </div>
       {!isHeroForm && (
         <div className="space-y-2">
           <Label htmlFor="author">نویسنده</Label>
