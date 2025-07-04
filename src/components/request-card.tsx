@@ -25,7 +25,7 @@ const formatGregorianToPersian = (dateString: string) => {
 
 export function RequestCard({ request }: RequestCardProps) {
   return (
-    <Card className="flex flex-col overflow-hidden transition-shadow duration-300 hover:shadow-lg h-full">
+    <Card className="flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 h-full">
       <CardContent className="p-4 space-y-3 flex-1">
         <Badge variant="secondary" className="bg-primary/10 text-primary">درخواست کتاب</Badge>
         <h2 className="text-xl font-bold font-headline">{request.title}</h2>
@@ -43,6 +43,10 @@ export function RequestCard({ request }: RequestCardProps) {
         </div>
       </CardContent>
       <CardFooter className="flex items-center justify-between p-4 border-t bg-muted/30">
+        <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+          <Send className="me-2 h-4 w-4" />
+          ارسال پیام
+        </Button>
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">{request.user.name}</span>
           <Avatar className="w-8 h-8">
@@ -50,10 +54,6 @@ export function RequestCard({ request }: RequestCardProps) {
             <AvatarFallback>{request.user.name.charAt(0)}</AvatarFallback>
           </Avatar>
         </div>
-        <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-          <Send className="me-2 h-4 w-4" />
-          ارسال پیام
-        </Button>
       </CardFooter>
     </Card>
   );

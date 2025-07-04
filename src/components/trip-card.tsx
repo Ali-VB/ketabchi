@@ -25,7 +25,7 @@ const formatGregorianToPersian = (dateString: string) => {
 
 export function TripCard({ trip }: TripCardProps) {
   return (
-    <Card className="flex flex-col overflow-hidden transition-shadow duration-300 hover:shadow-lg h-full">
+    <Card className="flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 h-full">
       <CardContent className="p-4 space-y-3 flex-1">
         <Badge variant='secondary' className='bg-accent/10 text-accent'>اعلام سفر</Badge>
         <div className="space-y-2 text-sm text-muted-foreground pt-2">
@@ -48,6 +48,10 @@ export function TripCard({ trip }: TripCardProps) {
         </div>
       </CardContent>
        <CardFooter className="flex items-center justify-between p-4 border-t bg-muted/30">
+        <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+          <Send className="me-2 h-4 w-4" />
+          ارسال پیام
+        </Button>
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">{trip.user.name}</span>
           <Avatar className="w-8 h-8">
@@ -55,10 +59,6 @@ export function TripCard({ trip }: TripCardProps) {
             <AvatarFallback>{trip.user.name.charAt(0)}</AvatarFallback>
           </Avatar>
         </div>
-        <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-          <Send className="me-2 h-4 w-4" />
-          ارسال پیام
-        </Button>
       </CardFooter>
     </Card>
   );
