@@ -25,7 +25,7 @@ export function NewRequestForm({ setDialogOpen, isHeroForm = false }: { setDialo
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className={cn('space-y-4', isHeroForm && 'space-y-3')}>
       <div className="space-y-2">
         <Label htmlFor="title">عنوان کتاب</Label>
         <Input id="title" placeholder="مثال: شازده کوچولو" />

@@ -9,16 +9,14 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { cn } from '@/lib/utils';
 import { NewRequestForm } from './new-request-form';
 import { Label } from './ui/label';
-import { HeroIllustration } from './hero-illustration';
-
 
 export function HeroSection() {
     const [date, setDate] = useState<Date | undefined>();
 
     return (
-        <section className="w-full py-12 md:py-24 lg:py-32 overflow-hidden">
-            <div className="container grid gap-12 px-4 md:grid-cols-2 md:items-center md:px-6 lg:gap-24">
-                <div className="w-full max-w-md space-y-4 justify-self-center md:justify-self-end">
+        <section className="w-full py-12 md:py-24 lg:py-32">
+            <div className="container flex items-center justify-center px-4 md:px-6">
+                <div className="w-full max-w-sm space-y-4">
                      <Tabs defaultValue="requester" className="w-full">
                         <TabsList className="grid w-full grid-cols-2 h-auto p-0 bg-transparent gap-2 mb-2">
                             <TabsTrigger value="requester" className="flex-col h-full items-start gap-1 rounded-lg border p-4 text-base data-[state=active]:border-primary data-[state=active]:bg-primary/5 data-[state=active]:shadow-md">
@@ -38,15 +36,15 @@ export function HeroSection() {
                         </TabsList>
                         <TabsContent value="requester">
                             <Card className="rounded-lg shadow-xl border">
-                                <CardContent className="p-6">
+                                <CardContent className="p-4">
                                     <NewRequestForm setDialogOpen={() => {}} isHeroForm={true}/>
                                 </CardContent>
                             </Card>
                         </TabsContent>
                         <TabsContent value="traveler">
                            <Card className="rounded-lg shadow-xl border">
-                                <CardContent className="p-6">
-                                    <form className="space-y-4">
+                                <CardContent className="p-4">
+                                    <form className="space-y-3">
                                         <div className="space-y-2">
                                             <Label>مسیر سفر</Label>
                                             <Input type="text" placeholder="مبدا" className="w-full" />
@@ -85,9 +83,6 @@ export function HeroSection() {
                             </Card>
                         </TabsContent>
                     </Tabs>
-                </div>
-                 <div className="place-self-center hidden md:block">
-                   <HeroIllustration />
                 </div>
             </div>
         </section>
