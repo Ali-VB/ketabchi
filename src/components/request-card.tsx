@@ -43,10 +43,6 @@ export function RequestCard({ request }: RequestCardProps) {
         </div>
       </CardContent>
       <CardFooter className="flex items-center justify-between p-4 border-t bg-muted/30">
-        <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-          <Send className="me-2 h-4 w-4" />
-          ارسال پیام
-        </Button>
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">{request.user.name}</span>
           <Avatar className="w-8 h-8">
@@ -54,6 +50,10 @@ export function RequestCard({ request }: RequestCardProps) {
             <AvatarFallback>{request.user.name.charAt(0)}</AvatarFallback>
           </Avatar>
         </div>
+        <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+          <Send className="me-2 h-4 w-4" />
+          ارسال پیام
+        </Button>
       </CardFooter>
     </Card>
   );
