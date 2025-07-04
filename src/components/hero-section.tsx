@@ -17,38 +17,41 @@ export function HeroSection() {
     const [date, setDate] = useState<Date | undefined>();
 
     return (
-        <section className="w-full py-12 md:py-24 lg:py-32">
-            <div className="container grid gap-12 px-4 md:grid-cols-2 md:items-center md:px-6 lg:gap-16">
-                <div className="hidden md:block place-self-center">
-                    <HeroIllustration className="w-full max-w-md" />
-                </div>
+        <section className="w-full py-12 md:py-24 lg:py-32 overflow-hidden">
+            <div className="container grid gap-12 px-4 md:grid-cols-2 md:items-center md:px-6 lg:gap-24">
                 <div className="w-full max-w-md space-y-4 justify-self-center md:justify-self-end">
                      <Tabs defaultValue="requester" className="w-full">
-                        <TabsList className="grid w-full grid-cols-2 h-16 rounded-b-none rounded-t-lg p-0 border-b">
-                            <TabsTrigger value="requester" className="flex h-full items-center gap-2 rounded-b-none rounded-tl-lg border-b-0 text-base data-[state=active]:bg-card data-[state=active]:shadow-lg">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-                                <span>درخواست کتاب دارم</span>
+                        <TabsList className="grid w-full grid-cols-2 h-auto p-0 bg-transparent gap-2 mb-2">
+                            <TabsTrigger value="requester" className="flex-col h-full items-start gap-1 rounded-lg border p-4 text-base data-[state=active]:border-primary data-[state=active]:bg-primary/5 data-[state=active]:shadow-md">
+                                <div className='flex items-center gap-2'>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                                    <span className='font-bold'>درخواست کتاب دارم</span>
+                                </div>
+                                <p className='text-xs text-muted-foreground text-right mt-1'>کتاب مورد نظر خود را درخواست دهید.</p>
                             </TabsTrigger>
-                            <TabsTrigger value="traveler" className="flex h-full items-center gap-2 rounded-b-none rounded-tr-lg border-b-0 text-base data-[state=active]:bg-card data-[state=active]:shadow-lg">
-                                <Plane className="h-6 w-6" />
-                                <span>مسافرم</span>
+                            <TabsTrigger value="traveler" className="flex-col h-full items-start gap-1 rounded-lg border p-4 text-base data-[state=active]:border-primary data-[state=active]:bg-primary/5 data-[state=active]:shadow-md">
+                                 <div className='flex items-center gap-2'>
+                                    <Plane className="h-5 w-5" />
+                                    <span className='font-bold'>مسافرم</span>
+                                 </div>
+                                <p className='text-xs text-muted-foreground text-right mt-1'>سفر خود را اعلام کنید و کمک کنید.</p>
                             </TabsTrigger>
                         </TabsList>
                         <TabsContent value="requester">
-                            <Card className="rounded-t-none shadow-xl">
+                            <Card className="rounded-lg shadow-xl border">
                                 <CardContent className="p-6">
                                     <NewRequestForm setDialogOpen={() => {}} isHeroForm={true}/>
                                 </CardContent>
                             </Card>
                         </TabsContent>
                         <TabsContent value="traveler">
-                           <Card className="rounded-t-none shadow-xl">
+                           <Card className="rounded-lg shadow-xl border">
                                 <CardContent className="p-6">
                                     <form className="space-y-4">
                                         <div className="space-y-2">
                                             <Label>مسیر سفر</Label>
-                                            <Input type="text" placeholder="مبدا" className="w-full bg-muted/50" />
-                                            <Input type="text" placeholder="مقصد" className="w-full bg-muted/50" />
+                                            <Input type="text" placeholder="مبدا" className="w-full" />
+                                            <Input type="text" placeholder="مقصد" className="w-full" />
                                         </div>
                                          <div className="space-y-2">
                                             <Label>تاریخ سفر</Label>
@@ -57,7 +60,7 @@ export function HeroSection() {
                                                     <Button
                                                       variant={"outline"}
                                                       className={cn(
-                                                        'w-full justify-start text-right font-normal bg-muted/50',
+                                                        'w-full justify-start text-right font-normal',
                                                         !date && 'text-muted-foreground'
                                                       )}
                                                     >
@@ -83,6 +86,9 @@ export function HeroSection() {
                             </Card>
                         </TabsContent>
                     </Tabs>
+                </div>
+                 <div className="hidden md:block place-self-center">
+                    <HeroIllustration />
                 </div>
             </div>
         </section>

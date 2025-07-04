@@ -28,15 +28,15 @@ export function NewRequestForm({ setDialogOpen, isHeroForm = false }: { setDialo
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="title">عنوان کتاب</Label>
-        <Input id="title" placeholder="مثال: شازده کوچولو" className="bg-muted/50" />
+        <Input id="title" placeholder="مثال: شازده کوچولو" />
       </div>
       <div className="space-y-2">
         <Label htmlFor="author">نویسنده</Label>
-        <Input id="author" placeholder="مثال: آنتوان دو سنت-اگزوپری" className="bg-muted/50" />
+        <Input id="author" placeholder="مثال: آنتوان دو سنت-اگزوپری" />
       </div>
        <div className="space-y-2">
         <Label htmlFor="to_city">شهر مقصد</Label>
-        <Input id="to_city" placeholder="مثال: تهران" className="bg-muted/50" />
+        <Input id="to_city" placeholder="مثال: تهران" />
       </div>
        <div className="space-y-2">
         <Label htmlFor="deadline">تاریخ مورد نیاز</Label>
@@ -45,7 +45,7 @@ export function NewRequestForm({ setDialogOpen, isHeroForm = false }: { setDialo
             <Button
               variant={"outline"}
               className={cn(
-                "w-full justify-start text-right font-normal bg-muted/50",
+                "w-full justify-start text-right font-normal",
                 !date && "text-muted-foreground"
               )}
             >
@@ -66,7 +66,7 @@ export function NewRequestForm({ setDialogOpen, isHeroForm = false }: { setDialo
       {!isHeroForm && (
         <div className="space-y-2">
           <Label htmlFor="description">توضیحات</Label>
-          <Textarea id="description" placeholder="اطلاعات تکمیلی مانند نسخه، ترجمه و..." className="bg-muted/50"/>
+          <Textarea id="description" placeholder="اطلاعات تکمیلی مانند نسخه، ترجمه و..." />
         </div>
       )}
       <div className="flex justify-end pt-2">
