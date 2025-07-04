@@ -47,17 +47,17 @@ export function TripCard({ trip }: TripCardProps) {
         </div>
       </CardContent>
        <CardFooter className="flex items-center justify-between p-4 mt-auto border-t bg-muted/30">
+        <Button size="sm" className="bg-accent text-accent-foreground hover:bg-accent/90">
+          <Send className="me-2 h-4 w-4" />
+          ارسال پیام
+        </Button>
         <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">{trip.user.name}</span>
           <Avatar className="w-8 h-8">
             <AvatarImage src={trip.user.avatar} alt={trip.user.name} data-ai-hint="person face" />
             <AvatarFallback>{trip.user.name.charAt(0)}</AvatarFallback>
           </Avatar>
-          <span className="text-sm font-medium">{trip.user.name}</span>
         </div>
-        <Button size="sm">
-          تماس
-          <Send className="ms-2 h-4 w-4" />
-        </Button>
       </CardFooter>
     </Card>
   );
