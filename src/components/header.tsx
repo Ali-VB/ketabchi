@@ -13,16 +13,7 @@ export function Header() {
             <p className="text-xs text-muted-foreground">با هر پرواز کتابی می‌آید</p>
           </div>
         </div>
-        <nav className="ms-auto hidden items-center gap-2 md:flex">
-          <Button variant="ghost" asChild>
-            <Link href="/dashboard/trips">من مسافر هستم</Link>
-          </Button>
-          <Button asChild>
-            <Link href="/dashboard/requests">من درخواست کتاب دارم</Link>
-          </Button>
-        </nav>
-        <div className="ms-auto md:ms-4 flex items-center gap-2">
-            <div className="h-6 w-px bg-border hidden md:block" />
+        <div className="ms-auto flex items-center gap-2">
             <Button variant="outline" asChild>
                 <Link href="/login">ورود / ثبت‌نام</Link>
             </Button>
