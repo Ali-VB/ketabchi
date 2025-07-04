@@ -25,13 +25,15 @@ export function NewTripForm({ setDialogOpen, isHeroForm = false }: { setDialogOp
   if (isHeroForm) {
     return (
         <form onSubmit={handleSubmit} className="space-y-3 text-right">
-            <div className="space-y-2">
-                <Label htmlFor="from_city_hero">شهر مبدا</Label>
-                <Input id="from_city_hero" placeholder="مثال: پاریس" dir="rtl" />
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="to_city_hero">شهر مقصد</Label>
-                <Input id="to_city_hero" placeholder="مثال: تهران" dir="rtl" />
+            <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                    <Label htmlFor="from_city_hero">شهر مبدا</Label>
+                    <Input id="from_city_hero" placeholder="مثال: پاریس" dir="rtl" />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="to_city_hero">شهر مقصد</Label>
+                    <Input id="to_city_hero" placeholder="مثال: تهران" dir="rtl" />
+                </div>
             </div>
             <div className="space-y-2">
                 <Label htmlFor="date_hero">تاریخ سفر</Label>
@@ -70,29 +72,25 @@ export function NewTripForm({ setDialogOpen, isHeroForm = false }: { setDialogOp
   }
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-4 py-4 text-right">
-      <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="from_city" className="text-right">
-          شهر مبدا
-        </Label>
-        <Input id="from_city" placeholder="مثال: پاریس" className="col-span-3" dir="rtl" />
+    <form onSubmit={handleSubmit} className="space-y-4 py-4 text-right">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="from_city">شهر مبدا</Label>
+          <Input id="from_city" placeholder="مثال: پاریس" dir="rtl" />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="to_city">شهر مقصد</Label>
+          <Input id="to_city" placeholder="مثال: تهران" dir="rtl" />
+        </div>
       </div>
-      <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="to_city" className="text-right">
-          شهر مقصد
-        </Label>
-        <Input id="to_city" placeholder="مثال: تهران" className="col-span-3" dir="rtl" />
-      </div>
-       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="date" className="text-right">
-          تاریخ سفر
-        </Label>
+       <div className="space-y-2">
+        <Label htmlFor="date">تاریخ سفر</Label>
         <Popover>
           <PopoverTrigger asChild>
             <Button
               variant={"outline"}
               className={cn(
-                "col-span-3 justify-start text-right font-normal",
+                "w-full justify-start text-right font-normal",
                 !date && "text-muted-foreground"
               )}
             >
@@ -110,11 +108,9 @@ export function NewTripForm({ setDialogOpen, isHeroForm = false }: { setDialogOp
           </PopoverContent>
         </Popover>
       </div>
-      <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="capacity" className="text-right">
-          ظرفیت خالی (به کیلو)
-        </Label>
-        <Input id="capacity" type="number" placeholder="مثال: 5" className="col-span-3" dir="rtl" />
+      <div className="space-y-2">
+        <Label htmlFor="capacity">ظرفیت خالی (به کیلو)</Label>
+        <Input id="capacity" type="number" placeholder="مثال: 5" dir="rtl" />
       </div>
       <div className="flex justify-end pt-2">
         <Button type="submit">ثبت سفر</Button>
