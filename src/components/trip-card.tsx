@@ -47,11 +47,11 @@ export function TripCard({ trip }: TripCardProps) {
         </div>
       </CardContent>
        <CardFooter className="flex items-center justify-between p-4 border-t bg-accent/10">
+        <span className="text-sm font-medium">{trip.user.name}</span>
         <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
           <Send className="me-2 h-4 w-4" />
           ارسال پیام
         </Button>
-        <span className="text-sm font-medium">{trip.user.name}</span>
       </CardFooter>
     </Card>
   );
