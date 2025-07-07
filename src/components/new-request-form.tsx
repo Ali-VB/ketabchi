@@ -9,14 +9,21 @@ import { Calendar } from "./ui/calendar";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 
 export function NewRequestForm({ setDialogOpen, isHeroForm = false }: { setDialogOpen: (open: boolean) => void; isHeroForm?: boolean }) {
   const [date, setDate] = useState<Date>();
   const { toast } = useToast();
+  const router = useRouter();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isHeroForm) {
+      router.push('/login');
+      return;
+    }
+    
     toast({
         title: "درخواست ثبت شد",
         description: "درخواست کتاب شما با موفقیت ثبت شد و در پلتفرم نمایش داده می‌شود.",
