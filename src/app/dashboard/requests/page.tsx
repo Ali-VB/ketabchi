@@ -1,19 +1,30 @@
 'use client';
 import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Loader2 } from "lucide-react";
 import { RequestCard } from "@/components/request-card";
 import { type BookRequest } from "@/lib/types";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { NewRequestForm } from "@/components/new-request-form";
-import { useState } from "react";
-
-const mockUserRequests: BookRequest[] = [
-  { id: '1', title: 'صد سال تنهایی', to_city: 'تهران', deadline: '2024-09-22', user: { name: 'شهریار', avatar: 'https://placehold.co/40x40.png' } },
-  { id: '2', title: 'جنایت و مکافات', to_city: 'مشهد', deadline: '2024-10-01', user: { name: 'شهریار', avatar: 'https://placehold.co/40x40.png' } },
-];
+import { useState, useEffect } from "react";
+import { useAuth } from "@/components/auth-provider";
+import { getUserRequests } from "@/lib/firebase/firestore";
 
 export default function MyRequestsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [requests, setRequests] = useState<BookRequest[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      setIsLoading(true);
+      getUserRequests(user.uid)
+        .then(setRequests)
+        .catch(console.error)
+        .finally(() => setIsLoading(false));
+    }
+  }, [user]);
+
 
   return (
     <div className="space-y-6">
@@ -41,9 +52,13 @@ export default function MyRequestsPage() {
         </Dialog>
       </div>
       
-      {mockUserRequests.length > 0 ? (
+      {isLoading ? (
+        <div className="flex justify-center items-center h-80">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : requests.length > 0 ? (
         <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-          {mockUserRequests.map((request) => (
+          {requests.map((request) => (
             <RequestCard key={request.id} request={request} />
           ))}
         </div>

@@ -2,45 +2,42 @@ import { Header } from '@/components/header';
 import { HeroSection } from '@/components/hero-section';
 import { RequestCard } from '@/components/request-card';
 import { TripCard } from '@/components/trip-card';
+import { getAllRequests, getAllTrips } from '@/lib/firebase/firestore';
 import type { BookRequest, Trip } from '@/lib/types';
 
-const mockRequests: BookRequest[] = [
-    { id: 'req1', title: 'کتابی از آمریکا', to_city: 'تهران', deadline: '2024-08-25', user: { name: 'سارا فهیمی', avatar: 'https://placehold.co/40x40.png' } },
-    { id: 'req2', title: 'کتابی از کانادا', to_city: 'اصفهان', deadline: '2024-09-05', user: { name: 'علی رضایی', avatar: 'https://placehold.co/40x40.png' } },
-    { id: 'req3', title: 'کتاب تخصصی', to_city: 'شیراز', deadline: '2024-09-10', user: { name: 'مریم نوری', avatar: 'https://placehold.co/40x40.png' } },
-    { id: 'req4', title: 'رمان خارجی', to_city: 'تبریز', deadline: '2024-09-15', user: { name: 'رضا قاسمی', avatar: 'https://placehold.co/40x40.png' } },
-    { id: 'req5', title: 'مجموعه اشعار', to_city: 'مشهد', deadline: '2024-09-20', user: { name: 'زهرا حسینی', avatar: 'https://placehold.co/40x40.png' } },
-];
 
-const mockTrips: Trip[] = [
-    { id: 'trip1', from_city: 'تهران', to_city: 'تورنتو', date: '2024-08-30', capacity: 3, user: { name: 'نیما افشار', avatar: 'https://placehold.co/40x40.png' } },
-    { id: 'trip2', from_city: 'اصفهان', to_city: 'نیویورک', date: '2024-09-02', capacity: 2, user: { name: 'آزاده کریمی', avatar: 'https://placehold.co/40x40.png' } },
-    { id: 'trip3', from_city: 'شیراز', to_city: 'ونکوور', date: '2024-09-12', capacity: 5, user: { name: 'بابک رسولی', avatar: 'https://placehold.co/40x40.png' } },
-    { id: 'trip4', from_city: 'تبریز', to_city: 'لس آنجلس', date: '2024-09-18', capacity: 4, user: { name: 'پریسا محمدی', avatar: 'https://placehold.co/40x40.png' } },
-    { id: 'trip5', from_city: 'مشهد', to_city: 'مونترال', date: '2024-09-25', capacity: 1, user: { name: 'شهریار احمدی', avatar: 'https://placehold.co/40x40.png' } },
-];
+export default async function Home() {
+  const requests = await getAllRequests();
+  const trips = await getAllTrips();
 
-const allItems = [
-    ...mockRequests.map(r => ({ type: 'request', data: r })),
-    ...mockTrips.map(t => ({ type: 'trip', data: t }))
-  ].sort((a, b) => a.data.id > b.data.id ? 1 : -1);
+  const allItems = [
+    ...requests.map(r => ({ type: 'request', data: r, date: new Date(r.deadline) })),
+    ...trips.map(t => ({ type: 'trip', data: t, date: new Date(t.date) }))
+  ].sort((a, b) => b.date.getTime() - a.date.getTime());
 
-export default function Home() {
+
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
       <main className="flex-1">
         <HeroSection />
         <section className="container py-8 md:py-12">
-          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {allItems.map((item) =>
-              item.type === 'request' ? (
-                <RequestCard key={item.data.id} request={item.data as BookRequest} />
-              ) : (
-                <TripCard key={item.data.id} trip={item.data as Trip} />
-              )
-            )}
-          </div>
+          {allItems.length > 0 ? (
+            <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              {allItems.map((item) =>
+                item.type === 'request' ? (
+                  <RequestCard key={item.data.id} request={item.data as BookRequest} />
+                ) : (
+                  <TripCard key={item.data.id} trip={item.data as Trip} />
+                )
+              )}
+            </div>
+          ) : (
+             <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/30 bg-muted/10 p-12 text-center h-80">
+                <h3 className="text-xl font-bold tracking-tight">هنوز هیچ درخواستی ثبت نشده است</h3>
+                <p className="text-sm text-muted-foreground mt-2">اولین درخواست کتاب یا سفر را شما ثبت کنید!</p>
+            </div>
+          )}
         </section>
       </main>
       <footer className="border-t">

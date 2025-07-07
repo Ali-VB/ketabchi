@@ -1,14 +1,20 @@
 export type User = {
+  uid: string;
   name: string;
-  avatar: string;
+  avatar: string | null;
 };
 
 export type BookRequest = {
   id: string;
   title: string;
+  author?: string;
+  description?: string;
+  quantity: number;
+  weight: number;
   to_city: string;
   deadline: string;
   user: User;
+  userId: string;
 };
 
 export type Trip = {
@@ -18,4 +24,5 @@ export type Trip = {
   date: string;
   capacity: number;
   user: User;
+  userId: string;
 };

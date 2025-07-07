@@ -1,18 +1,29 @@
 'use client';
 import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Loader2 } from "lucide-react";
 import { TripCard } from "@/components/trip-card";
 import { type Trip } from "@/lib/types";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { NewTripForm } from "@/components/new-trip-form";
-import { useState } from "react";
-
-const mockUserTrips: Trip[] = [
-  { id: '1', from_city: 'تهران', to_city: 'مونترال', date: '2024-09-25', capacity: 4, user: { name: 'شهریار', avatar: 'https://placehold.co/40x40.png' } },
-];
+import { useState, useEffect } from "react";
+import { useAuth } from "@/components/auth-provider";
+import { getUserTrips } from "@/lib/firebase/firestore";
 
 export default function MyTripsPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      setIsLoading(true);
+      getUserTrips(user.uid)
+        .then(setTrips)
+        .catch(console.error)
+        .finally(() => setIsLoading(false));
+    }
+  }, [user]);
 
   return (
     <div className="space-y-6">
@@ -40,9 +51,13 @@ export default function MyTripsPage() {
         </Dialog>
       </div>
 
-      {mockUserTrips.length > 0 ? (
+      {isLoading ? (
+         <div className="flex justify-center items-center h-80">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : trips.length > 0 ? (
         <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-          {mockUserTrips.map((trip) => (
+          {trips.map((trip) => (
             <TripCard key={trip.id} trip={trip} />
           ))}
         </div>
