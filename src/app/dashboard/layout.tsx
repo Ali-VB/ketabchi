@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   SidebarProvider,
   Sidebar,
@@ -15,9 +15,12 @@ import {
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Bell, ChevronDown, Home, LogOut, Mail, Package, Plane, Settings, User, Users } from 'lucide-react';
+import { Bell, ChevronDown, Home, Loader2, LogOut, Mail, Package, Plane, Settings, User, Users } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Logo } from '@/components/logo';
+import { useAuth } from '@/components/auth-provider';
+import { signOut } from '@/lib/firebase/auth';
+import { useEffect } from 'react';
 
 const menuItems = [
   { href: '/dashboard', label: 'داشبورد', icon: Home },
@@ -29,6 +32,27 @@ const menuItems = [
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, loading } = useAuth();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
+  const handleLogout = async () => {
+    await signOut();
+    router.push('/login');
+  };
+
+  if (loading || !user) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <SidebarProvider>
@@ -67,11 +91,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <DropdownMenuTrigger asChild>
                 <div className="flex cursor-pointer items-center gap-2 p-2 rounded-md hover:bg-sidebar-accent">
                     <Avatar className="size-8">
-                      <AvatarImage src="https://placehold.co/40x40.png" data-ai-hint="user portrait" />
-                      <AvatarFallback>U</AvatarFallback>
+                      <AvatarImage src={user.photoURL ?? `https://placehold.co/40x40.png`} data-ai-hint="user portrait" />
+                      <AvatarFallback>{user.displayName?.charAt(0) || user.email?.charAt(0) || 'U'}</AvatarFallback>
                     </Avatar>
                     <div className="grow overflow-hidden">
-                      <p className="text-sm font-semibold text-sidebar-foreground">شهریار</p>
+                      <p className="text-sm font-semibold text-sidebar-foreground truncate">{user.displayName || user.email}</p>
                     </div>
                     <ChevronDown className="h-4 w-4 text-sidebar-foreground" />
                 </div>
@@ -82,7 +106,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <DropdownMenuItem asChild><Link href="/dashboard/profile"><User className="me-2 h-4 w-4" />پروفایل</Link></DropdownMenuItem>
                 <DropdownMenuItem><Settings className="me-2 h-4 w-4" />تنظیمات</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-500 focus:text-red-500 focus:bg-red-500/10">
+                <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:text-red-500 focus:bg-red-500/10">
                   <LogOut className="me-2 h-4 w-4" />
                   خروج
                 </DropdownMenuItem>
