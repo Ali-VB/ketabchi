@@ -47,10 +47,26 @@ export default function SignupPage() {
       }
       router.push('/role-selection');
     } catch (error: any) {
+      console.error("Firebase signup error:", error);
+      let description = 'مشکلی پیش آمد. لطفا دوباره تلاش کنید.';
+      switch (error.code) {
+        case 'auth/email-already-in-use':
+          description = 'این ایمیل قبلا استفاده شده است.';
+          break;
+        case 'auth/invalid-email':
+          description = 'لطفاً یک ایمیل معتبر وارد کنید.';
+          break;
+        case 'auth/weak-password':
+          description = 'رمز عبور ضعیف است. باید حداقل ۶ حرف داشته باشد.';
+          break;
+        case 'auth/operation-not-allowed':
+          description = 'ثبت‌نام با ایمیل/رمزعبور فعال نیست. لطفا تنظیمات فایربیس را بررسی کنید.';
+          break;
+      }
       toast({
         variant: 'destructive',
         title: 'خطا در ثبت‌نام',
-        description: error.code === 'auth/email-already-in-use' ? 'این ایمیل قبلا استفاده شده است.' : 'مشکلی پیش آمد. لطفا دوباره تلاش کنید.',
+        description: description,
       });
     } finally {
       setIsLoading(false);

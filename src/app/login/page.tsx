@@ -40,10 +40,15 @@ export default function LoginPage() {
       await signInWithEmailAndPassword(auth, values.email, values.password);
       router.push('/dashboard');
     } catch (error: any) {
+      console.error('Firebase login error:', error);
+      let description = 'مشکلی در هنگام ورود پیش آمد. لطفا دوباره تلاش کنید.';
+      if (error.code === 'auth/invalid-credential') {
+        description = 'ایمیل یا رمز عبور اشتباه است.';
+      }
       toast({
         variant: 'destructive',
         title: 'خطا در ورود',
-        description: 'ایمیل یا رمز عبور اشتباه است.',
+        description: description,
       });
     } finally {
       setIsLoading(false);
