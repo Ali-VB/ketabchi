@@ -79,9 +79,9 @@ export default function SignupPage() {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4">
+          <Link href="/" className="mx-auto mb-4">
             <Logo className="h-12 w-12" />
-          </div>
+          </Link>
           <CardTitle className="text-3xl font-headline">ایجاد حساب کاربری</CardTitle>
           <CardDescription>به کتابچی بپیوندید. دنیایی از کتاب در انتظار شماست.</CardDescription>
         </CardHeader>
