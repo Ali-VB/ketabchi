@@ -58,7 +58,6 @@ const getRequestMatchText = (count: number) => {
   return `${countInPersian} سفر با این درخواست منطبق است`;
 };
 
-
 export function RequestCard({
   request,
   showFooter = true,
@@ -107,17 +106,26 @@ export function RequestCard({
             <div className="space-y-2 pt-2 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
-                <span>
-                  <span className="font-semibold text-foreground">
-                    {request.from_city || 'مبدا نامشخص'}
+                {request.from_city ? (
+                  <span>
+                    <span className="font-semibold text-foreground">
+                      {request.from_city}
+                    </span>
+                    <span className="mx-1 font-normal text-muted-foreground">
+                      →
+                    </span>
+                    <span className="font-semibold text-foreground">
+                      {request.to_city}
+                    </span>
                   </span>
-                  <span className="mx-1 font-normal text-muted-foreground">
-                    →
+                ) : (
+                  <span>
+                    مقصد:{' '}
+                    <span className="font-semibold text-foreground">
+                      {request.to_city}
+                    </span>
                   </span>
-                  <span className="font-semibold text-foreground">
-                    {request.to_city}
-                  </span>
-                </span>
+                )}
               </div>
               <div className="flex items-start gap-2">
                 <CalendarDays className="mt-1 h-4 w-4 shrink-0" />

@@ -28,7 +28,6 @@ const bookSchema = z.object({
 
 const requestFormSchema = z.object({
   books: z.array(bookSchema).min(1, "حداقل یک کتاب باید اضافه شود."),
-  from_city: z.string().min(1, "شهر مبدا الزامی است."),
   to_city: z.string().min(1, "شهر مقصد الزامی است."),
   deadline: z.object(
     {
@@ -53,7 +52,6 @@ export function NewRequestForm({ setDialogOpen, isHeroForm = false }: { setDialo
     resolver: zodResolver(requestFormSchema),
     defaultValues: {
       books: [{ title: '', author: '', quantity: 1 }],
-      from_city: '',
       to_city: '',
       description: '',
     },
@@ -75,7 +73,6 @@ export function NewRequestForm({ setDialogOpen, isHeroForm = false }: { setDialo
     try {
         await addRequest({
             books: data.books,
-            from_city: data.from_city,
             to_city: data.to_city,
             deadline_start: format(data.deadline.from, "yyyy-MM-dd"),
             deadline_end: format(data.deadline.to, "yyyy-MM-dd"),
@@ -216,34 +213,19 @@ export function NewRequestForm({ setDialogOpen, isHeroForm = false }: { setDialo
           افزودن کتاب دیگر
         </Button>
         
-        <div className="grid grid-cols-2 gap-4">
-            <FormField
-                control={form.control}
-                name="from_city"
-                render={({ field }) => (
-                <FormItem>
-                    <FormLabel>شهر مبدا</FormLabel>
-                    <FormControl>
-                    <Input placeholder="مثال: لندن" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                </FormItem>
-                )}
-            />
-            <FormField
-                control={form.control}
-                name="to_city"
-                render={({ field }) => (
-                <FormItem>
-                    <FormLabel>شهر مقصد</FormLabel>
-                    <FormControl>
-                    <Input placeholder="مثال: تهران" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                </FormItem>
-                )}
-            />
-        </div>
+        <FormField
+            control={form.control}
+            name="to_city"
+            render={({ field }) => (
+            <FormItem>
+                <FormLabel>شهر مقصد (در ایران)</FormLabel>
+                <FormControl>
+                <Input placeholder="مثال: تهران" {...field} />
+                </FormControl>
+                <FormMessage />
+            </FormItem>
+            )}
+        />
        
         <FormField
             control={form.control}
