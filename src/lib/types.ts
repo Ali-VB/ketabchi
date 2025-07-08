@@ -4,12 +4,21 @@ export type User = {
   avatar: string | null;
 };
 
+export type Book = {
+  title: string;
+  author: string;
+  quantity: number;
+};
+
 export type BookRequest = {
   id: string;
-  title: string;
+  // For backwards compatibility with old data
+  title?: string;
   author?: string;
+  quantity?: number;
+  // New data structure
+  books?: Book[];
   description?: string;
-  quantity: number;
   weight: number;
   to_city: string;
   deadline: string;

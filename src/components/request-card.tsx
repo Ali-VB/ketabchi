@@ -50,15 +50,31 @@ export function RequestCard({ request }: RequestCardProps) {
 
   const redirectUrl = encodeURIComponent('/dashboard/trips?action=new');
 
+  const isLegacy = !request.books || request.books.length === 0;
+
   return (
     <>
-      <Card className="flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 h-full">
-        <CardContent className="p-4 space-y-3 flex-1">
+      <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
+        <CardContent className="flex-1 space-y-3 p-4">
           <Badge variant="secondary" className="bg-primary/10 text-primary">
             درخواست کتاب
           </Badge>
-          <h2 className="text-xl font-bold font-headline">{request.title}</h2>
-          <div className="space-y-2 text-sm text-muted-foreground">
+          
+          {isLegacy ? (
+            <h2 className="text-xl font-bold font-headline">{request.title}</h2>
+          ) : (
+            <div className="space-y-1">
+              <div>
+                <h2 className="text-xl font-bold font-headline">{request.books?.[0].title}</h2>
+                <p className="text-sm text-muted-foreground">اثر {request.books?.[0].author}</p>
+              </div>
+              {request.books && request.books.length > 1 && (
+                <Badge variant="outline">و {request.books.length - 1} کتاب دیگر</Badge>
+              )}
+            </div>
+          )}
+
+          <div className="space-y-2 pt-2 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <MapPin className="h-4 w-4" />
               <span>
@@ -74,7 +90,7 @@ export function RequestCard({ request }: RequestCardProps) {
             </div>
           </div>
         </CardContent>
-        <CardFooter className="flex items-center justify-between p-4 border-t bg-primary/10">
+        <CardFooter className="flex items-center justify-between border-t bg-primary/10 p-4">
           <span className="text-sm font-medium">{request.user.name}</span>
           <Button
             variant="ghost"
