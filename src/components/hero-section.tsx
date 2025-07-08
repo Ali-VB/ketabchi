@@ -21,7 +21,7 @@ export function HeroSection() {
         <section className="w-full py-16 lg:py-20 bg-muted/30 border-b">
             <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center space-y-4 text-center">
-                    <div className="max-w-2xl mx-auto space-y-6">
+                    <div className="max-w-lg mx-auto space-y-6">
                         <div>
                             <p className="mt-4 text-lg md:text-xl text-muted-foreground">
                                از مسافری بخواهید برایتان از ایران کتاب بیاورد، یا در سفرتان کتابی را به دست کسی برسانید.
