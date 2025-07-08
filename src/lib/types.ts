@@ -20,6 +20,7 @@ export type BookRequest = {
   books?: Book[];
   description?: string;
   weight: number;
+  from_city: string;
   to_city: string;
   deadline_start: string;
   deadline_end: string;
@@ -53,4 +54,12 @@ export type Message = {
   senderId: string;
   text: string;
   timestamp: string;
+};
+
+export type MatchedRequest = BookRequest & {
+  matchingTrips: Trip[];
+};
+
+export type MatchedTrip = Trip & {
+  matchingRequests: BookRequest[];
 };

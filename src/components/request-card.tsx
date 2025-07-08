@@ -95,7 +95,10 @@ export function RequestCard({ request, showFooter = true }: RequestCardProps) {
             <div className="flex items-center gap-2">
               <MapPin className="h-4 w-4" />
               <span>
-                مقصد:{' '}
+                <span className="font-semibold text-foreground">
+                  {request.from_city || 'مبدا نامشخص'}
+                </span>
+                <span className="mx-1 font-normal text-muted-foreground">→</span>
                 <span className="font-semibold text-foreground">
                   {request.to_city}
                 </span>

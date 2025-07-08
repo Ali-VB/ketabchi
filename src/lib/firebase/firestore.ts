@@ -17,7 +17,7 @@ import {
   setDoc,
 } from 'firebase/firestore';
 import { db } from './config';
-import type { BookRequest, Trip, Conversation, Message, User } from '../types';
+import type { BookRequest, Trip, Conversation, Message, User, MatchedRequest, MatchedTrip } from '../types';
 
 const requestsCollection = collection(db, 'requests');
 const tripsCollection = collection(db, 'trips');
@@ -131,6 +131,78 @@ export const getUserTrips = async (userId: string): Promise<Trip[]> => {
     ...processSerializable(doc.data()),
   })) as Trip[];
 };
+
+// --- Matching System ---
+
+export const findMatches = async (userId: string): Promise<{
+  requestMatches: MatchedRequest[];
+  tripMatches: MatchedTrip[];
+}> => {
+  if (!userId) {
+    return { requestMatches: [], tripMatches: [] };
+  }
+
+  // 1. Get all requests and trips
+  const allRequestsSnapshot = await getDocs(query(requestsCollection, orderBy('createdAt', 'desc')));
+  const allRequests = allRequestsSnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...processSerializable(doc.data()),
+  })) as BookRequest[];
+
+  const allTripsSnapshot = await getDocs(query(tripsCollection, orderBy('createdAt', 'desc')));
+  const allTrips = allTripsSnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...processSerializable(doc.data()),
+  })) as Trip[];
+
+  // 2. Filter for user's own items
+  const myRequests = allRequests.filter(r => r.userId === userId);
+  const myTrips = allTrips.filter(t => t.userId === userId);
+
+  // 3. Find matches for user's requests
+  const requestMatches: MatchedRequest[] = myRequests.map(myRequest => {
+    const matchingTrips = allTrips.filter(trip => {
+      if (!myRequest.from_city || !myRequest.to_city || !trip.from_city || !trip.to_city) {
+        return false;
+      }
+      
+      const cityMatch = myRequest.from_city.trim().toLowerCase() === trip.from_city.trim().toLowerCase() &&
+                        myRequest.to_city.trim().toLowerCase() === trip.to_city.trim().toLowerCase();
+      
+      const dateMatch = new Date(trip.date_start) <= new Date(myRequest.deadline_end);
+      
+      const capacityMatch = trip.capacity >= (myRequest.weight || 0.5);
+      
+      const notOwnItem = trip.userId !== myRequest.userId;
+
+      return cityMatch && dateMatch && capacityMatch && notOwnItem;
+    });
+    return { ...myRequest, matchingTrips };
+  }).filter(r => r.matchingTrips.length > 0);
+
+  // 4. Find matches for user's trips
+  const tripMatches: MatchedTrip[] = myTrips.map(myTrip => {
+    const matchingRequests = allRequests.filter(request => {
+       if (!request.from_city || !request.to_city || !myTrip.from_city || !myTrip.to_city) {
+        return false;
+      }
+       const cityMatch = request.from_city.trim().toLowerCase() === myTrip.from_city.trim().toLowerCase() &&
+                        request.to_city.trim().toLowerCase() === myTrip.to_city.trim().toLowerCase();
+
+      const dateMatch = new Date(myTrip.date_start) <= new Date(request.deadline_end);
+
+      const capacityMatch = myTrip.capacity >= (request.weight || 0.5);
+
+      const notOwnItem = request.userId !== myTrip.userId;
+
+      return cityMatch && dateMatch && capacityMatch && notOwnItem;
+    });
+    return { ...myTrip, matchingRequests };
+  }).filter(t => t.matchingRequests.length > 0);
+
+  return { requestMatches, tripMatches };
+};
+
 
 // --- Messaging Functions ---
 
