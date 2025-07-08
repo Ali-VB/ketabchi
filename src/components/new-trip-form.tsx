@@ -126,7 +126,7 @@ export function NewTripForm({ setDialogOpen, isHeroForm = false }: { setDialogOp
             <FormItem>
               <FormLabel>شهر مبدا</FormLabel>
               <FormControl>
-                <Input placeholder="مثال: پاریس" {...field} />
+                <Input placeholder="مثال: تهران" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -139,7 +139,7 @@ export function NewTripForm({ setDialogOpen, isHeroForm = false }: { setDialogOp
             <FormItem>
               <FormLabel>شهر مقصد</FormLabel>
               <FormControl>
-                <Input placeholder="مثال: تهران" {...field} />
+                <Input placeholder="مثال: تورنتو" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

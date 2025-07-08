@@ -224,7 +224,7 @@ export function NewRequestForm({ setDialogOpen, isHeroForm = false }: { setDialo
                 <FormItem>
                     <FormLabel>شهر مبدا</FormLabel>
                     <FormControl>
-                    <Input placeholder="مثال: پاریس" {...field} />
+                    <Input placeholder="مثال: لندن" {...field} />
                     </FormControl>
                     <FormMessage />
                 </FormItem>
