@@ -43,10 +43,10 @@ export function Header() {
           ) : user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="group flex h-auto items-center gap-2 rounded-full p-1 pe-3">
+                <Button variant="default" size="sm" className="group flex items-center gap-2">
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={user.photoURL ?? ''} alt={user.displayName ?? 'User'} data-ai-hint="user portrait" />
-                    <AvatarFallback className="group-hover:bg-accent-foreground group-hover:text-accent">
+                    <AvatarFallback className="bg-primary-foreground/20">
                       {user.displayName?.charAt(0) || user.email?.charAt(0) || 'U'}
                     </AvatarFallback>
                   </Avatar>
