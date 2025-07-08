@@ -24,7 +24,7 @@ export function HeroSection() {
                     <div className="max-w-2xl mx-auto space-y-6">
                         <div>
                             <p className="mt-4 text-lg md:text-xl text-muted-foreground">
-                               از هر کجای دنیا کتاب مورد نظرتان را درخواست دهید، یا در سفرتان کتابی را به دست کسی برسانید.
+                               از مسافری بخواهید برایتان از ایران کتاب بیاورد، یا در سفرتان کتابی را به دست کسی برسانید.
                             </p>
                         </div>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
