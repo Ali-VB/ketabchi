@@ -1,24 +1,30 @@
 'use client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, Plane, Users, Loader2 } from 'lucide-react';
-import { ReportGenerator } from '@/components/report-generator';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/components/auth-provider';
-import { getUserRequests, getUserTrips } from '@/lib/firebase/firestore';
+import { getUserRequests, getUserTrips, findMatches } from '@/lib/firebase/firestore';
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const [requestCount, setRequestCount] = useState(0);
   const [tripCount, setTripCount] = useState(0);
+  const [matchCount, setMatchCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (user) {
       setIsLoading(true);
-      Promise.all([getUserRequests(user.uid), getUserTrips(user.uid)])
-        .then(([requests, trips]) => {
+      Promise.all([
+        getUserRequests(user.uid),
+        getUserTrips(user.uid),
+        findMatches(user.uid),
+      ])
+        .then(([requests, trips, { requestMatches, tripMatches }]) => {
           setRequestCount(requests.length);
           setTripCount(trips.length);
+          const totalMatches = requestMatches.length + tripMatches.length;
+          setMatchCount(totalMatches);
         })
         .catch(console.error)
         .finally(() => setIsLoading(false));
@@ -69,14 +75,14 @@ export default function DashboardPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">۰</div>
-            <p className="text-xs text-muted-foreground">به‌زودی...</p>
+            {isLoading ? (
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            ) : (
+              <div className="text-2xl font-bold">{matchCount}</div>
+            )}
+            <p className="text-xs text-muted-foreground">تعداد کل موارد دارای تطبیق</p>
           </CardContent>
         </Card>
-      </div>
-
-      <div>
-        <ReportGenerator />
       </div>
     </div>
   );
