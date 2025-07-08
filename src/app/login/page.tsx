@@ -54,6 +54,9 @@ export default function LoginPage() {
         case 'auth/invalid-email':
           description = 'فرمت ایمیل وارد شده معتبر نیست.';
           break;
+        case 'auth/network-request-failed':
+          description = 'خطای شبکه. لطفاً اتصال اینترنت خود را بررسی کرده و دوباره تلاش کنید.';
+          break;
         default:
           // Keep the generic message for other unexpected errors
           break;
