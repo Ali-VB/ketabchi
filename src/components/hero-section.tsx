@@ -12,7 +12,7 @@ export function HeroSection() {
         <section className="w-full py-12 md:py-24 lg:py-32">
             <div className="container flex items-center justify-center px-4 md:px-6">
                 <div className="w-full max-w-sm space-y-4">
-                     <Tabs defaultValue="requester" className="w-full">
+                     <Tabs defaultValue="traveler" className="w-full">
                         <TabsList className="grid w-full grid-cols-2 h-auto p-0 bg-transparent gap-2 mb-2">
                             <TabsTrigger value="requester" className="flex-col h-full items-center justify-center gap-1 rounded-lg border p-4 text-base data-[state=active]:border-primary data-[state=active]:bg-primary/5 data-[state=active]:shadow-md">
                                 <div className='flex items-center gap-2'>
