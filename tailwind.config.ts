@@ -19,6 +19,7 @@ export default {
       fontFamily: {
         body: ['Vazirmatn', 'sans-serif'],
         headline: ['Vazirmatn', 'sans-serif'],
+        display: ['Tanha', 'sans-serif'],
         code: ['monospace'],
       },
       colors: {
