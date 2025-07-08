@@ -53,6 +53,10 @@ export function RequestCard({ request, showFooter = true }: RequestCardProps) {
 
   const isLegacy = !request.books || request.books.length === 0;
 
+  const totalQuantity = isLegacy 
+    ? (request.quantity || 1)
+    : (request.books?.reduce((sum, book) => sum + book.quantity, 0) || 0);
+
   return (
     <>
       <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
@@ -61,19 +65,14 @@ export function RequestCard({ request, showFooter = true }: RequestCardProps) {
             درخواست کتاب
           </Badge>
           
-          {isLegacy ? (
-            <h2 className="text-xl font-bold font-headline">{request.title}</h2>
-          ) : (
-            <div className="space-y-1">
-              <div>
-                <h2 className="text-xl font-bold font-headline">{request.books?.[0].title}</h2>
-                <p className="text-sm text-muted-foreground">اثر {request.books?.[0].author}</p>
-              </div>
-              {request.books && request.books.length > 1 && (
-                <Badge variant="outline">و {request.books.length - 1} کتاب دیگر</Badge>
-              )}
-            </div>
-          )}
+          <div className="space-y-1">
+             <h2 className="text-xl font-bold font-headline">
+                {`درخواست برای ${totalQuantity} جلد کتاب`}
+             </h2>
+             {!isLegacy && request.books && request.books.length > 1 && (
+                <p className="text-sm text-muted-foreground">شامل {request.books.length} عنوان مختلف</p>
+             )}
+          </div>
 
           <div className="space-y-2 pt-2 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
