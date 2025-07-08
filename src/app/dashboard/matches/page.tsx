@@ -74,6 +74,18 @@ export default function MatchesPage() {
     
     const totalQuantity = (request: BookRequest) => request.books?.reduce((sum, book) => sum + book.quantity, 0) || 0;
 
+    const getRequestMatchText = (count: number) => {
+        if (count === 1) return 'یک سفر با این درخواست منطبق است';
+        const countInPersian = new Intl.NumberFormat('fa-IR').format(count);
+        return `${countInPersian} سفر با این درخواست منطبق است`;
+    };
+
+    const getTripMatchText = (count: number) => {
+        if (count === 1) return 'یک درخواست با این سفر منطبق است';
+        const countInPersian = new Intl.NumberFormat('fa-IR').format(count);
+        return `${countInPersian} درخواست با این سفر منطبق است`;
+    };
+
     return (
         <div className="space-y-6">
             <div>
@@ -95,7 +107,7 @@ export default function MatchesPage() {
                                             <p className="font-bold">درخواست کتاب از {match.from_city} به {match.to_city}</p>
                                             <p className="text-sm text-muted-foreground">مهلت: {formatPersianDate(match.deadline_end)}</p>
                                         </div>
-                                        <Badge variant="secondary">{match.matchingTrips.length} تطبیق</Badge>
+                                        <Badge variant="secondary">{getRequestMatchText(match.matchingTrips.length)}</Badge>
                                     </div>
                                 </AccordionTrigger>
                                 <AccordionContent className="p-4 pt-0 space-y-4">
@@ -138,7 +150,7 @@ export default function MatchesPage() {
                                             <p className="font-bold">سفر از {match.from_city} به {match.to_city}</p>
                                             <p className="text-sm text-muted-foreground">تاریخ: {formatPersianDate(match.date_start)}</p>
                                         </div>
-                                        <Badge variant="secondary">{match.matchingRequests.length} تطبیق</Badge>
+                                        <Badge variant="secondary">{getTripMatchText(match.matchingRequests.length)}</Badge>
                                     </div>
                                 </AccordionTrigger>
                                 <AccordionContent className="p-4 pt-0 space-y-4">
