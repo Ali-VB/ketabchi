@@ -162,14 +162,17 @@ export const findMatches = async (userId: string): Promise<{
   // 3. Find matches for user's requests
   const requestMatches: MatchedRequest[] = myRequests.map(myRequest => {
     const matchingTrips = allTrips.filter(trip => {
-      if (!myRequest.from_city || !myRequest.to_city || !trip.from_city || !trip.to_city) {
+      // Basic validation
+      if (!myRequest.to_city || !trip.to_city || !myRequest.deadline_start || !myRequest.deadline_end || !trip.date_start || !trip.date_end) {
         return false;
       }
       
-      const cityMatch = myRequest.from_city.trim().toLowerCase() === trip.from_city.trim().toLowerCase() &&
-                        myRequest.to_city.trim().toLowerCase() === trip.to_city.trim().toLowerCase();
+      // Match if destination cities are the same
+      const cityMatch = myRequest.to_city.trim().toLowerCase() === trip.to_city.trim().toLowerCase();
       
-      const dateMatch = new Date(trip.date_start) <= new Date(myRequest.deadline_end);
+      // Match if the date ranges overlap
+      const dateMatch = new Date(trip.date_start) <= new Date(myRequest.deadline_end) &&
+                        new Date(trip.date_end) >= new Date(myRequest.deadline_start);
       
       const capacityMatch = trip.capacity >= (myRequest.weight || 0.5);
       
@@ -183,13 +186,17 @@ export const findMatches = async (userId: string): Promise<{
   // 4. Find matches for user's trips
   const tripMatches: MatchedTrip[] = myTrips.map(myTrip => {
     const matchingRequests = allRequests.filter(request => {
-       if (!request.from_city || !request.to_city || !myTrip.from_city || !myTrip.to_city) {
+       // Basic validation
+       if (!request.to_city || !myTrip.to_city || !request.deadline_start || !request.deadline_end || !myTrip.date_start || !myTrip.date_end) {
         return false;
       }
-       const cityMatch = request.from_city.trim().toLowerCase() === myTrip.from_city.trim().toLowerCase() &&
-                        request.to_city.trim().toLowerCase() === myTrip.to_city.trim().toLowerCase();
+      
+      // Match if destination cities are the same
+       const cityMatch = request.to_city.trim().toLowerCase() === myTrip.to_city.trim().toLowerCase();
 
-      const dateMatch = new Date(myTrip.date_start) <= new Date(request.deadline_end);
+      // Match if the date ranges overlap
+      const dateMatch = new Date(myTrip.date_start) <= new Date(request.deadline_end) &&
+                        new Date(myTrip.date_end) >= new Date(request.deadline_start);
 
       const capacityMatch = myTrip.capacity >= (request.weight || 0.5);
 
