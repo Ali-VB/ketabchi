@@ -42,7 +42,7 @@ export function Header() {
           ) : user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="lg" className="group flex items-center gap-2">
+                <Button variant="ghost" size="lg" className="group flex items-center gap-2 border border-primary">
                   <span className="font-medium">{user.displayName}</span>
                 </Button>
               </DropdownMenuTrigger>
