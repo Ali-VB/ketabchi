@@ -76,7 +76,7 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <Link href="/" className="mx-auto mb-4">
@@ -139,13 +139,13 @@ export default function SignupPage() {
               وارد شوید
             </Link>
           </div>
-          <div className="mt-4 text-center text-sm text-muted-foreground">
-            <Link href="/" className="underline underline-offset-4 hover:text-primary">
-              بازگشت به صفحه اصلی
-            </Link>
-          </div>
         </CardContent>
       </Card>
+      <div className="mt-4 text-center text-sm">
+        <Link href="/" className="text-muted-foreground underline-offset-4 hover:text-primary hover:underline">
+          بازگشت به صفحه اصلی
+        </Link>
+      </div>
     </div>
   );
 }
