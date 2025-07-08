@@ -11,7 +11,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
@@ -23,6 +23,7 @@ const formSchema = z.object({
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -38,7 +39,8 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       await signInWithEmailAndPassword(auth, values.email, values.password);
-      router.push('/dashboard');
+      const redirect = searchParams.get('redirect');
+      router.push(redirect || '/dashboard');
     } catch (error: any) {
       console.error('Firebase login error:', error);
       let description = 'مشکلی در هنگام ورود پیش آمد. لطفا دوباره تلاش کنید.';
