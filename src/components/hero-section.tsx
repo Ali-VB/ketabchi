@@ -19,7 +19,7 @@ export function HeroSection() {
     }
 
     return (
-        <section className="relative w-full h-[60vh] min-h-[450px] flex items-center justify-center sm:justify-end text-center sm:text-right text-white">
+        <section className="relative w-full h-[50vh] min-h-[400px] flex items-center justify-center sm:justify-end text-center sm:text-right text-white">
             <Image
                 src="/hero-background.png"
                 alt="A person reading a book, line art."
