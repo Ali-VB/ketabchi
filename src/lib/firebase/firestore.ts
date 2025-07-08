@@ -13,7 +13,8 @@ import {
   onSnapshot,
   updateDoc,
   serverTimestamp,
-  writeBatch
+  writeBatch,
+  setDoc,
 } from 'firebase/firestore';
 import { db } from './config';
 import type { BookRequest, Trip, Conversation, Message, User } from '../types';
