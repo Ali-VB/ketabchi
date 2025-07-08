@@ -32,9 +32,7 @@ export function RequestCard({ request }: RequestCardProps) {
 
   const handleSendMessage = () => {
     if (!user) {
-      const redirectUrl = encodeURIComponent(
-        `/dashboard/messages?recipient=${request.userId}`
-      );
+      const redirectUrl = encodeURIComponent('/dashboard/trips?action=new');
       router.push(`/login?redirect=${redirectUrl}`);
     } else {
       router.push(`/dashboard/messages?recipient=${request.userId}`);

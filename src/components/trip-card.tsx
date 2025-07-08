@@ -32,9 +32,7 @@ export function TripCard({ trip }: TripCardProps) {
 
   const handleSendMessage = () => {
     if (!user) {
-      const redirectUrl = encodeURIComponent(
-        `/dashboard/messages?recipient=${trip.userId}`
-      );
+      const redirectUrl = encodeURIComponent('/dashboard/requests?action=new');
       router.push(`/login?redirect=${redirectUrl}`);
     } else {
       router.push(`/dashboard/messages?recipient=${trip.userId}`);

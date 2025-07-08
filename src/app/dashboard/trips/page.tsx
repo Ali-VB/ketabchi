@@ -8,12 +8,20 @@ import { NewTripForm } from "@/components/new-trip-form";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { getUserTrips } from "@/lib/firebase/firestore";
+import { useSearchParams } from "next/navigation";
 
 export default function MyTripsPage() {
+  const searchParams = useSearchParams();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [trips, setTrips] = useState<Trip[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
+
+  useEffect(() => {
+    if (searchParams.get('action') === 'new') {
+      setIsDialogOpen(true);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (user) {
