@@ -23,7 +23,7 @@ export function HeroSection() {
                 <div className="flex flex-col items-center space-y-4 text-center">
                     <div className="mx-auto max-w-2xl space-y-8">
                         <div className="space-y-4">
-                            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl font-headline bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent leading-tight">
+                            <h1 className="text-3xl font-medium tracking-tight sm:text-4xl md:text-5xl font-headline bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent leading-tight">
                                از مسافری بخواهید برایتان از ایران کتاب بیاورد،<br />یا در سفرتان کتابی را به دست کسی برسانید.
                             </h1>
                         </div>
