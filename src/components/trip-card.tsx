@@ -95,7 +95,7 @@ export function TripCard({ trip }: TripCardProps) {
             <DialogTitle>برای ادامه وارد شوید</DialogTitle>
             <DialogDescription>
               برای ارسال پیام و هماهنگی، ابتدا باید وارد حساب کاربری خود شوید یا
-              یک حساب جدید بسازید.
+              یک حساب جدید بسازید. پس از آن با درخواست کتاب میتوانید پیام خود را ارسال کنید.
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-2 pt-4">

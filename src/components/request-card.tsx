@@ -93,7 +93,7 @@ export function RequestCard({ request }: RequestCardProps) {
             <DialogTitle>برای ادامه وارد شوید</DialogTitle>
             <DialogDescription>
               برای ارسال پیام و هماهنگی، ابتدا باید وارد حساب کاربری خود شوید یا
-              یک حساب جدید بسازید.
+              یک حساب جدید بسازید. پس از آن با اعلام سفر میتوانید پیام خود را ارسال کنید.
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-2 pt-4">
