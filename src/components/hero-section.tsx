@@ -23,16 +23,16 @@ export function HeroSection() {
                 <div className="flex flex-col items-center space-y-4 text-center">
                     <div className="max-w-lg mx-auto space-y-6">
                         <div>
-                            <p className="mt-4 text-lg md:text-xl text-muted-foreground">
+                            <p className="mt-4 text-lg md:text-xl text-muted-foreground max-w-md mx-auto">
                                از مسافری بخواهید برایتان از ایران کتاب بیاورد،<br />یا در سفرتان کتابی را به دست کسی برسانید.
                             </p>
                         </div>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                             <Button onClick={() => handleLinkClick('/dashboard/requests?action=new')} size="lg" variant="secondary">
+                             <Button onClick={() => handleLinkClick('/dashboard/requests?action=new')} size="lg">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
                                 <span>درخواست کتاب دارم</span>
                             </Button>
-                            <Button onClick={() => handleLinkClick('/dashboard/trips?action=new')} size="lg">
+                            <Button onClick={() => handleLinkClick('/dashboard/trips?action=new')} size="lg" variant="secondary">
                                 <Plane className="h-5 w-5" />
                                 <span>مسافرم و جا دارم</span>
                             </Button>
