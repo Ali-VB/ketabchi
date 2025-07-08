@@ -17,6 +17,7 @@ import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "./ui/form";
+import { ScrollArea } from "./ui/scroll-area";
 
 const bookSchema = z.object({
   title: z.string().min(1, "عنوان کتاب الزامی است."),
@@ -101,78 +102,83 @@ export function NewRequestForm({ setDialogOpen, isHeroForm = false }: { setDialo
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className={cn('space-y-4 text-right', isHeroForm && 'space-y-3')}>
         
-        <div className="space-y-4">
+        <div className="space-y-2">
           <Label className="font-bold">کتاب‌ها</Label>
-          {fields.map((field, index) => (
-            <div key={field.id} className="relative space-y-3 rounded-lg border bg-muted/30 p-4">
-              {fields.length > 1 && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute -top-3 -left-3 h-7 w-7 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/80"
-                  onClick={() => remove(index)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              )}
-              <FormField
-                control={form.control}
-                name={`books.${index}.title`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>عنوان کتاب</FormLabel>
-                    <FormControl>
-                      <Input placeholder="مثال: شازده کوچولو" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="grid grid-cols-5 gap-3">
-                <div className="col-span-3">
-                   <FormField
-                    control={form.control}
-                    name={`books.${index}.author`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>نویسنده</FormLabel>
-                        <FormControl>
-                          <Input placeholder="مثال: اگزوپری" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="col-span-2">
+          <ScrollArea className="h-auto max-h-64 w-full pr-4">
+            <div className="space-y-4">
+              {fields.map((field, index) => (
+                <div key={field.id} className="relative space-y-3 rounded-lg border bg-muted/30 p-4">
+                  {fields.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute -top-3 -left-3 h-7 w-7 rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/80"
+                      onClick={() => remove(index)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
                   <FormField
                     control={form.control}
-                    name={`books.${index}.quantity`}
+                    name={`books.${index}.title`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>تعداد</FormLabel>
+                        <FormLabel>عنوان کتاب</FormLabel>
                         <FormControl>
-                          <Input type="number" min="1" {...field} />
+                          <Input placeholder="مثال: شازده کوچولو" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+                  <div className="grid grid-cols-5 gap-3">
+                    <div className="col-span-3">
+                      <FormField
+                        control={form.control}
+                        name={`books.${index}.author`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>نویسنده</FormLabel>
+                            <FormControl>
+                              <Input placeholder="مثال: اگزوپری" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <FormField
+                        control={form.control}
+                        name={`books.${index}.quantity`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>تعداد</FormLabel>
+                            <FormControl>
+                              <Input type="number" min="1" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ))}
             </div>
-          ))}
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            onClick={() => append({ title: "", author: "", quantity: 1 })}
-          >
-            <PlusCircle className="me-2 h-4 w-4" />
-            افزودن کتاب دیگر
-          </Button>
+          </ScrollArea>
         </div>
+        
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full"
+          onClick={() => append({ title: "", author: "", quantity: 1 })}
+        >
+          <PlusCircle className="me-2 h-4 w-4" />
+          افزودن کتاب دیگر
+        </Button>
         
         <FormField
             control={form.control}
