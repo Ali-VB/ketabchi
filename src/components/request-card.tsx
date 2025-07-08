@@ -18,6 +18,7 @@ import Link from 'next/link';
 
 interface RequestCardProps {
   request: BookRequest;
+  showFooter?: boolean;
 }
 
 const formatGregorianToPersian = (dateString: string) => {
@@ -35,7 +36,7 @@ const formatGregorianToPersian = (dateString: string) => {
   }
 };
 
-export function RequestCard({ request }: RequestCardProps) {
+export function RequestCard({ request, showFooter = true }: RequestCardProps) {
   const { user } = useAuth();
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -90,18 +91,20 @@ export function RequestCard({ request }: RequestCardProps) {
             </div>
           </div>
         </CardContent>
-        <CardFooter className="flex items-center justify-between border-t bg-primary/10 p-4">
-          <span className="text-sm font-medium">{request.user.name}</span>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-muted-foreground hover:text-foreground"
-            onClick={handleSendMessage}
-          >
-            <Send className="me-2 h-4 w-4" />
-            ارسال پیام
-          </Button>
-        </CardFooter>
+        {showFooter && (
+          <CardFooter className="flex items-center justify-between border-t bg-primary/10 p-4">
+            <span className="text-sm font-medium">{request.user.name}</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:text-foreground"
+              onClick={handleSendMessage}
+            >
+              <Send className="me-2 h-4 w-4" />
+              ارسال پیام
+            </Button>
+          </CardFooter>
+        )}
       </Card>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-md">
