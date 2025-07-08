@@ -82,12 +82,15 @@ export function RequestCard({
       <Card className="relative flex h-full flex-col overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
         {matchCount && matchCount > 0 && (
           <div className="absolute top-0 left-0 z-10 h-24 w-24 overflow-hidden">
-            <div className="absolute top-7 -left-8 w-32 -rotate-45 transform bg-destructive py-1 px-2 text-center text-destructive-foreground">
+            <Link
+              href="/dashboard/matches"
+              className="absolute top-7 -left-8 block w-32 -rotate-45 transform bg-destructive py-1 px-2 text-center text-destructive-foreground"
+            >
               <div className="flex items-center justify-center text-xs font-bold">
                 <Users className="me-1 h-3 w-3" />
                 <span>{matchCount} تطبیق</span>
               </div>
-            </div>
+            </Link>
           </div>
         )}
         <CardContent className="flex-1 space-y-3 p-4">
