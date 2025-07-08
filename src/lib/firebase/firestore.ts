@@ -162,8 +162,9 @@ export const findMatches = async (userId: string): Promise<{
   // 3. Find matches for user's requests
   const requestMatches: MatchedRequest[] = myRequests.map(myRequest => {
     const matchingTrips = allTrips.filter(trip => {
-      // A trip (Abroad -> Iran) matches a request if the destination cities are the same.
-      const cityMatch = myRequest.to_city && trip.to_city && myRequest.to_city.trim().toLowerCase() === trip.to_city.trim().toLowerCase();
+      // A trip (Abroad -> Iran) matches a request if the origin and destination cities are the same.
+      const cityMatch = myRequest.from_city && trip.from_city && myRequest.from_city.trim().toLowerCase() === trip.from_city.trim().toLowerCase()
+                        && myRequest.to_city && trip.to_city && myRequest.to_city.trim().toLowerCase() === trip.to_city.trim().toLowerCase();
 
       // And if the date ranges overlap.
       const dateMatch = myRequest.deadline_start && myRequest.deadline_end && trip.date_start && trip.date_end &&
@@ -182,8 +183,9 @@ export const findMatches = async (userId: string): Promise<{
   // 4. Find matches for user's trips
   const tripMatches: MatchedTrip[] = myTrips.map(myTrip => {
     const matchingRequests = allRequests.filter(request => {
-      // A trip (Abroad -> Iran) matches a request if the destination cities are the same.
-      const cityMatch = request.to_city && myTrip.to_city && request.to_city.trim().toLowerCase() === myTrip.to_city.trim().toLowerCase();
+      // A trip (Abroad -> Iran) matches a request if the origin and destination cities are the same.
+      const cityMatch = request.from_city && myTrip.from_city && request.from_city.trim().toLowerCase() === myTrip.from_city.trim().toLowerCase()
+                      && request.to_city && myTrip.to_city && request.to_city.trim().toLowerCase() === myTrip.to_city.trim().toLowerCase();
 
       // And if the date ranges overlap.
       const dateMatch = request.deadline_start && request.deadline_end && myTrip.date_start && myTrip.date_end &&

@@ -20,7 +20,7 @@ export type BookRequest = {
   books?: Book[];
   description?: string;
   weight: number;
-  from_city?: string;
+  from_city: string;
   to_city: string;
   deadline_start: string;
   deadline_end: string;

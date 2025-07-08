@@ -106,26 +106,17 @@ export function RequestCard({
             <div className="space-y-2 pt-2 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
-                {request.from_city ? (
-                  <span>
-                    <span className="font-semibold text-foreground">
-                      {request.from_city}
-                    </span>
-                    <span className="mx-1 font-normal text-muted-foreground">
-                      →
-                    </span>
-                    <span className="font-semibold text-foreground">
-                      {request.to_city}
-                    </span>
+                <span>
+                  <span className="font-semibold text-foreground">
+                    {request.from_city}
                   </span>
-                ) : (
-                  <span>
-                    مقصد:{' '}
-                    <span className="font-semibold text-foreground">
-                      {request.to_city}
-                    </span>
+                  <span className="mx-1 font-normal text-muted-foreground">
+                    →
                   </span>
-                )}
+                  <span className="font-semibold text-foreground">
+                    {request.to_city}
+                  </span>
+                </span>
               </div>
               <div className="flex items-start gap-2">
                 <CalendarDays className="mt-1 h-4 w-4 shrink-0" />
@@ -163,7 +154,7 @@ export function RequestCard({
         {matchCount && matchCount > 0 && (
           <Link
             href="/dashboard/matches"
-            className="group absolute inset-0 z-10 flex flex-col justify-end bg-black/20 p-4 transition-all duration-300 hover:bg-black/30"
+            className="group absolute inset-0 z-10 flex flex-col justify-end bg-black/5 p-4 transition-all duration-300 hover:bg-black/10"
           >
             <div className="flex items-center gap-2 font-bold text-primary-foreground">
               <Users className="h-5 w-5 text-primary" />
