@@ -72,8 +72,8 @@ export function TripCard({ trip, showFooter = true, matchCount }: TripCardProps)
       <Card className="relative flex h-full flex-col overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
         {matchCount && matchCount > 0 && (
           <Badge
-            variant="default"
-            className="absolute -right-2 -top-2 z-10 bg-accent text-accent-foreground"
+            variant="destructive"
+            className="absolute -right-2 -top-2 z-10 rounded-md"
           >
             <Users className="me-1 h-3 w-3" />
             {matchCount} تطبیق
