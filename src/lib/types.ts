@@ -21,7 +21,8 @@ export type BookRequest = {
   description?: string;
   weight: number;
   to_city: string;
-  deadline: string;
+  deadline_start: string;
+  deadline_end: string;
   user: User;
   userId: string;
   createdAt: string;
@@ -31,7 +32,8 @@ export type Trip = {
   id: string;
   from_city: string;
   to_city: string;
-  date: string;
+  date_start: string;
+  date_end: string;
   capacity: number;
   user: User;
   userId: string;

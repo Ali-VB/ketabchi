@@ -18,6 +18,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "./ui/form";
 import { ScrollArea } from "./ui/scroll-area";
+import { DateRange } from "react-day-picker";
+import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 
 const bookSchema = z.object({
   title: z.string().min(1, "عنوان کتاب الزامی است."),
@@ -28,7 +30,13 @@ const bookSchema = z.object({
 const requestFormSchema = z.object({
   books: z.array(bookSchema).min(1, "حداقل یک کتاب باید اضافه شود."),
   to_city: z.string().min(1, "شهر مقصد الزامی است."),
-  deadline: z.date({ required_error: "تاریخ مورد نیاز الزامی است." }),
+  deadline: z.object(
+    {
+      from: z.date({ required_error: "تاریخ شروع الزامی است." }),
+      to: z.date({ required_error: "تاریخ پایان الزامی است." }),
+    },
+    { required_error: "بازه زمانی مهلت الزامی است." }
+  ),
   weight: z.coerce.number().min(0.1, "وزن باید حداقل ۰.۱ کیلوگرم باشد.").optional(),
   description: z.string().optional(),
 });
@@ -40,6 +48,7 @@ export function NewRequestForm({ setDialogOpen, isHeroForm = false }: { setDialo
   const { toast } = useToast();
   const router = useRouter();
   const { user } = useAuth();
+  const [calendarType, setCalendarType] = useState<'gregorian' | 'jalali'>('jalali');
 
   const form = useForm<RequestFormValues>({
     resolver: zodResolver(requestFormSchema),
@@ -67,7 +76,8 @@ export function NewRequestForm({ setDialogOpen, isHeroForm = false }: { setDialo
         await addRequest({
             books: data.books,
             to_city: data.to_city,
-            deadline: format(data.deadline, "yyyy-MM-dd"),
+            deadline_start: format(data.deadline.from, "yyyy-MM-dd"),
+            deadline_end: format(data.deadline.to, "yyyy-MM-dd"),
             weight: data.weight || 0.5,
             description: data.description || '',
             userId: user.uid,
@@ -97,6 +107,32 @@ export function NewRequestForm({ setDialogOpen, isHeroForm = false }: { setDialo
         setIsLoading(false);
     }
   }
+
+  const formatDateRange = (
+    date: DateRange | undefined,
+    calendar: 'gregorian' | 'jalali'
+  ): string => {
+    if (!date?.from) {
+      return "یک تاریخ انتخاب کنید";
+    }
+  
+    const formatOptions: Intl.DateTimeFormatOptions = {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    };
+  
+    const locale = calendar === 'jalali' ? 'fa-IR-u-ca-persian' : 'en-US';
+    const formatter = new Intl.DateTimeFormat(locale, formatOptions);
+    const fromDate = formatter.format(date.from);
+  
+    if (date.to) {
+      const toDate = formatter.format(date.to);
+      return `${fromDate} – ${toDate}`;
+    }
+  
+    return fromDate;
+  };
   
   const formContent = (
      <form onSubmit={form.handleSubmit(onSubmit)} className={cn('space-y-4 text-right', isHeroForm ? 'space-y-3' : 'p-1')}>
@@ -190,13 +226,29 @@ export function NewRequestForm({ setDialogOpen, isHeroForm = false }: { setDialo
             </FormItem>
             )}
         />
+
+        <RadioGroup
+          dir="rtl"
+          value={calendarType}
+          onValueChange={(value: 'gregorian' | 'jalali') => setCalendarType(value)}
+          className="flex items-center gap-4 pt-2"
+        >
+          <Label className="font-normal flex items-center gap-2 cursor-pointer">
+            <RadioGroupItem value="jalali" id="req-jalali" />
+            شمسی
+          </Label>
+          <Label className="font-normal flex items-center gap-2 cursor-pointer">
+            <RadioGroupItem value="gregorian" id="req-gregorian" />
+            میلادی
+          </Label>
+        </RadioGroup>
        
         <FormField
             control={form.control}
             name="deadline"
             render={({ field }) => (
             <FormItem className="flex flex-col">
-                <FormLabel>تاریخ مورد نیاز</FormLabel>
+                <FormLabel>بازه زمانی مهلت</FormLabel>
                 <Popover>
                     <PopoverTrigger asChild>
                         <FormControl>
@@ -208,13 +260,13 @@ export function NewRequestForm({ setDialogOpen, isHeroForm = false }: { setDialo
                             )}
                         >
                             <CalendarIcon className="ms-2 h-4 w-4" />
-                            {field.value ? new Intl.DateTimeFormat('fa-IR').format(field.value) : <span>یک تاریخ انتخاب کنید</span>}
+                            {formatDateRange(field.value, calendarType)}
                         </Button>
                         </FormControl>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">
                         <Calendar
-                        mode="single"
+                        mode="range"
                         selected={field.value}
                         onSelect={field.onChange}
                         initialFocus

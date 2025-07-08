@@ -11,6 +11,8 @@ import { Calendar } from './ui/calendar';
 import { DateRange } from 'react-day-picker';
 import { addDays, format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import { RadioGroup, RadioGroupItem } from './ui/radio-group';
+import { Label } from './ui/label';
 
 export function ReportGenerator() {
   const [report, setReport] = useState('');
@@ -19,8 +21,8 @@ export function ReportGenerator() {
     from: new Date(2024, 0, 20),
     to: addDays(new Date(2024, 0, 20), 7),
   });
+  const [calendarType, setCalendarType] = useState<'gregorian' | 'jalali'>('jalali');
   const { toast } = useToast();
-
 
   const handleGenerateReport = async () => {
     if (!date?.from || !date?.to) {
@@ -52,6 +54,33 @@ export function ReportGenerator() {
     }
   };
 
+  const formatDateRange = (
+    date: DateRange | undefined,
+    calendar: 'gregorian' | 'jalali'
+  ): string => {
+    if (!date?.from) {
+      return "یک تاریخ انتخاب کنید";
+    }
+  
+    const formatOptions: Intl.DateTimeFormatOptions = {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    };
+  
+    const locale = calendar === 'jalali' ? 'fa-IR-u-ca-persian' : 'en-US';
+    const formatter = new Intl.DateTimeFormat(locale, formatOptions);
+    const fromDate = formatter.format(date.from);
+  
+    if (date.to) {
+      const toDate = formatter.format(date.to);
+      return `${fromDate} – ${toDate}`;
+    }
+  
+    return fromDate;
+  };
+
+
   return (
     <Card>
       <CardHeader>
@@ -61,7 +90,23 @@ export function ReportGenerator() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid gap-2">
+        <div className="grid gap-4">
+           <RadioGroup
+            dir="rtl"
+            value={calendarType}
+            onValueChange={(value: 'gregorian' | 'jalali') => setCalendarType(value)}
+            className="flex items-center gap-4"
+            >
+              <Label className="font-normal flex items-center gap-2 cursor-pointer">
+                <RadioGroupItem value="jalali" id="jalali" />
+                شمسی
+              </Label>
+              <Label className="font-normal flex items-center gap-2 cursor-pointer">
+                <RadioGroupItem value="gregorian" id="gregorian" />
+                میلادی
+              </Label>
+            </RadioGroup>
+
            <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -69,18 +114,7 @@ export function ReportGenerator() {
                 variant={"outline"}
                 className="w-[300px] justify-start text-right font-normal"
               >
-                {date?.from ? (
-                  date.to ? (
-                    <>
-                      {format(date.from, "LLL dd, y")} -{" "}
-                      {format(date.to, "LLL dd, y")}
-                    </>
-                  ) : (
-                    format(date.from, "LLL dd, y")
-                  )
-                ) : (
-                  <span>یک تاریخ انتخاب کنید</span>
-                )}
+                {formatDateRange(date, calendarType)}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">

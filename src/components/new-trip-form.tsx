@@ -1,7 +1,6 @@
 'use client';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Calendar as CalendarIcon, Loader2 } from 'lucide-react';
 import { Calendar } from "./ui/calendar";
@@ -12,16 +11,46 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "./auth-provider";
 import { addTrip } from "@/lib/firebase/firestore";
 import { format } from "date-fns";
+import { DateRange } from "react-day-picker";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "./ui/form";
+import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
+import { Label } from "./ui/label";
+
+const tripFormSchema = z.object({
+  from_city: z.string().min(1, "شهر مبدا الزامی است."),
+  to_city: z.string().min(1, "شهر مقصد الزامی است."),
+  date: z.object(
+    {
+      from: z.date({ required_error: "تاریخ شروع الزامی است." }),
+      to: z.date({ required_error: "تاریخ پایان الزامی است." }),
+    },
+    { required_error: "بازه زمانی سفر الزامی است." }
+  ),
+  capacity: z.coerce.number().min(0.1, "ظرفیت باید حداقل ۰.۱ کیلوگرم باشد."),
+});
+
+type TripFormValues = z.infer<typeof tripFormSchema>;
 
 export function NewTripForm({ setDialogOpen, isHeroForm = false }: { setDialogOpen: (open: boolean) => void; isHeroForm?: boolean }) {
-  const [date, setDate] = useState<Date>();
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
   const { user } = useAuth();
+  const [calendarType, setCalendarType] = useState<'gregorian' | 'jalali'>('jalali');
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const form = useForm<TripFormValues>({
+    resolver: zodResolver(tripFormSchema),
+    defaultValues: {
+      from_city: '',
+      to_city: '',
+      capacity: 1,
+    },
+  });
+
+  const onSubmit = async (data: TripFormValues) => {
     if (!user) {
       router.push('/login');
       return;
@@ -29,113 +58,175 @@ export function NewTripForm({ setDialogOpen, isHeroForm = false }: { setDialogOp
     
     setIsLoading(true);
 
-    const formData = new FormData(e.currentTarget);
-    const data = Object.fromEntries(formData.entries());
-
-    if (!data.from_city || !data.to_city || !date || !data.capacity) {
-        toast({
-            title: "خطا",
-            description: "لطفاً تمام فیلدها را پر کنید.",
-            variant: "destructive"
-        })
-        setIsLoading(false);
-        return;
-    }
-
     try {
-        await addTrip({
-            from_city: data.from_city as string,
-            to_city: data.to_city as string,
-            date: format(date, "yyyy-MM-dd"),
-            capacity: Number(data.capacity),
-            userId: user.uid,
-            user: {
-                uid: user.uid,
-                name: user.displayName || 'کاربر بی‌نام',
-                avatar: user.photoURL
-            }
-        });
-        
-        toast({
-            title: "سفر شما ثبت شد",
-            description: "سفر شما با موفقیت اعلام شد و برای تطبیق با درخواست‌ها استفاده می‌شود.",
-        });
-
-        if (!isHeroForm) {
-            setDialogOpen(false);
+      await addTrip({
+        from_city: data.from_city,
+        to_city: data.to_city,
+        date_start: format(data.date.from, "yyyy-MM-dd"),
+        date_end: format(data.date.to, "yyyy-MM-dd"),
+        capacity: data.capacity,
+        userId: user.uid,
+        user: {
+            uid: user.uid,
+            name: user.displayName || 'کاربر بی‌نام',
+            avatar: user.photoURL
         }
+      });
+        
+      toast({
+          title: "سفر شما ثبت شد",
+          description: "سفر شما با موفقیت اعلام شد و برای تطبیق با درخواست‌ها استفاده می‌شود.",
+      });
+      
+      form.reset();
+      if (!isHeroForm) {
+          setDialogOpen(false);
+      }
     } catch (error) {
-        toast({
-            title: "خطا در ثبت سفر",
-            description: "مشکلی در هنگام ثبت سفر شما پیش آمد. لطفا دوباره تلاش کنید.",
-            variant: "destructive"
-        })
+      toast({
+          title: "خطا در ثبت سفر",
+          description: "مشکلی در هنگام ثبت سفر شما پیش آمد. لطفا دوباره تلاش کنید.",
+          variant: "destructive"
+      })
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   }
+
+  const formatDateRange = (
+    date: DateRange | undefined,
+    calendar: 'gregorian' | 'jalali'
+  ): string => {
+    if (!date?.from) {
+      return "یک تاریخ انتخاب کنید";
+    }
+  
+    const formatOptions: Intl.DateTimeFormatOptions = {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    };
+  
+    const locale = calendar === 'jalali' ? 'fa-IR-u-ca-persian' : 'en-US';
+    const formatter = new Intl.DateTimeFormat(locale, formatOptions);
+    const fromDate = formatter.format(date.from);
+  
+    if (date.to) {
+      const toDate = formatter.format(date.to);
+      return `${fromDate} – ${toDate}`;
+    }
+  
+    return fromDate;
+  };
   
   const formContent = (
-    <>
+    <form onSubmit={form.handleSubmit(onSubmit)} className={cn('space-y-4 text-right', isHeroForm ? 'space-y-3' : 'p-1')}>
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="from_city">شهر مبدا</Label>
-          <Input name="from_city" id="from_city" placeholder="مثال: پاریس" dir="rtl" required/>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="to_city">شهر مقصد</Label>
-          <Input name="to_city" id="to_city" placeholder="مثال: تهران" dir="rtl" required/>
-        </div>
+        <FormField
+          control={form.control}
+          name="from_city"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>شهر مبدا</FormLabel>
+              <FormControl>
+                <Input placeholder="مثال: پاریس" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="to_city"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>شهر مقصد</FormLabel>
+              <FormControl>
+                <Input placeholder="مثال: تهران" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       </div>
-       <div className="space-y-2">
-        <Label htmlFor="date">تاریخ سفر</Label>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant={"outline"}
-              className={cn(
-                "w-full justify-start text-right font-normal",
-                !date && "text-muted-foreground"
-              )}
-            >
-              <CalendarIcon className="ms-2 h-4 w-4" />
-              {date ? new Intl.DateTimeFormat('fa-IR').format(date) : <span>یک تاریخ انتخاب کنید</span>}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0">
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={setDate}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="capacity">ظرفیت خالی (به کیلو)</Label>
-        <Input name="capacity" id="capacity" type="number" placeholder="مثال: 5" dir="rtl" required/>
-      </div>
+
+       <RadioGroup
+          dir="rtl"
+          value={calendarType}
+          onValueChange={(value: 'gregorian' | 'jalali') => setCalendarType(value)}
+          className="flex items-center gap-4 pt-2"
+        >
+          <Label className="font-normal flex items-center gap-2 cursor-pointer">
+            <RadioGroupItem value="jalali" id="trip-jalali" />
+            شمسی
+          </Label>
+          <Label className="font-normal flex items-center gap-2 cursor-pointer">
+            <RadioGroupItem value="gregorian" id="trip-gregorian" />
+            میلادی
+          </Label>
+        </RadioGroup>
+
+      <FormField
+        control={form.control}
+        name="date"
+        render={({ field }) => (
+          <FormItem className="flex flex-col">
+            <FormLabel>بازه زمانی سفر</FormLabel>
+            <Popover>
+              <PopoverTrigger asChild>
+                <FormControl>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-full justify-start text-right font-normal",
+                      !field.value && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="ms-2 h-4 w-4" />
+                    {formatDateRange(field.value, calendarType)}
+                  </Button>
+                </FormControl>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="range"
+                  selected={field.value}
+                  onSelect={field.onChange}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="capacity"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>ظرفیت خالی (کیلوگرم)</FormLabel>
+            <FormControl>
+              <Input type="number" step="0.5" placeholder="مثال: 5" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
       <div className="flex justify-end pt-2">
         <Button type="submit" size={isHeroForm ? "lg" : "default"} className={cn(isHeroForm && "w-full text-base font-bold")} disabled={isLoading}>
             {isLoading && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
             ثبت سفر
         </Button>
       </div>
-    </>
+    </form>
   );
 
-  if (isHeroForm) {
-    return (
-        <form onSubmit={handleSubmit} className="space-y-3 text-right">
-            {formContent}
-        </form>
-    );
-  }
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 py-4 text-right">
+    <Form {...form}>
         {formContent}
-    </form>
+    </Form>
   );
 }

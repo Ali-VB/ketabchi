@@ -69,7 +69,7 @@ export function TripCard({ trip, showFooter = true }: TripCardProps) {
             </div>
             <div className="flex items-center gap-2">
               <CalendarDays className="h-4 w-4" />
-              <span>تاریخ: {formatGregorianToPersian(trip.date)}</span>
+              <span>تاریخ: {`${formatGregorianToPersian(trip.date_start)} تا ${formatGregorianToPersian(trip.date_end)}`}</span>
             </div>
             <div className="flex items-center gap-2">
               <Package className="h-4 w-4" />

@@ -86,7 +86,7 @@ export function RequestCard({ request, showFooter = true }: RequestCardProps) {
             </div>
             <div className="flex items-center gap-2">
               <CalendarDays className="h-4 w-4" />
-              <span>مهلت: {formatGregorianToPersian(request.deadline)}</span>
+              <span>مهلت: {`${formatGregorianToPersian(request.deadline_start)} تا ${formatGregorianToPersian(request.deadline_end)}`}</span>
             </div>
           </div>
         </CardContent>
