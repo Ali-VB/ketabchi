@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
-import { Plane } from "lucide-react";
+import { Plane, Package } from "lucide-react";
 import { useRouter } from 'next/navigation';
 import { useAuth } from './auth-provider';
 
@@ -21,15 +21,18 @@ export function HeroSection() {
         <section className="w-full py-16 lg:py-20 bg-muted/30 border-b">
             <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center space-y-4 text-center">
-                    <div className="max-w-lg mx-auto space-y-6">
-                        <div>
+                    <div className="mx-auto max-w-2xl space-y-8">
+                        <div className="space-y-4">
+                            <h1 className="text-5xl font-bold tracking-tighter sm:text-6xl md:text-7xl font-headline bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                                کتابچی
+                            </h1>
                             <p className="mt-4 text-lg md:text-xl text-muted-foreground max-w-md mx-auto">
                                از مسافری بخواهید برایتان از ایران کتاب بیاورد،<br />یا در سفرتان کتابی را به دست کسی برسانید.
                             </p>
                         </div>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
                              <Button onClick={() => handleLinkClick('/dashboard/requests?action=new')} size="lg">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                                <Package className="h-5 w-5" />
                                 <span>درخواست کتاب دارم</span>
                             </Button>
                             <Button onClick={() => handleLinkClick('/dashboard/trips?action=new')} size="lg" variant="secondary">
