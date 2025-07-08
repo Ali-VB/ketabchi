@@ -155,7 +155,7 @@ export function RequestCard({
         {matchCount && matchCount > 0 && (
           <Link
             href="/dashboard/matches"
-            className="group absolute inset-0 z-10 flex flex-col justify-end bg-black/50 p-4 backdrop-blur-sm transition-all duration-300 hover:bg-black/60"
+            className="group absolute inset-0 z-10 flex flex-col justify-end bg-black/20 p-4 transition-all duration-300 hover:bg-black/30"
           >
             <div className="flex items-center gap-2 font-bold text-primary-foreground">
               <Users className="h-5 w-5 text-primary" />
