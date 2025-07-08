@@ -75,7 +75,12 @@ export default function MessagesPage() {
                     avatar: recipientProfile?.photoURL || null,
                 }
             };
-            setConversations(prev => [newConversation, ...prev]);
+            setConversations(prev => {
+              if (prev.some(c => c.id === newConversation.id)) {
+                return prev;
+              }
+              return [newConversation, ...prev];
+            });
             setSelectedConversation(newConversation);
         })
         .catch(console.error)
