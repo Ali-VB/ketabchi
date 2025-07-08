@@ -80,7 +80,7 @@ export default function MatchesPage() {
                 <h2 className="text-2xl font-bold tracking-tight font-headline">تطبیق‌ها</h2>
                 <p className="text-muted-foreground">تطبیق‌های پیدا شده برای درخواست‌ها و سفرهای شما.</p>
             </div>
-            <Tabs defaultValue="requests" className="w-full">
+            <Tabs defaultValue="trips" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="requests">تطبیق برای درخواست‌های من</TabsTrigger>
                     <TabsTrigger value="trips">تطبیق برای سفرهای من</TabsTrigger>
