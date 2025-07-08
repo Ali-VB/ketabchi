@@ -43,7 +43,7 @@ const requestFormSchema = z.object({
 
 type RequestFormValues = z.infer<typeof requestFormSchema>;
 
-export function NewRequestForm({ setDialogOpen, isHeroForm = false, onPostSuccess }: { setDialogOpen: (open: boolean) => void; isHeroForm?: boolean, onPostSuccess?: () => void }) {
+export function NewRequestForm({ setDialogOpen, onPostSuccess }: { setDialogOpen: (open: boolean) => void; onPostSuccess?: () => void }) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -96,11 +96,7 @@ export function NewRequestForm({ setDialogOpen, isHeroForm = false, onPostSucces
         
         onPostSuccess?.();
         form.reset();
-        if (!isHeroForm) {
-            setDialogOpen(false);
-        } else {
-            router.push('/dashboard/requests');
-        }
+        setDialogOpen(false);
     } catch (error) {
          toast({
             title: "خطا در ثبت درخواست",
@@ -138,7 +134,7 @@ export function NewRequestForm({ setDialogOpen, isHeroForm = false, onPostSucces
   };
   
   const formContent = (
-     <form onSubmit={form.handleSubmit(onSubmit)} className={cn('space-y-4 text-right', isHeroForm ? 'space-y-3' : 'p-1')}>
+     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 text-right p-1">
         
         <div className="space-y-2">
           <Label className="font-bold">کتاب‌ها</Label>
@@ -279,39 +275,34 @@ export function NewRequestForm({ setDialogOpen, isHeroForm = false, onPostSucces
             </FormItem>
             )}
         />
-
-        {!isHeroForm && (
-            <>
-                <FormField
-                    control={form.control}
-                    name="weight"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>وزن تقریبی کل (کیلوگرم)</FormLabel>
-                        <FormControl>
-                        <Input type="number" step="0.1" placeholder="۰.۵" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>توضیحات (اختیاری)</FormLabel>
-                        <FormControl>
-                        <Textarea placeholder="اطلاعات تکمیلی مانند نسخه، ترجمه و..." {...field} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-            </>
-        )}
+        <FormField
+            control={form.control}
+            name="weight"
+            render={({ field }) => (
+            <FormItem>
+                <FormLabel>وزن تقریبی کل (کیلوگرم)</FormLabel>
+                <FormControl>
+                <Input type="number" step="0.1" placeholder="۰.۵" {...field} />
+                </FormControl>
+                <FormMessage />
+            </FormItem>
+            )}
+        />
+        <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+            <FormItem>
+                <FormLabel>توضیحات (اختیاری)</FormLabel>
+                <FormControl>
+                <Textarea placeholder="اطلاعات تکمیلی مانند نسخه، ترجمه و..." {...field} />
+                </FormControl>
+                <FormMessage />
+            </FormItem>
+            )}
+        />
         <div className="flex justify-end pt-2">
-            <Button type="submit" size={isHeroForm ? "lg" : "default"} className={cn(isHeroForm && "w-full text-base font-bold")} disabled={isLoading}>
+            <Button type="submit" disabled={isLoading}>
                 {isLoading && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                 ثبت درخواست
             </Button>
@@ -321,13 +312,9 @@ export function NewRequestForm({ setDialogOpen, isHeroForm = false, onPostSucces
 
   return (
     <Form {...form}>
-      {isHeroForm ? (
-        formContent
-      ) : (
-        <ScrollArea className="h-[70vh] pr-4">
-          {formContent}
-        </ScrollArea>
-      )}
+      <ScrollArea className="h-[70vh] pr-4">
+        {formContent}
+      </ScrollArea>
     </Form>
   );
 }

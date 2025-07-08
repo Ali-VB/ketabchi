@@ -36,7 +36,7 @@ const formatPersianDate = (date: Date) => {
     }
   };
 
-export function NewTripForm({ setDialogOpen, isHeroForm = false, onTripAdded }: { setDialogOpen: (open: boolean) => void; isHeroForm?: boolean; onTripAdded?: () => void; }) {
+export function NewTripForm({ setDialogOpen, onTripAdded }: { setDialogOpen: (open: boolean) => void; onTripAdded?: () => void; }) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -80,11 +80,7 @@ export function NewTripForm({ setDialogOpen, isHeroForm = false, onTripAdded }: 
       
       onTripAdded?.();
       form.reset();
-      if (!isHeroForm) {
-          setDialogOpen(false);
-      } else {
-        router.push('/dashboard/trips');
-      }
+      setDialogOpen(false);
     } catch (error) {
       toast({
           title: "خطا در ثبت سفر",
@@ -97,7 +93,7 @@ export function NewTripForm({ setDialogOpen, isHeroForm = false, onTripAdded }: 
   }
   
   const formContent = (
-    <form onSubmit={form.handleSubmit(onSubmit)} className={cn('space-y-4 text-right', isHeroForm ? 'space-y-3' : 'p-1')}>
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 text-right p-1">
       <div className="grid grid-cols-2 gap-4">
         <FormField
           control={form.control}
@@ -177,7 +173,7 @@ export function NewTripForm({ setDialogOpen, isHeroForm = false, onTripAdded }: 
       />
 
       <div className="flex justify-end pt-2">
-        <Button type="submit" size={isHeroForm ? "lg" : "default"} className={cn(isHeroForm && "w-full text-base font-bold")} disabled={isLoading}>
+        <Button type="submit" disabled={isLoading}>
             {isLoading && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
             ثبت سفر
         </Button>
