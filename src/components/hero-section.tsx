@@ -34,7 +34,7 @@ export function HeroSection() {
                                 <Package className="h-5 w-5" />
                                 <span>درخواست کتاب دارم</span>
                             </Button>
-                            <Button onClick={() => handleLinkClick('/dashboard/trips?action=new')} size="lg" variant="secondary">
+                            <Button onClick={() => handleLinkClick('/dashboard/trips?action=new')} size="lg" variant="outline">
                                 <Plane className="h-5 w-5" />
                                 <span>مسافرم و جا دارم</span>
                             </Button>
