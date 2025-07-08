@@ -124,9 +124,9 @@ export function NewTripForm({ setDialogOpen, isHeroForm = false }: { setDialogOp
           name="from_city"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>شهر مبدا (خارج از ایران)</FormLabel>
+              <FormLabel>شهر مبدا (در ایران)</FormLabel>
               <FormControl>
-                <Input placeholder="مثال: پاریس" {...field} />
+                <Input placeholder="مثال: تهران" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -137,9 +137,9 @@ export function NewTripForm({ setDialogOpen, isHeroForm = false }: { setDialogOp
           name="to_city"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>شهر مقصد (در ایران)</FormLabel>
+              <FormLabel>شهر مقصد (خارج از ایران)</FormLabel>
               <FormControl>
-                <Input placeholder="مثال: تهران" {...field} />
+                <Input placeholder="مثال: تورنتو" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
