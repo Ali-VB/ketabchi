@@ -5,8 +5,8 @@ import { Header } from '@/components/header';
 import { HeroSection } from '@/components/hero-section';
 import { RequestCard } from '@/components/request-card';
 import { TripCard } from '@/components/trip-card';
-import { getAllRequests, getAllTrips } from '@/lib/firebase/firestore';
-import type { BookRequest, Trip } from '@/lib/types';
+import { getAllRequests, getAllTrips, findMatches } from '@/lib/firebase/firestore';
+import type { BookRequest, Trip, MatchedRequest, MatchedTrip } from '@/lib/types';
 import { useAuth } from '@/components/auth-provider';
 import { Loader2 } from 'lucide-react';
 
@@ -14,6 +14,7 @@ type CombinedItem = {
   type: 'request' | 'trip';
   data: BookRequest | Trip;
   date: Date;
+  matchCount?: number;
 };
 
 export default function Home() {
@@ -28,9 +29,36 @@ export default function Home() {
         const requests = await getAllRequests(10);
         const trips = await getAllTrips(10);
 
+        let requestMatches: MatchedRequest[] = [];
+        let tripMatches: MatchedTrip[] = [];
+
+        if (user) {
+          const matches = await findMatches(user.uid);
+          requestMatches = matches.requestMatches;
+          tripMatches = matches.tripMatches;
+        }
+
         const combinedItems: CombinedItem[] = [
-          ...requests.map(r => ({ type: 'request' as const, data: r, date: new Date(r.deadline_end) })),
-          ...trips.map(t => ({ type: 'trip' as const, data: t, date: new Date(t.date_end) }))
+          ...requests.map(r => {
+            let matchCount: number | undefined = undefined;
+            if (user && r.userId === user.uid) {
+              const match = requestMatches.find(rm => rm.id === r.id);
+              if (match) {
+                matchCount = match.matchingTrips.length;
+              }
+            }
+            return { type: 'request' as const, data: r, date: new Date(r.deadline_end), matchCount };
+          }),
+          ...trips.map(t => {
+            let matchCount: number | undefined = undefined;
+            if (user && t.userId === user.uid) {
+                const match = tripMatches.find(tm => tm.id === t.id);
+                if (match) {
+                    matchCount = match.matchingRequests.length;
+                }
+            }
+            return { type: 'trip' as const, data: t, date: new Date(t.date_end), matchCount };
+          })
         ].sort((a, b) => b.date.getTime() - a.date.getTime());
         
         setAllItems(combinedItems);
@@ -42,7 +70,7 @@ export default function Home() {
     };
 
     fetchData();
-  }, []);
+  }, [user]);
 
 
   return (
@@ -63,12 +91,14 @@ export default function Home() {
                     key={item.data.id} 
                     request={item.data as BookRequest} 
                     showFooter={!user || user.uid !== item.data.userId}
+                    matchCount={item.matchCount}
                   />
                 ) : (
                   <TripCard 
                     key={item.data.id} 
                     trip={item.data as Trip} 
                     showFooter={!user || user.uid !== item.data.userId}
+                    matchCount={item.matchCount}
                   />
                 )
               )}

@@ -1,7 +1,7 @@
 'use client';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CalendarDays, MapPin, Send } from 'lucide-react';
+import { CalendarDays, MapPin, Send, Users } from 'lucide-react';
 import type { BookRequest } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from './auth-provider';
@@ -19,6 +19,7 @@ import Link from 'next/link';
 interface RequestCardProps {
   request: BookRequest;
   showFooter?: boolean;
+  matchCount?: number;
 }
 
 const formatPersianDate = (dateString: string) => {
@@ -51,7 +52,11 @@ const formatGregorianDate = (dateString: string) => {
   }
 };
 
-export function RequestCard({ request, showFooter = true }: RequestCardProps) {
+export function RequestCard({
+  request,
+  showFooter = true,
+  matchCount,
+}: RequestCardProps) {
   const { user } = useAuth();
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -74,7 +79,16 @@ export function RequestCard({ request, showFooter = true }: RequestCardProps) {
 
   return (
     <>
-      <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
+      <Card className="relative flex h-full flex-col overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
+        {matchCount && matchCount > 0 && (
+          <Badge
+            variant="default"
+            className="absolute -right-2 -top-2 z-10 bg-accent text-accent-foreground"
+          >
+            <Users className="me-1 h-3 w-3" />
+            {matchCount} تطبیق
+          </Badge>
+        )}
         <CardContent className="flex-1 space-y-3 p-4">
           <Badge variant="secondary" className="bg-primary/10 text-primary">
             درخواست کتاب
@@ -98,7 +112,9 @@ export function RequestCard({ request, showFooter = true }: RequestCardProps) {
                 <span className="font-semibold text-foreground">
                   {request.from_city || 'مبدا نامشخص'}
                 </span>
-                <span className="mx-1 font-normal text-muted-foreground">→</span>
+                <span className="mx-1 font-normal text-muted-foreground">
+                  →
+                </span>
                 <span className="font-semibold text-foreground">
                   {request.to_city}
                 </span>

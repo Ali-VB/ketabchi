@@ -1,7 +1,7 @@
 'use client';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CalendarDays, Package, Plane, Send } from 'lucide-react';
+import { CalendarDays, Package, Plane, Send, Users } from 'lucide-react';
 import type { Trip } from '@/lib/types';
 import { Badge } from './ui/badge';
 import { useAuth } from './auth-provider';
@@ -19,6 +19,7 @@ import Link from 'next/link';
 interface TripCardProps {
   trip: Trip;
   showFooter?: boolean;
+  matchCount?: number;
 }
 
 const formatPersianDate = (dateString: string) => {
@@ -51,7 +52,7 @@ const formatGregorianDate = (dateString: string) => {
   }
 };
 
-export function TripCard({ trip, showFooter = true }: TripCardProps) {
+export function TripCard({ trip, showFooter = true, matchCount }: TripCardProps) {
   const { user } = useAuth();
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -68,7 +69,16 @@ export function TripCard({ trip, showFooter = true }: TripCardProps) {
 
   return (
     <>
-      <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
+      <Card className="relative flex h-full flex-col overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
+        {matchCount && matchCount > 0 && (
+          <Badge
+            variant="default"
+            className="absolute -right-2 -top-2 z-10 bg-accent text-accent-foreground"
+          >
+            <Users className="me-1 h-3 w-3" />
+            {matchCount} تطبیق
+          </Badge>
+        )}
         <CardContent className="flex-1 space-y-3 p-4">
           <Badge variant="secondary" className="bg-accent/10 text-accent">
             اعلام سفر
