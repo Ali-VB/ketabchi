@@ -97,14 +97,10 @@ export function TripCard({ trip, showFooter = true, matchCount }: TripCardProps)
                 <div>
                   <span>تاریخ:</span>
                   <p className="font-semibold text-foreground">
-                    {`${formatPersianDate(trip.date_start)} تا ${formatPersianDate(
-                      trip.date_end
-                    )}`}
+                    {formatPersianDate(trip.trip_date)}
                   </p>
                   <p className="text-xs">
-                    {`${formatGregorianDate(
-                      trip.date_start
-                    )} to ${formatGregorianDate(trip.date_end)}`}
+                    {formatGregorianDate(trip.trip_date)}
                   </p>
                 </div>
               </div>

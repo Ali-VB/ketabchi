@@ -166,10 +166,12 @@ export const findMatches = async (userId: string): Promise<{
       const cityMatch = myRequest.from_city && trip.from_city && myRequest.from_city.trim().toLowerCase() === trip.from_city.trim().toLowerCase()
                         && myRequest.to_city && trip.to_city && myRequest.to_city.trim().toLowerCase() === trip.to_city.trim().toLowerCase();
 
-      // And if the date ranges overlap.
-      const dateMatch = myRequest.deadline_start && myRequest.deadline_end && trip.date_start && trip.date_end &&
-                        (new Date(trip.date_start) <= new Date(myRequest.deadline_end) &&
-                         new Date(trip.date_end) >= new Date(myRequest.deadline_start));
+      // And if the traveler's date is within the requester's deadline range.
+      const tripDate = new Date(trip.trip_date);
+      const requestStartDate = new Date(myRequest.deadline_start);
+      const requestEndDate = new Date(myRequest.deadline_end);
+      const dateMatch = trip.trip_date && myRequest.deadline_start && myRequest.deadline_end &&
+                        (tripDate >= requestStartDate && tripDate <= requestEndDate);
       
       const capacityMatch = trip.capacity >= (myRequest.weight || 0.5);
       
@@ -187,10 +189,12 @@ export const findMatches = async (userId: string): Promise<{
       const cityMatch = request.from_city && myTrip.from_city && request.from_city.trim().toLowerCase() === myTrip.from_city.trim().toLowerCase()
                       && request.to_city && myTrip.to_city && request.to_city.trim().toLowerCase() === myTrip.to_city.trim().toLowerCase();
 
-      // And if the date ranges overlap.
-      const dateMatch = request.deadline_start && request.deadline_end && myTrip.date_start && myTrip.date_end &&
-                        (new Date(myTrip.date_start) <= new Date(request.deadline_end) &&
-                         new Date(myTrip.date_end) >= new Date(request.deadline_start));
+      // And if the traveler's date is within the requester's deadline range.
+      const tripDate = new Date(myTrip.trip_date);
+      const requestStartDate = new Date(request.deadline_start);
+      const requestEndDate = new Date(request.deadline_end);
+      const dateMatch = myTrip.trip_date && request.deadline_start && request.deadline_end &&
+                        (tripDate >= requestStartDate && tripDate <= requestEndDate);
 
       const capacityMatch = myTrip.capacity >= (request.weight || 0.5);
 

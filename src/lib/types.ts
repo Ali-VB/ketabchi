@@ -33,8 +33,7 @@ export type Trip = {
   id: string;
   from_city: string;
   to_city: string;
-  date_start: string;
-  date_end: string;
+  trip_date: string;
   capacity: number;
   user: User;
   userId: string;

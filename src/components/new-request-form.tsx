@@ -43,7 +43,7 @@ const requestFormSchema = z.object({
 
 type RequestFormValues = z.infer<typeof requestFormSchema>;
 
-export function NewRequestForm({ setDialogOpen, isHeroForm = false }: { setDialogOpen: (open: boolean) => void; isHeroForm?: boolean }) {
+export function NewRequestForm({ setDialogOpen, isHeroForm = false, onPostSuccess }: { setDialogOpen: (open: boolean) => void; isHeroForm?: boolean, onPostSuccess?: () => void }) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -93,13 +93,13 @@ export function NewRequestForm({ setDialogOpen, isHeroForm = false }: { setDialo
             title: "درخواست ثبت شد",
             description: "درخواست کتاب شما با موفقیت ثبت شد و در پلتفرم نمایش داده می‌شود.",
         });
-
+        
+        onPostSuccess?.();
         form.reset();
         if (!isHeroForm) {
             setDialogOpen(false);
-            router.push('/dashboard/requests');
         } else {
-            router.push('/dashboard');
+            router.push('/dashboard/requests');
         }
     } catch (error) {
          toast({

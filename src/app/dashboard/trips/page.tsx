@@ -5,7 +5,7 @@ import { TripCard } from "@/components/trip-card";
 import { type Trip } from "@/lib/types";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { NewTripForm } from "@/components/new-trip-form";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { getUserTrips } from "@/lib/firebase/firestore";
 import { useSearchParams } from "next/navigation";
@@ -17,13 +17,7 @@ export default function MyTripsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
 
-  useEffect(() => {
-    if (searchParams.get('action') === 'new') {
-      setIsDialogOpen(true);
-    }
-  }, [searchParams]);
-
-  useEffect(() => {
+  const fetchTrips = useCallback(() => {
     if (user) {
       setIsLoading(true);
       getUserTrips(user.uid)
@@ -32,6 +26,16 @@ export default function MyTripsPage() {
         .finally(() => setIsLoading(false));
     }
   }, [user]);
+
+  useEffect(() => {
+    if (searchParams.get('action') === 'new') {
+      setIsDialogOpen(true);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    fetchTrips();
+  }, [fetchTrips]);
 
   return (
     <div className="space-y-6">
@@ -54,7 +58,7 @@ export default function MyTripsPage() {
                 مشخصات سفر خود را برای کمک به دیگران وارد کنید.
               </DialogDescription>
             </DialogHeader>
-            <NewTripForm setDialogOpen={setIsDialogOpen} />
+            <NewTripForm setDialogOpen={setIsDialogOpen} onTripAdded={fetchTrips} />
           </DialogContent>
         </Dialog>
       </div>

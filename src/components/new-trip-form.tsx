@@ -11,29 +11,32 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "./auth-provider";
 import { addTrip } from "@/lib/firebase/firestore";
 import { format } from "date-fns";
-import { DateRange } from "react-day-picker";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "./ui/form";
-import { Label } from "./ui/label";
 
 const tripFormSchema = z.object({
   from_city: z.string().min(1, "شهر مبدا الزامی است."),
   to_city: z.string().min(1, "شهر مقصد الزامی است."),
-  date: z.object(
-    {
-      from: z.date({ required_error: "تاریخ شروع الزامی است." }),
-      to: z.date({ required_error: "تاریخ پایان الزامی است." }),
-    },
-    { required_error: "بازه زمانی سفر الزامی است." }
-  ),
+  trip_date: z.date({
+    required_error: "تاریخ سفر الزامی است.",
+  }),
   capacity: z.coerce.number().min(0.1, "ظرفیت باید حداقل ۰.۱ کیلوگرم باشد."),
 });
 
 type TripFormValues = z.infer<typeof tripFormSchema>;
 
-export function NewTripForm({ setDialogOpen, isHeroForm = false }: { setDialogOpen: (open: boolean) => void; isHeroForm?: boolean }) {
+const formatPersianDate = (date: Date) => {
+    if (!date) return '';
+    try {
+      return new Intl.DateTimeFormat('fa-IR', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' }).format(date);
+    } catch (e) {
+      return date.toDateString();
+    }
+  };
+
+export function NewTripForm({ setDialogOpen, isHeroForm = false, onTripAdded }: { setDialogOpen: (open: boolean) => void; isHeroForm?: boolean; onTripAdded?: () => void; }) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
@@ -50,7 +53,7 @@ export function NewTripForm({ setDialogOpen, isHeroForm = false }: { setDialogOp
 
   const onSubmit = async (data: TripFormValues) => {
     if (!user) {
-      router.push('/login');
+      router.push('/login?redirect=/dashboard/trips?action=new');
       return;
     }
     
@@ -60,8 +63,7 @@ export function NewTripForm({ setDialogOpen, isHeroForm = false }: { setDialogOp
       await addTrip({
         from_city: data.from_city,
         to_city: data.to_city,
-        date_start: format(data.date.from, "yyyy-MM-dd"),
-        date_end: format(data.date.to, "yyyy-MM-dd"),
+        trip_date: format(data.trip_date, "yyyy-MM-dd"),
         capacity: data.capacity,
         userId: user.uid,
         user: {
@@ -76,9 +78,12 @@ export function NewTripForm({ setDialogOpen, isHeroForm = false }: { setDialogOp
           description: "سفر شما با موفقیت اعلام شد و برای تطبیق با درخواست‌ها استفاده می‌شود.",
       });
       
+      onTripAdded?.();
       form.reset();
       if (!isHeroForm) {
           setDialogOpen(false);
+      } else {
+        router.push('/dashboard/trips');
       }
     } catch (error) {
       toast({
@@ -90,31 +95,6 @@ export function NewTripForm({ setDialogOpen, isHeroForm = false }: { setDialogOp
       setIsLoading(false);
     }
   }
-
-  const formatDateRange = (
-    date: DateRange | undefined
-  ): string => {
-    if (!date?.from) {
-      return "یک تاریخ انتخاب کنید";
-    }
-  
-    const formatOptions: Intl.DateTimeFormatOptions = {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    };
-  
-    const locale = 'fa-IR-u-ca-persian';
-    const formatter = new Intl.DateTimeFormat(locale, formatOptions);
-    const fromDate = formatter.format(date.from);
-  
-    if (date.to) {
-      const toDate = formatter.format(date.to);
-      return `${fromDate} – ${toDate}`;
-    }
-  
-    return fromDate;
-  };
   
   const formContent = (
     <form onSubmit={form.handleSubmit(onSubmit)} className={cn('space-y-4 text-right', isHeroForm ? 'space-y-3' : 'p-1')}>
@@ -149,10 +129,10 @@ export function NewTripForm({ setDialogOpen, isHeroForm = false }: { setDialogOp
 
       <FormField
         control={form.control}
-        name="date"
+        name="trip_date"
         render={({ field }) => (
           <FormItem className="flex flex-col">
-            <FormLabel>بازه زمانی سفر</FormLabel>
+            <FormLabel>تاریخ سفر</FormLabel>
             <Popover>
               <PopoverTrigger asChild>
                 <FormControl>
@@ -164,13 +144,13 @@ export function NewTripForm({ setDialogOpen, isHeroForm = false }: { setDialogOp
                     )}
                   >
                     <CalendarIcon className="ms-2 h-4 w-4" />
-                    {formatDateRange(field.value)}
+                    {field.value ? formatPersianDate(field.value) : <span>یک تاریخ انتخاب کنید</span>}
                   </Button>
                 </FormControl>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0">
                 <Calendar
-                  mode="range"
+                  mode="single"
                   selected={field.value}
                   onSelect={field.onChange}
                   initialFocus

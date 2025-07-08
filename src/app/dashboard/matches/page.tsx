@@ -122,7 +122,7 @@ export default function MatchesPage() {
                                                     <div className="space-y-1 text-sm">
                                                         <p className="font-semibold">{trip.user.name}</p>
                                                         <div className="flex items-center gap-2 text-muted-foreground"><Plane className="h-4 w-4" /> سفر از {trip.from_city} به {trip.to_city}</div>
-                                                        <div className="flex items-center gap-2 text-muted-foreground"><CalendarDays className="h-4 w-4" /> تاریخ سفر: {formatPersianDate(trip.date_start)}</div>
+                                                        <div className="flex items-center gap-2 text-muted-foreground"><CalendarDays className="h-4 w-4" /> تاریخ سفر: {formatPersianDate(trip.trip_date)}</div>
                                                         <div className="flex items-center gap-2 text-muted-foreground"><Package className="h-4 w-4" /> ظرفیت: {trip.capacity} کیلوگرم</div>
                                                     </div>
                                                 </div>
@@ -148,7 +148,7 @@ export default function MatchesPage() {
                                     <div className="flex items-center justify-between w-full">
                                          <div className="text-right">
                                             <p className="font-bold">سفر از {match.from_city} به {match.to_city}</p>
-                                            <p className="text-sm text-muted-foreground">تاریخ: {formatPersianDate(match.date_start)}</p>
+                                            <p className="text-sm text-muted-foreground">تاریخ: {formatPersianDate(match.trip_date)}</p>
                                         </div>
                                         <Badge variant="secondary">{getTripMatchText(match.matchingRequests.length)}</Badge>
                                     </div>

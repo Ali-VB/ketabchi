@@ -5,7 +5,7 @@ import { RequestCard } from "@/components/request-card";
 import { type BookRequest } from "@/lib/types";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { NewRequestForm } from "@/components/new-request-form";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { getUserRequests } from "@/lib/firebase/firestore";
 import { useSearchParams } from "next/navigation";
@@ -17,13 +17,7 @@ export default function MyRequestsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
 
-  useEffect(() => {
-    if (searchParams.get('action') === 'new') {
-      setIsDialogOpen(true);
-    }
-  }, [searchParams]);
-
-  useEffect(() => {
+  const fetchRequests = useCallback(() => {
     if (user) {
       setIsLoading(true);
       getUserRequests(user.uid)
@@ -32,6 +26,17 @@ export default function MyRequestsPage() {
         .finally(() => setIsLoading(false));
     }
   }, [user]);
+
+
+  useEffect(() => {
+    if (searchParams.get('action') === 'new') {
+      setIsDialogOpen(true);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    fetchRequests();
+  }, [fetchRequests]);
 
 
   return (
@@ -55,7 +60,7 @@ export default function MyRequestsPage() {
                 مشخصات کتاب مورد نظر خود را وارد کنید.
               </DialogDescription>
             </DialogHeader>
-            <NewRequestForm setDialogOpen={setIsDialogOpen} />
+            <NewRequestForm setDialogOpen={setIsDialogOpen} onPostSuccess={fetchRequests} />
           </DialogContent>
         </Dialog>
       </div>
