@@ -108,6 +108,11 @@ export default function LoginPage() {
               ثبت‌نام کنید
             </Link>
           </div>
+          <div className="mt-4 text-center text-sm text-muted-foreground">
+            <Link href="/" className="underline underline-offset-4 hover:text-primary">
+              بازگشت به صفحه اصلی
+            </Link>
+          </div>
         </CardContent>
       </Card>
     </div>
