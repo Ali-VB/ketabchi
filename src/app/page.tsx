@@ -7,8 +7,8 @@ import type { BookRequest, Trip } from '@/lib/types';
 
 
 export default async function Home() {
-  const requests = await getAllRequests();
-  const trips = await getAllTrips();
+  const requests = await getAllRequests(10);
+  const trips = await getAllTrips(10);
 
   const allItems = [
     ...requests.map(r => ({ type: 'request', data: r, date: new Date(r.deadline) })),

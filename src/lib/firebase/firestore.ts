@@ -7,6 +7,7 @@ import {
   orderBy,
   Timestamp,
   DocumentData,
+  limit,
 } from 'firebase/firestore';
 import { db } from './config';
 import type { BookRequest, Trip } from '../types';
@@ -43,8 +44,8 @@ export const addTrip = async (tripData: Omit<Trip, 'id'>) => {
 };
 
 // Fetch all book requests
-export const getAllRequests = async (): Promise<BookRequest[]> => {
-  const q = query(requestsCollection, orderBy('createdAt', 'desc'));
+export const getAllRequests = async (docLimit = 20): Promise<BookRequest[]> => {
+  const q = query(requestsCollection, orderBy('createdAt', 'desc'), limit(docLimit));
   const querySnapshot = await getDocs(q);
   return querySnapshot.docs.map(doc => ({
     id: doc.id,
@@ -53,8 +54,8 @@ export const getAllRequests = async (): Promise<BookRequest[]> => {
 };
 
 // Fetch all trips
-export const getAllTrips = async (): Promise<Trip[]> => {
-  const q = query(tripsCollection, orderBy('createdAt', 'desc'));
+export const getAllTrips = async (docLimit = 20): Promise<Trip[]> => {
+  const q = query(tripsCollection, orderBy('createdAt', 'desc'), limit(docLimit));
   const querySnapshot = await getDocs(q);
   return querySnapshot.docs.map(doc => ({
     id: doc.id,
