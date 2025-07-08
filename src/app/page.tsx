@@ -1,19 +1,48 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import { Header } from '@/components/header';
 import { HeroSection } from '@/components/hero-section';
 import { RequestCard } from '@/components/request-card';
 import { TripCard } from '@/components/trip-card';
 import { getAllRequests, getAllTrips } from '@/lib/firebase/firestore';
 import type { BookRequest, Trip } from '@/lib/types';
+import { useAuth } from '@/components/auth-provider';
+import { Loader2 } from 'lucide-react';
 
+type CombinedItem = {
+  type: 'request' | 'trip';
+  data: BookRequest | Trip;
+  date: Date;
+};
 
-export default async function Home() {
-  const requests = await getAllRequests(10);
-  const trips = await getAllTrips(10);
+export default function Home() {
+  const [allItems, setAllItems] = useState<CombinedItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth();
 
-  const allItems = [
-    ...requests.map(r => ({ type: 'request', data: r, date: new Date(r.deadline) })),
-    ...trips.map(t => ({ type: 'trip', data: t, date: new Date(t.date) }))
-  ].sort((a, b) => b.date.getTime() - a.date.getTime());
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const requests = await getAllRequests(10);
+        const trips = await getAllTrips(10);
+
+        const combinedItems: CombinedItem[] = [
+          ...requests.map(r => ({ type: 'request' as const, data: r, date: new Date(r.deadline_end) })),
+          ...trips.map(t => ({ type: 'trip' as const, data: t, date: new Date(t.date_end) }))
+        ].sort((a, b) => b.date.getTime() - a.date.getTime());
+        
+        setAllItems(combinedItems);
+      } catch (error) {
+          console.error("Error fetching homepage items:", error);
+      } finally {
+          setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
 
   return (
@@ -22,13 +51,25 @@ export default async function Home() {
       <main className="flex-1">
         <HeroSection />
         <section className="container py-8 md:py-12">
-          {allItems.length > 0 ? (
+          {isLoading ? (
+            <div className="flex justify-center items-center h-80">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : allItems.length > 0 ? (
             <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {allItems.map((item) =>
                 item.type === 'request' ? (
-                  <RequestCard key={item.data.id} request={item.data as BookRequest} />
+                  <RequestCard 
+                    key={item.data.id} 
+                    request={item.data as BookRequest} 
+                    showFooter={!user || user.uid !== item.data.userId}
+                  />
                 ) : (
-                  <TripCard key={item.data.id} trip={item.data as Trip} />
+                  <TripCard 
+                    key={item.data.id} 
+                    trip={item.data as Trip} 
+                    showFooter={!user || user.uid !== item.data.userId}
+                  />
                 )
               )}
             </div>
