@@ -52,6 +52,13 @@ const formatGregorianDate = (dateString: string) => {
   }
 };
 
+const getRequestMatchText = (count: number) => {
+  if (count === 1) return 'یک سفر با این درخواست منطبق است';
+  const countInPersian = new Intl.NumberFormat('fa-IR').format(count);
+  return `${countInPersian} سفر با این درخواست منطبق است`;
+};
+
+
 export function RequestCard({
   request,
   showFooter = true,
@@ -79,68 +86,65 @@ export function RequestCard({
 
   return (
     <>
-      <Card className="relative flex h-full flex-col overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
-        {matchCount && matchCount > 0 && (
-          <div className="absolute top-0 left-0 z-10 h-24 w-24 overflow-hidden">
-            <Link
-              href="/dashboard/matches"
-              className="absolute top-7 -left-8 block w-32 -rotate-45 transform bg-destructive py-1 px-2 text-center text-destructive-foreground"
-            >
-              <div className="flex items-center justify-center text-xs font-bold">
-                <Users className="me-1 h-3 w-3" />
-                <span>{matchCount} تطبیق</span>
+      <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
+        <CardContent className="flex flex-1 flex-col space-y-3 p-4">
+          <div className="flex-1 space-y-3">
+            <Badge variant="secondary" className="bg-primary/10 text-primary">
+              درخواست کتاب
+            </Badge>
+
+            <div className="space-y-1">
+              <h2 className="text-xl font-bold font-headline">
+                {`درخواست برای ${totalQuantity} جلد کتاب`}
+              </h2>
+              {!isLegacy && request.books && request.books.length > 1 && (
+                <p className="text-sm text-muted-foreground">
+                  شامل {request.books.length} عنوان مختلف
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2 pt-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4" />
+                <span>
+                  <span className="font-semibold text-foreground">
+                    {request.from_city || 'مبدا نامشخص'}
+                  </span>
+                  <span className="mx-1 font-normal text-muted-foreground">
+                    →
+                  </span>
+                  <span className="font-semibold text-foreground">
+                    {request.to_city}
+                  </span>
+                </span>
+              </div>
+              <div className="flex items-start gap-2">
+                <CalendarDays className="mt-1 h-4 w-4 shrink-0" />
+                <div>
+                  <span>مهلت:</span>
+                  <p className="font-semibold text-foreground">
+                    {`${formatPersianDate(
+                      request.deadline_start
+                    )} تا ${formatPersianDate(request.deadline_end)}`}
+                  </p>
+                  <p className="text-xs">
+                    {`${formatGregorianDate(
+                      request.deadline_start
+                    )} to ${formatGregorianDate(request.deadline_end)}`}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          {matchCount && matchCount > 0 && (
+            <Link href="/dashboard/matches" className="block pt-2">
+              <div className="flex items-center gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-2 text-sm text-destructive transition-colors hover:bg-destructive/20">
+                <Users className="h-4 w-4" />
+                <span className="font-semibold">{getRequestMatchText(matchCount)}</span>
               </div>
             </Link>
-          </div>
-        )}
-        <CardContent className="flex-1 space-y-3 p-4">
-          <Badge variant="secondary" className="bg-primary/10 text-primary">
-            درخواست کتاب
-          </Badge>
-
-          <div className="space-y-1">
-            <h2 className="text-xl font-bold font-headline">
-              {`درخواست برای ${totalQuantity} جلد کتاب`}
-            </h2>
-            {!isLegacy && request.books && request.books.length > 1 && (
-              <p className="text-sm text-muted-foreground">
-                شامل {request.books.length} عنوان مختلف
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-2 pt-2 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4" />
-              <span>
-                <span className="font-semibold text-foreground">
-                  {request.from_city || 'مبدا نامشخص'}
-                </span>
-                <span className="mx-1 font-normal text-muted-foreground">
-                  →
-                </span>
-                <span className="font-semibold text-foreground">
-                  {request.to_city}
-                </span>
-              </span>
-            </div>
-            <div className="flex items-start gap-2">
-              <CalendarDays className="mt-1 h-4 w-4 shrink-0" />
-              <div>
-                <span>مهلت:</span>
-                <p className="font-semibold text-foreground">
-                  {`${formatPersianDate(
-                    request.deadline_start
-                  )} تا ${formatPersianDate(request.deadline_end)}`}
-                </p>
-                <p className="text-xs">
-                  {`${formatGregorianDate(
-                    request.deadline_start
-                  )} to ${formatGregorianDate(request.deadline_end)}`}
-                </p>
-              </div>
-            </div>
-          </div>
+          )}
         </CardContent>
         {showFooter && (
           <CardFooter className="flex items-center justify-between border-t bg-primary/10 p-4">

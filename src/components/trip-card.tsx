@@ -52,6 +52,12 @@ const formatGregorianDate = (dateString: string) => {
   }
 };
 
+const getTripMatchText = (count: number) => {
+  if (count === 1) return 'یک درخواست با این سفر منطبق است';
+  const countInPersian = new Intl.NumberFormat('fa-IR').format(count);
+  return `${countInPersian} درخواست با این سفر منطبق است`;
+};
+
 export function TripCard({ trip, showFooter = true, matchCount }: TripCardProps) {
   const { user } = useAuth();
   const router = useRouter();
@@ -69,56 +75,53 @@ export function TripCard({ trip, showFooter = true, matchCount }: TripCardProps)
 
   return (
     <>
-      <Card className="relative flex h-full flex-col overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
-        {matchCount && matchCount > 0 && (
-          <div className="absolute top-0 left-0 z-10 h-24 w-24 overflow-hidden">
-            <Link
-              href="/dashboard/matches"
-              className="absolute top-7 -left-8 block w-32 -rotate-45 transform bg-destructive py-1 px-2 text-center text-destructive-foreground"
-            >
-              <div className="flex items-center justify-center text-xs font-bold">
-                <Users className="me-1 h-3 w-3" />
-                <span>{matchCount} تطبیق</span>
+      <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
+        <CardContent className="flex flex-1 flex-col space-y-3 p-4">
+          <div className="flex-1 space-y-3">
+            <Badge variant="secondary" className="bg-accent/10 text-accent">
+              اعلام سفر
+            </Badge>
+            <div className="space-y-2 pt-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <Plane className="h-4 w-4" />
+                <span className="font-semibold text-foreground">
+                  {trip.from_city}
+                  <span className="mx-1 font-normal text-muted-foreground">
+                    →
+                  </span>
+                  {trip.to_city}
+                </span>
+              </div>
+              <div className="flex items-start gap-2">
+                <CalendarDays className="mt-1 h-4 w-4 shrink-0" />
+                <div>
+                  <span>تاریخ:</span>
+                  <p className="font-semibold text-foreground">
+                    {`${formatPersianDate(trip.date_start)} تا ${formatPersianDate(
+                      trip.date_end
+                    )}`}
+                  </p>
+                  <p className="text-xs">
+                    {`${formatGregorianDate(
+                      trip.date_start
+                    )} to ${formatGregorianDate(trip.date_end)}`}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Package className="h-4 w-4" />
+                <span>ظرفیت: {trip.capacity} کیلوگرم</span>
+              </div>
+            </div>
+          </div>
+          {matchCount && matchCount > 0 && (
+            <Link href="/dashboard/matches" className="block pt-2">
+              <div className="flex items-center gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-2 text-sm text-destructive transition-colors hover:bg-destructive/20">
+                <Users className="h-4 w-4" />
+                <span className="font-semibold">{getTripMatchText(matchCount)}</span>
               </div>
             </Link>
-          </div>
-        )}
-        <CardContent className="flex-1 space-y-3 p-4">
-          <Badge variant="secondary" className="bg-accent/10 text-accent">
-            اعلام سفر
-          </Badge>
-          <div className="space-y-2 pt-2 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <Plane className="h-4 w-4" />
-              <span className="font-semibold text-foreground">
-                {trip.from_city}
-                <span className="mx-1 font-normal text-muted-foreground">
-                  →
-                </span>
-                {trip.to_city}
-              </span>
-            </div>
-            <div className="flex items-start gap-2">
-              <CalendarDays className="mt-1 h-4 w-4 shrink-0" />
-              <div>
-                <span>تاریخ:</span>
-                <p className="font-semibold text-foreground">
-                  {`${formatPersianDate(trip.date_start)} تا ${formatPersianDate(
-                    trip.date_end
-                  )}`}
-                </p>
-                <p className="text-xs">
-                  {`${formatGregorianDate(
-                    trip.date_start
-                  )} to ${formatGregorianDate(trip.date_end)}`}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Package className="h-4 w-4" />
-              <span>ظرفیت: {trip.capacity} کیلوگرم</span>
-            </div>
-          </div>
+          )}
         </CardContent>
         {showFooter && (
           <CardFooter className="flex items-center justify-between border-t bg-accent/10 p-4">
