@@ -28,3 +28,18 @@ export type Trip = {
   userId: string;
   createdAt: string;
 };
+
+export type Conversation = {
+  id: string;
+  users: string[];
+  lastMessage: string;
+  lastMessageTimestamp: string;
+  otherUser: User;
+};
+
+export type Message = {
+  id: string;
+  senderId: string;
+  text: string;
+  timestamp: string;
+};

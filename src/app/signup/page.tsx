@@ -11,6 +11,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
+import { createUserProfileDocument } from '@/lib/firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
@@ -44,6 +45,7 @@ export default function SignupPage() {
         await updateProfile(userCredential.user, {
           displayName: values.name,
         });
+        await createUserProfileDocument(userCredential.user);
       }
       router.push('/role-selection');
     } catch (error: any) {
