@@ -19,7 +19,6 @@ import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "./ui/form";
 import { ScrollArea } from "./ui/scroll-area";
 import { DateRange } from "react-day-picker";
-import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 
 const bookSchema = z.object({
   title: z.string().min(1, "عنوان کتاب الزامی است."),
@@ -48,7 +47,6 @@ export function NewRequestForm({ setDialogOpen, isHeroForm = false }: { setDialo
   const { toast } = useToast();
   const router = useRouter();
   const { user } = useAuth();
-  const [calendarType, setCalendarType] = useState<'gregorian' | 'jalali'>('jalali');
 
   const form = useForm<RequestFormValues>({
     resolver: zodResolver(requestFormSchema),
@@ -109,8 +107,7 @@ export function NewRequestForm({ setDialogOpen, isHeroForm = false }: { setDialo
   }
 
   const formatDateRange = (
-    date: DateRange | undefined,
-    calendar: 'gregorian' | 'jalali'
+    date: DateRange | undefined
   ): string => {
     if (!date?.from) {
       return "یک تاریخ انتخاب کنید";
@@ -122,7 +119,7 @@ export function NewRequestForm({ setDialogOpen, isHeroForm = false }: { setDialo
       day: 'numeric',
     };
   
-    const locale = calendar === 'jalali' ? 'fa-IR-u-ca-persian' : 'en-US';
+    const locale = 'fa-IR-u-ca-persian';
     const formatter = new Intl.DateTimeFormat(locale, formatOptions);
     const fromDate = formatter.format(date.from);
   
@@ -226,22 +223,6 @@ export function NewRequestForm({ setDialogOpen, isHeroForm = false }: { setDialo
             </FormItem>
             )}
         />
-
-        <RadioGroup
-          dir="rtl"
-          value={calendarType}
-          onValueChange={(value: 'gregorian' | 'jalali') => setCalendarType(value)}
-          className="flex items-center gap-4 pt-2"
-        >
-          <Label className="font-normal flex items-center gap-2 cursor-pointer">
-            <RadioGroupItem value="jalali" id="req-jalali" />
-            شمسی
-          </Label>
-          <Label className="font-normal flex items-center gap-2 cursor-pointer">
-            <RadioGroupItem value="gregorian" id="req-gregorian" />
-            میلادی
-          </Label>
-        </RadioGroup>
        
         <FormField
             control={form.control}
@@ -260,7 +241,7 @@ export function NewRequestForm({ setDialogOpen, isHeroForm = false }: { setDialo
                             )}
                         >
                             <CalendarIcon className="ms-2 h-4 w-4" />
-                            {formatDateRange(field.value, calendarType)}
+                            {formatDateRange(field.value)}
                         </Button>
                         </FormControl>
                     </PopoverTrigger>

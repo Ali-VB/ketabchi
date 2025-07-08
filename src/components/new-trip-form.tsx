@@ -16,7 +16,6 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "./ui/form";
-import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { Label } from "./ui/label";
 
 const tripFormSchema = z.object({
@@ -39,7 +38,6 @@ export function NewTripForm({ setDialogOpen, isHeroForm = false }: { setDialogOp
   const { toast } = useToast();
   const router = useRouter();
   const { user } = useAuth();
-  const [calendarType, setCalendarType] = useState<'gregorian' | 'jalali'>('jalali');
 
   const form = useForm<TripFormValues>({
     resolver: zodResolver(tripFormSchema),
@@ -94,8 +92,7 @@ export function NewTripForm({ setDialogOpen, isHeroForm = false }: { setDialogOp
   }
 
   const formatDateRange = (
-    date: DateRange | undefined,
-    calendar: 'gregorian' | 'jalali'
+    date: DateRange | undefined
   ): string => {
     if (!date?.from) {
       return "یک تاریخ انتخاب کنید";
@@ -107,7 +104,7 @@ export function NewTripForm({ setDialogOpen, isHeroForm = false }: { setDialogOp
       day: 'numeric',
     };
   
-    const locale = calendar === 'jalali' ? 'fa-IR-u-ca-persian' : 'en-US';
+    const locale = 'fa-IR-u-ca-persian';
     const formatter = new Intl.DateTimeFormat(locale, formatOptions);
     const fromDate = formatter.format(date.from);
   
@@ -150,22 +147,6 @@ export function NewTripForm({ setDialogOpen, isHeroForm = false }: { setDialogOp
         />
       </div>
 
-       <RadioGroup
-          dir="rtl"
-          value={calendarType}
-          onValueChange={(value: 'gregorian' | 'jalali') => setCalendarType(value)}
-          className="flex items-center gap-4 pt-2"
-        >
-          <Label className="font-normal flex items-center gap-2 cursor-pointer">
-            <RadioGroupItem value="jalali" id="trip-jalali" />
-            شمسی
-          </Label>
-          <Label className="font-normal flex items-center gap-2 cursor-pointer">
-            <RadioGroupItem value="gregorian" id="trip-gregorian" />
-            میلادی
-          </Label>
-        </RadioGroup>
-
       <FormField
         control={form.control}
         name="date"
@@ -183,7 +164,7 @@ export function NewTripForm({ setDialogOpen, isHeroForm = false }: { setDialogOp
                     )}
                   >
                     <CalendarIcon className="ms-2 h-4 w-4" />
-                    {formatDateRange(field.value, calendarType)}
+                    {formatDateRange(field.value)}
                   </Button>
                 </FormControl>
               </PopoverTrigger>

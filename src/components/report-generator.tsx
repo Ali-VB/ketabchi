@@ -11,7 +11,6 @@ import { Calendar } from './ui/calendar';
 import { DateRange } from 'react-day-picker';
 import { addDays, format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
-import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Label } from './ui/label';
 
 export function ReportGenerator() {
@@ -21,7 +20,6 @@ export function ReportGenerator() {
     from: new Date(2024, 0, 20),
     to: addDays(new Date(2024, 0, 20), 7),
   });
-  const [calendarType, setCalendarType] = useState<'gregorian' | 'jalali'>('jalali');
   const { toast } = useToast();
 
   const handleGenerateReport = async () => {
@@ -55,8 +53,7 @@ export function ReportGenerator() {
   };
 
   const formatDateRange = (
-    date: DateRange | undefined,
-    calendar: 'gregorian' | 'jalali'
+    date: DateRange | undefined
   ): string => {
     if (!date?.from) {
       return "یک تاریخ انتخاب کنید";
@@ -68,7 +65,7 @@ export function ReportGenerator() {
       day: 'numeric',
     };
   
-    const locale = calendar === 'jalali' ? 'fa-IR-u-ca-persian' : 'en-US';
+    const locale = 'fa-IR-u-ca-persian';
     const formatter = new Intl.DateTimeFormat(locale, formatOptions);
     const fromDate = formatter.format(date.from);
   
@@ -90,23 +87,8 @@ export function ReportGenerator() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid gap-4">
-           <RadioGroup
-            dir="rtl"
-            value={calendarType}
-            onValueChange={(value: 'gregorian' | 'jalali') => setCalendarType(value)}
-            className="flex items-center gap-4"
-            >
-              <Label className="font-normal flex items-center gap-2 cursor-pointer">
-                <RadioGroupItem value="jalali" id="jalali" />
-                شمسی
-              </Label>
-              <Label className="font-normal flex items-center gap-2 cursor-pointer">
-                <RadioGroupItem value="gregorian" id="gregorian" />
-                میلادی
-              </Label>
-            </RadioGroup>
-
+        <div className="grid gap-2">
+           <Label>بازه زمانی گزارش</Label>
            <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -114,7 +96,7 @@ export function ReportGenerator() {
                 variant={"outline"}
                 className="w-[300px] justify-start text-right font-normal"
               >
-                {formatDateRange(date, calendarType)}
+                {formatDateRange(date)}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">

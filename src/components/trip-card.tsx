@@ -21,16 +21,23 @@ interface TripCardProps {
   showFooter?: boolean;
 }
 
-const formatGregorianToPersian = (dateString: string) => {
+const formatDualDate = (dateString: string) => {
   if (!dateString) return '';
   try {
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat('fa-IR', {
+    const persianDate = new Intl.DateTimeFormat('fa-IR', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
       timeZone: 'UTC',
     }).format(date);
+    const gregorianDate = new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      timeZone: 'UTC',
+    }).format(date);
+    return `${persianDate} (${gregorianDate})`;
   } catch (e) {
     return dateString;
   }
@@ -69,7 +76,7 @@ export function TripCard({ trip, showFooter = true }: TripCardProps) {
             </div>
             <div className="flex items-center gap-2">
               <CalendarDays className="h-4 w-4" />
-              <span>تاریخ: {`${formatGregorianToPersian(trip.date_start)} تا ${formatGregorianToPersian(trip.date_end)}`}</span>
+              <span>تاریخ: {`${formatDualDate(trip.date_start)} تا ${formatDualDate(trip.date_end)}`}</span>
             </div>
             <div className="flex items-center gap-2">
               <Package className="h-4 w-4" />

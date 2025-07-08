@@ -21,16 +21,23 @@ interface RequestCardProps {
   showFooter?: boolean;
 }
 
-const formatGregorianToPersian = (dateString: string) => {
+const formatDualDate = (dateString: string) => {
   if (!dateString) return '';
   try {
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat('fa-IR', {
+    const persianDate = new Intl.DateTimeFormat('fa-IR', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
       timeZone: 'UTC',
     }).format(date);
+    const gregorianDate = new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      timeZone: 'UTC',
+    }).format(date);
+    return `${persianDate} (${gregorianDate})`;
   } catch (e) {
     return dateString;
   }
@@ -86,7 +93,7 @@ export function RequestCard({ request, showFooter = true }: RequestCardProps) {
             </div>
             <div className="flex items-center gap-2">
               <CalendarDays className="h-4 w-4" />
-              <span>مهلت: {`${formatGregorianToPersian(request.deadline_start)} تا ${formatGregorianToPersian(request.deadline_end)}`}</span>
+              <span>مهلت: {`${formatDualDate(request.deadline_start)} تا ${formatDualDate(request.deadline_end)}`}</span>
             </div>
           </div>
         </CardContent>
