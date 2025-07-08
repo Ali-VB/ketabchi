@@ -21,23 +21,31 @@ interface RequestCardProps {
   showFooter?: boolean;
 }
 
-const formatDualDate = (dateString: string) => {
+const formatPersianDate = (dateString: string) => {
   if (!dateString) return '';
   try {
     const date = new Date(dateString);
-    const persianDate = new Intl.DateTimeFormat('fa-IR', {
+    return new Intl.DateTimeFormat('fa-IR', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
       timeZone: 'UTC',
     }).format(date);
-    const gregorianDate = new Intl.DateTimeFormat('en-US', {
+  } catch (e) {
+    return dateString;
+  }
+};
+
+const formatGregorianDate = (dateString: string) => {
+  if (!dateString) return '';
+  try {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
       timeZone: 'UTC',
     }).format(date);
-    return `${persianDate} (${gregorianDate})`;
   } catch (e) {
     return dateString;
   }
@@ -60,9 +68,9 @@ export function RequestCard({ request, showFooter = true }: RequestCardProps) {
 
   const isLegacy = !request.books || request.books.length === 0;
 
-  const totalQuantity = isLegacy 
-    ? (request.quantity || 1)
-    : (request.books?.reduce((sum, book) => sum + book.quantity, 0) || 0);
+  const totalQuantity = isLegacy
+    ? request.quantity || 1
+    : request.books?.reduce((sum, book) => sum + book.quantity, 0) || 0;
 
   return (
     <>
@@ -71,14 +79,16 @@ export function RequestCard({ request, showFooter = true }: RequestCardProps) {
           <Badge variant="secondary" className="bg-primary/10 text-primary">
             درخواست کتاب
           </Badge>
-          
+
           <div className="space-y-1">
-             <h2 className="text-xl font-bold font-headline">
-                {`درخواست برای ${totalQuantity} جلد کتاب`}
-             </h2>
-             {!isLegacy && request.books && request.books.length > 1 && (
-                <p className="text-sm text-muted-foreground">شامل {request.books.length} عنوان مختلف</p>
-             )}
+            <h2 className="text-xl font-bold font-headline">
+              {`درخواست برای ${totalQuantity} جلد کتاب`}
+            </h2>
+            {!isLegacy && request.books && request.books.length > 1 && (
+              <p className="text-sm text-muted-foreground">
+                شامل {request.books.length} عنوان مختلف
+              </p>
+            )}
           </div>
 
           <div className="space-y-2 pt-2 text-sm text-muted-foreground">
@@ -91,9 +101,21 @@ export function RequestCard({ request, showFooter = true }: RequestCardProps) {
                 </span>
               </span>
             </div>
-            <div className="flex items-center gap-2">
-              <CalendarDays className="h-4 w-4" />
-              <span>مهلت: {`${formatDualDate(request.deadline_start)} تا ${formatDualDate(request.deadline_end)}`}</span>
+            <div className="flex items-start gap-2">
+              <CalendarDays className="mt-1 h-4 w-4 shrink-0" />
+              <div>
+                <span>مهلت:</span>
+                <p className="font-semibold text-foreground">
+                  {`${formatPersianDate(
+                    request.deadline_start
+                  )} تا ${formatPersianDate(request.deadline_end)}`}
+                </p>
+                <p className="text-xs">
+                  {`${formatGregorianDate(
+                    request.deadline_start
+                  )} to ${formatGregorianDate(request.deadline_end)}`}
+                </p>
+              </div>
             </div>
           </div>
         </CardContent>
@@ -118,14 +140,12 @@ export function RequestCard({ request, showFooter = true }: RequestCardProps) {
             <DialogTitle>برای ادامه وارد شوید</DialogTitle>
             <DialogDescription>
               برای ارسال پیام و هماهنگی، ابتدا باید وارد حساب کاربری خود شوید یا
-              یک حساب جدید بسازید. پس از آن با اعلام سفر میتوانید پیام خود را ارسال کنید.
+              یک حساب جدید بسازید. پس از آن با اعلام سفر میتوانید پیام خود را
+              ارسال کنید.
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-2 pt-4">
-            <Button
-              variant="outline"
-              onClick={() => setIsDialogOpen(false)}
-            >
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
               انصراف
             </Button>
             <Button asChild variant="secondary">

@@ -21,23 +21,31 @@ interface TripCardProps {
   showFooter?: boolean;
 }
 
-const formatDualDate = (dateString: string) => {
+const formatPersianDate = (dateString: string) => {
   if (!dateString) return '';
   try {
     const date = new Date(dateString);
-    const persianDate = new Intl.DateTimeFormat('fa-IR', {
+    return new Intl.DateTimeFormat('fa-IR', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
       timeZone: 'UTC',
     }).format(date);
-    const gregorianDate = new Intl.DateTimeFormat('en-US', {
+  } catch (e) {
+    return dateString;
+  }
+};
+
+const formatGregorianDate = (dateString: string) => {
+  if (!dateString) return '';
+  try {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
       timeZone: 'UTC',
     }).format(date);
-    return `${persianDate} (${gregorianDate})`;
   } catch (e) {
     return dateString;
   }
@@ -60,23 +68,37 @@ export function TripCard({ trip, showFooter = true }: TripCardProps) {
 
   return (
     <>
-      <Card className="flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 h-full">
-        <CardContent className="p-4 space-y-3 flex-1">
+      <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
+        <CardContent className="flex-1 space-y-3 p-4">
           <Badge variant="secondary" className="bg-accent/10 text-accent">
             اعلام سفر
           </Badge>
-          <div className="space-y-2 text-sm text-muted-foreground pt-2">
+          <div className="space-y-2 pt-2 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <Plane className="h-4 w-4" />
               <span className="font-semibold text-foreground">
                 {trip.from_city}
-                <span className="mx-1 font-normal text-muted-foreground">→</span>
+                <span className="mx-1 font-normal text-muted-foreground">
+                  →
+                </span>
                 {trip.to_city}
               </span>
             </div>
-            <div className="flex items-center gap-2">
-              <CalendarDays className="h-4 w-4" />
-              <span>تاریخ: {`${formatDualDate(trip.date_start)} تا ${formatDualDate(trip.date_end)}`}</span>
+            <div className="flex items-start gap-2">
+              <CalendarDays className="mt-1 h-4 w-4 shrink-0" />
+              <div>
+                <span>تاریخ:</span>
+                <p className="font-semibold text-foreground">
+                  {`${formatPersianDate(trip.date_start)} تا ${formatPersianDate(
+                    trip.date_end
+                  )}`}
+                </p>
+                <p className="text-xs">
+                  {`${formatGregorianDate(
+                    trip.date_start
+                  )} to ${formatGregorianDate(trip.date_end)}`}
+                </p>
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <Package className="h-4 w-4" />
@@ -85,7 +107,7 @@ export function TripCard({ trip, showFooter = true }: TripCardProps) {
           </div>
         </CardContent>
         {showFooter && (
-          <CardFooter className="flex items-center justify-between p-4 border-t bg-accent/10">
+          <CardFooter className="flex items-center justify-between border-t bg-accent/10 p-4">
             <span className="text-sm font-medium">{trip.user.name}</span>
             <Button
               variant="ghost"
@@ -105,14 +127,12 @@ export function TripCard({ trip, showFooter = true }: TripCardProps) {
             <DialogTitle>برای ادامه وارد شوید</DialogTitle>
             <DialogDescription>
               برای ارسال پیام و هماهنگی، ابتدا باید وارد حساب کاربری خود شوید یا
-              یک حساب جدید بسازید. پس از آن با درخواست کتاب میتوانید پیام خود را ارسال کنید.
+              یک حساب جدید بسازید. پس از آن با درخواست کتاب میتوانید پیام خود را
+              ارسال کنید.
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-2 pt-4">
-            <Button
-              variant="outline"
-              onClick={() => setIsDialogOpen(false)}
-            >
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
               انصراف
             </Button>
             <Button asChild variant="secondary">
