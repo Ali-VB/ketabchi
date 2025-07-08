@@ -19,6 +19,7 @@ const formatGregorianToPersian = (dateString: string) => {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
+      timeZone: 'UTC',
     }).format(date);
   } catch (e) {
     return dateString;
