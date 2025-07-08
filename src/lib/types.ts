@@ -15,6 +15,7 @@ export type BookRequest = {
   deadline: string;
   user: User;
   userId: string;
+  createdAt: string;
 };
 
 export type Trip = {
@@ -25,4 +26,5 @@ export type Trip = {
   capacity: number;
   user: User;
   userId: string;
+  createdAt: string;
 };
