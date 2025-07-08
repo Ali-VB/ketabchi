@@ -21,9 +21,9 @@ export function HeroSection() {
         <section className="w-full py-16 lg:py-20 bg-muted/30 border-b">
             <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center space-y-4 text-center">
-                    <div className="mx-auto max-w-2xl space-y-8">
+                    <div className="mx-auto max-w-2xl space-y-12">
                         <div className="space-y-4">
-                            <h1 className="text-2xl sm:text-3xl md:text-4xl font-headline font-light bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent leading-[2.2] tracking-normal">
+                            <h1 className="text-2xl sm:text-3xl md:text-4xl font-headline font-light bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent leading-[2.7] tracking-normal">
                                 از مسافری بخواه برایت از ایران کتاب بیاورد،
                                 <br />
                                 یا در سفرت کتابی را به دست کسی برسان.
