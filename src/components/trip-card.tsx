@@ -75,7 +75,7 @@ export function TripCard({ trip, showFooter = true, matchCount }: TripCardProps)
 
   return (
     <>
-      <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
+      <Card className="relative flex h-full flex-col overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
         <CardContent className="flex flex-1 flex-col space-y-3 p-4">
           <div className="flex-1 space-y-3">
             <Badge variant="secondary" className="bg-accent/10 text-accent">
@@ -114,14 +114,6 @@ export function TripCard({ trip, showFooter = true, matchCount }: TripCardProps)
               </div>
             </div>
           </div>
-          {matchCount && matchCount > 0 && (
-            <Link href="/dashboard/matches" className="block pt-2">
-              <div className="flex items-center gap-2 rounded-md border border-destructive/50 bg-destructive/10 p-2 text-sm text-destructive transition-colors hover:bg-destructive/20">
-                <Users className="h-4 w-4" />
-                <span className="font-semibold">{getTripMatchText(matchCount)}</span>
-              </div>
-            </Link>
-          )}
         </CardContent>
         {showFooter && (
           <CardFooter className="flex items-center justify-between border-t bg-accent/10 p-4">
@@ -136,6 +128,17 @@ export function TripCard({ trip, showFooter = true, matchCount }: TripCardProps)
               ارسال پیام
             </Button>
           </CardFooter>
+        )}
+        {matchCount && matchCount > 0 && (
+          <Link
+            href="/dashboard/matches"
+            className="group absolute inset-0 z-10 flex flex-col justify-end bg-black/50 p-4 backdrop-blur-sm transition-all duration-300 hover:bg-black/60"
+          >
+            <div className="flex items-center gap-2 font-bold text-primary-foreground">
+              <Users className="h-5 w-5 text-primary" />
+              <p>{getTripMatchText(matchCount)}</p>
+            </div>
+          </Link>
         )}
       </Card>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
