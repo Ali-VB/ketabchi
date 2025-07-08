@@ -5,7 +5,7 @@ export const Logo = ({ className }: { className?: string }) => {
   return (
     <div className={cn("relative h-full w-full", className)}>
       <Image
-        src="/logo.svg"
+        src="/logo.png"
         alt="Ketabchi Logo"
         fill
         sizes="48px"
