@@ -19,7 +19,7 @@ export function HeroSection() {
     }
 
     return (
-        <section className="relative w-full h-[60vh] min-h-[450px] flex items-center justify-center text-center text-white">
+        <section className="relative w-full h-[60vh] min-h-[450px] flex items-center justify-center sm:justify-end text-center sm:text-right text-white">
             <Image
                 src="/hero-background.png"
                 alt="A person reading a book, line art."
@@ -27,7 +27,7 @@ export function HeroSection() {
                 priority
                 className="object-cover object-center brightness-50"
             />
-            <div className="relative z-10 container flex flex-col items-center sm:items-end text-right">
+            <div className="relative z-10 container">
                 <div className="max-w-md space-y-6">
                     <div>
                         <h1 className="text-4xl md:text-5xl font-bold font-headline drop-shadow-lg">کتاب‌های نایاب، در دستان شما</h1>
@@ -35,7 +35,7 @@ export function HeroSection() {
                            از هر کجای دنیا کتاب مورد نظرتان را درخواست دهید، یا در سفرتان کتابی را به دست کسی برسانید.
                         </p>
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-end">
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center sm:justify-end">
                          <Button onClick={() => handleLinkClick('/dashboard/requests?action=new')} size="lg" variant="secondary" className="bg-background/90 text-foreground hover:bg-background">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
                             <span>درخواست کتاب دارم</span>
