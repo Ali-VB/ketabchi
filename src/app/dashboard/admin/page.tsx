@@ -22,7 +22,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { ReportGenerator } from '@/components/report-generator';
 
 const formatPersianDate = (dateString: string) => {
     if (!dateString) return '';
@@ -176,9 +175,6 @@ export default function AdminDisputesPage() {
                     )}
                 </CardContent>
             </Card>
-            <div className="pt-4">
-                <ReportGenerator />
-            </div>
         </div>
     );
 }

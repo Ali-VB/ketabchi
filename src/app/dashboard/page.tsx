@@ -4,7 +4,6 @@ import { Package, Plane, Users, Loader2, ShieldAlert, BookOpen, Handshake } from
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/components/auth-provider';
 import { getUserRequests, getUserTrips, getMatchesForUser, getPlatformStats } from '@/lib/firebase/firestore';
-import { ReportGenerator } from '@/components/report-generator';
 
 const ADMIN_USER_ID = 'jwHiUx2XD3dcl3C0x7mobpkGOYy2';
 
