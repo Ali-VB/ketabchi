@@ -42,7 +42,8 @@ export default function AdminPage() {
     const [isResolving, setIsResolving] = useState<string | null>(null);
 
     // TODO: This is a temporary admin check. Replace with a robust role-based system.
-    const ADMIN_USER_ID = 'fXzd77d1fvhU7agG4j66UACBvGY2';
+    // To access this page, replace the placeholder below with your own User UID from Firebase Authentication.
+    const ADMIN_USER_ID = 'YOUR_ADMIN_USER_ID_HERE';
 
     const fetchDisputes = useCallback(() => {
         setIsLoading(true);
@@ -58,12 +59,13 @@ export default function AdminPage() {
     useEffect(() => {
         if (!authLoading) {
             if (!user || user.uid !== ADMIN_USER_ID) {
+                toast({ variant: 'destructive', title: 'دسترسی غیرمجاز', description: 'شما اجازه دسترسی به این صفحه را ندارید.' });
                 router.push('/dashboard');
                 return;
             }
             fetchDisputes();
         }
-    }, [user, authLoading, router, fetchDisputes]);
+    }, [user, authLoading, router, fetchDisputes, toast]);
 
     const handleResolve = async (matchId: string, resolution: 'release' | 'refund') => {
         setIsResolving(matchId);
@@ -85,6 +87,17 @@ export default function AdminPage() {
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
         );
+    }
+    
+    if (ADMIN_USER_ID === 'YOUR_ADMIN_USER_ID_HERE') {
+        return (
+             <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-destructive/50 bg-destructive/10 p-12 text-center h-80">
+                <h3 className="text-xl font-bold tracking-tight text-destructive">پیکربندی ادمین لازم است</h3>
+                <p className="text-sm text-destructive/80 mt-2 max-w-md">
+                   برای استفاده از این صفحه، لطفاً فایل <code className="font-mono text-xs bg-destructive/20 p-1 rounded">src/app/dashboard/admin/page.tsx</code> را ویرایش کرده و شناسه کاربری ادمین را جایگزین کنید.
+                </p>
+            </div>
+        )
     }
 
     return (

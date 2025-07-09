@@ -23,7 +23,8 @@ import { signOut } from '@/lib/firebase/auth';
 import { useEffect } from 'react';
 
 // TODO: Replace with a real admin check, e.g., from a custom claim in Firebase Auth.
-const ADMIN_USER_ID = 'fXzd77d1fvhU7agG4j66UACBvGY2';
+// To enable the admin link in the sidebar, replace the placeholder below with the User UID of the admin account.
+const ADMIN_USER_ID = 'YOUR_ADMIN_USER_ID_HERE';
 
 const menuItems = [
   { href: '/dashboard', label: 'داشبورد', icon: Home },
