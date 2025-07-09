@@ -136,7 +136,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <DropdownMenuLabel>{isAdmin ? 'حساب ادمین' : 'حساب کاربری من'}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild><Link href="/dashboard/profile"><User className="me-2 h-4 w-4" />پروفایل</Link></DropdownMenuItem>
-                <DropdownMenuItem><Settings className="me-2 h-4 w-4" />تنظیمات</Link></DropdownMenuItem>
+                <DropdownMenuItem><Settings className="me-2 h-4 w-4" />تنظیمات</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:text-red-500 focus:bg-red-500/10">
                   <LogOut className="me-2 h-4 w-4" />
