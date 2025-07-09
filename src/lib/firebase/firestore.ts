@@ -190,11 +190,9 @@ export const findMatches = async (userId: string): Promise<{
       const cityMatch = myRequest.to_city && trip.to_city && myRequest.to_city.trim().toLowerCase() === trip.to_city.trim().toLowerCase();
 
       // And if the traveler's date is within the requester's deadline range.
-      const tripDate = new Date(trip.trip_date);
-      const requestStartDate = new Date(myRequest.deadline_start);
-      const requestEndDate = new Date(myRequest.deadline_end);
+      // Comparing YYYY-MM-DD strings is safe and avoids timezone issues.
       const dateMatch = trip.trip_date && myRequest.deadline_start && myRequest.deadline_end &&
-                        (tripDate >= requestStartDate && tripDate <= requestEndDate);
+                        trip.trip_date >= myRequest.deadline_start && trip.trip_date <= myRequest.deadline_end;
       
       const capacityMatch = trip.capacity >= (myRequest.weight || 0.5);
       
@@ -212,11 +210,9 @@ export const findMatches = async (userId: string): Promise<{
       const cityMatch = request.to_city && myTrip.to_city && request.to_city.trim().toLowerCase() === myTrip.to_city.trim().toLowerCase();
 
       // And if the traveler's date is within the requester's deadline range.
-      const tripDate = new Date(myTrip.trip_date);
-      const requestStartDate = new Date(request.deadline_start);
-      const requestEndDate = new Date(request.deadline_end);
+      // Comparing YYYY-MM-DD strings is safe and avoids timezone issues.
       const dateMatch = myTrip.trip_date && request.deadline_start && request.deadline_end &&
-                        (tripDate >= requestStartDate && tripDate <= requestEndDate);
+                        myTrip.trip_date >= request.deadline_start && myTrip.trip_date <= request.deadline_end;
 
       const capacityMatch = myTrip.capacity >= (request.weight || 0.5);
 
