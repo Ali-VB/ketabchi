@@ -184,7 +184,6 @@ export default function MessagesPage() {
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 h-[calc(100vh-120px)] rounded-lg border bg-card text-card-foreground shadow-sm">
       <div className="col-span-1 border-e flex flex-col">
         <div className="p-4 border-b">
-          <h2 className="text-lg font-semibold">پیام‌ها</h2>
         </div>
         <ScrollArea className="flex-1">
           {isLoadingConversations ? (
