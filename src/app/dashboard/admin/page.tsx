@@ -43,7 +43,7 @@ export default function AdminPage() {
 
     // TODO: This is a temporary admin check. Replace with a robust role-based system.
     // To access this page, replace the placeholder below with your own User UID from Firebase Authentication.
-    const ADMIN_USER_ID = 'YOUR_ADMIN_USER_ID_HERE';
+    const ADMIN_USER_ID = 'jwHiUx2XD3dcl3C0x7mobpkGOYy2';
 
     const fetchDisputes = useCallback(() => {
         setIsLoading(true);
