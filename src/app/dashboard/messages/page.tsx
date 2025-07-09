@@ -52,54 +52,55 @@ export default function MessagesPage() {
   }, [messages]);
 
 
-  // Fetch conversations for the logged-in user
   React.useEffect(() => {
-    if (user) {
-      setIsLoadingConversations(true);
-      getConversations(user.uid)
-        .then(setConversations)
-        .catch(console.error)
-        .finally(() => setIsLoadingConversations(false));
+    if (!user) {
+      return;
     }
-  }, [user]);
 
-  // Handle selecting or creating a new conversation
-  React.useEffect(() => {
-    if (user && recipientId && conversations.length >= 0) {
-      const existingConvo = conversations.find(c => c.users.includes(recipientId));
-      if (existingConvo) {
-          setSelectedConversation(existingConvo);
-      } else {
-        setIsLoadingConversations(true);
-        getOrCreateConversation(user.uid, recipientId)
-        .then(async (convoId) => {
-            const recipientProfile = await getUserProfile(recipientId);
-            const newConversation: Conversation = {
-                id: convoId,
-                users: [user.uid, recipientId],
-                lastMessage: 'یک مکالمه جدید شروع کنید...',
-                lastMessageTimestamp: new Date().toISOString(),
-                otherUser: {
-                    uid: recipientId,
-                    name: recipientProfile?.displayName || 'کاربر جدید',
-                    avatar: recipientProfile?.photoURL || null,
-                }
-            };
-            setConversations(prev => {
-              if (prev.some(c => c.id === newConversation.id)) {
-                return prev;
-              }
-              return [newConversation, ...prev];
-            });
-            setSelectedConversation(newConversation);
-        })
-        .catch(console.error)
-        .finally(() => setIsLoadingConversations(false));
+    let isMounted = true;
+    setIsLoadingConversations(true);
+
+    const setupConversations = async () => {
+      try {
+        // If a recipient is specified in the URL, ensure the conversation exists first.
+        if (recipientId) {
+          await getOrCreateConversation(user.uid, recipientId);
+        }
+
+        // Then, fetch the complete and up-to-date list of all conversations.
+        const allConversations = await getConversations(user.uid);
+        
+        if (!isMounted) return;
+
+        setConversations(allConversations);
+
+        // Now, determine which conversation to select from the clean list.
+        if (recipientId) {
+          const targetConversation = allConversations.find(c => c.users.includes(recipientId));
+          setSelectedConversation(targetConversation || null);
+        } else if (allConversations.length > 0) {
+          // If no recipient is specified, select the most recent conversation.
+          setSelectedConversation(allConversations[0]);
+        } else {
+          // No conversations exist.
+          setSelectedConversation(null);
+        }
+      } catch (error) {
+        console.error("Failed to setup conversations:", error);
+        toast({ variant: "destructive", title: "خطا", description: "امکان بارگذاری گفتگوها وجود نداشت." });
+      } finally {
+        if (isMounted) {
+          setIsLoadingConversations(false);
+        }
       }
-    } else if (!recipientId && conversations.length > 0 && !selectedConversation) {
-        setSelectedConversation(conversations[0]);
-    }
-  }, [recipientId, user, conversations]);
+    };
+
+    setupConversations();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user, recipientId]);
 
 
   // Listen for messages in the selected conversation
