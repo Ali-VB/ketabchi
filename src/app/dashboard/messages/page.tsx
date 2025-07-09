@@ -100,7 +100,7 @@ export default function MessagesPage() {
     return () => {
       isMounted = false;
     };
-  }, [user, recipientId]);
+  }, [user, recipientId, toast]);
 
 
   // Listen for messages in the selected conversation
