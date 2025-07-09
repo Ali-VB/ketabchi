@@ -4,6 +4,7 @@ export type User = {
   email: string | null;
   photoURL: string | null;
   createdAt?: string;
+  isBanned?: boolean;
 };
 
 export type Book = {

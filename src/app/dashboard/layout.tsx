@@ -38,6 +38,7 @@ const adminMenuItems = [
     { href: '/dashboard/admin/matches', label: 'تراکنش‌ها', icon: Handshake },
     { href: '/dashboard/admin/users', label: 'کاربران', icon: Users },
     { href: '/dashboard/admin/disputes', label: 'اختلافات', icon: ShieldAlert },
+    { href: '/dashboard/admin/settings', label: 'تنظیمات', icon: Settings },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -72,6 +73,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         if (path.startsWith('/dashboard/admin/matches')) return 'مدیریت تراکنش‌ها';
         if (path.startsWith('/dashboard/admin/users')) return 'مدیریت کاربران';
         if (path.startsWith('/dashboard/admin/disputes')) return 'رسیدگی به اختلافات';
+        if (path.startsWith('/dashboard/admin/settings')) return 'تنظیمات پلتفرم';
         if (path === '/dashboard') return 'داشبورد ادمین';
     }
     
@@ -134,7 +136,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <DropdownMenuLabel>{isAdmin ? 'حساب ادمین' : 'حساب کاربری من'}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild><Link href="/dashboard/profile"><User className="me-2 h-4 w-4" />پروفایل</Link></DropdownMenuItem>
-                <DropdownMenuItem><Settings className="me-2 h-4 w-4" />تنظیمات</DropdownMenuItem>
+                <DropdownMenuItem><Settings className="me-2 h-4 w-4" />تنظیمات</Link></DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:text-red-500 focus:bg-red-500/10">
                   <LogOut className="me-2 h-4 w-4" />

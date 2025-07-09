@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/components/auth-provider';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,9 +8,22 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { User } from '@/lib/types';
-import { getAllUsers } from '@/lib/firebase/firestore';
+import { getAllUsers, banUser, unbanUser } from '@/lib/firebase/firestore';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
 
 // This is a temporary admin check. Replace with a robust role-based system.
 const ADMIN_USER_ID = 'jwHiUx2XD3dcl3C0x7mobpkGOYy2';
@@ -31,6 +44,18 @@ export default function UserManagementPage() {
     const { toast } = useToast();
     const [users, setUsers] = useState<User[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isActionLoading, setIsActionLoading] = useState(false);
+
+    const fetchUsers = useCallback(() => {
+        setIsLoading(true);
+        getAllUsers()
+            .then(setUsers)
+            .catch(err => {
+                console.error(err);
+                toast({ variant: 'destructive', title: 'خطا', description: 'خطا در بارگذاری لیست کاربران. لطفا قوانین امنیتی Firestore را بررسی کنید.' });
+            })
+            .finally(() => setIsLoading(false));
+    }, [toast]);
 
     useEffect(() => {
         if (!authLoading) {
@@ -39,17 +64,28 @@ export default function UserManagementPage() {
                 router.push('/dashboard');
                 return;
             }
-            
-            setIsLoading(true);
-            getAllUsers()
-                .then(setUsers)
-                .catch(err => {
-                    console.error(err);
-                    toast({ variant: 'destructive', title: 'خطا', description: 'خطا در بارگذاری لیست کاربران. لطفا قوانین امنیتی Firestore را بررسی کنید.' });
-                })
-                .finally(() => setIsLoading(false));
+            fetchUsers();
         }
-    }, [authUser, authLoading, router, toast]);
+    }, [authUser, authLoading, router, toast, fetchUsers]);
+    
+    const handleBanToggle = async (userToUpdate: User) => {
+        setIsActionLoading(true);
+        try {
+            if (userToUpdate.isBanned) {
+                await unbanUser(userToUpdate.uid);
+                toast({ title: 'موفقیت‌آمیز', description: `${userToUpdate.displayName} از محرومیت خارج شد.`});
+            } else {
+                await banUser(userToUpdate.uid);
+                toast({ title: 'موفقیت‌آمیز', description: `${userToUpdate.displayName} محروم شد.`});
+            }
+            fetchUsers(); // Refresh the user list
+        } catch (error) {
+             toast({ variant: 'destructive', title: 'خطا', description: 'خطا در به‌روزرسانی وضعیت کاربر.'});
+        } finally {
+            setIsActionLoading(false);
+        }
+    }
+
 
     if (authLoading || isLoading) {
         return (
@@ -76,8 +112,9 @@ export default function UserManagementPage() {
                             <TableRow>
                                 <TableHead>کاربر</TableHead>
                                 <TableHead>ایمیل</TableHead>
+                                <TableHead>وضعیت</TableHead>
                                 <TableHead>تاریخ عضویت</TableHead>
-                                <TableHead>شناسه کاربر (UID)</TableHead>
+                                <TableHead className="text-left">اقدامات</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -95,8 +132,44 @@ export default function UserManagementPage() {
                                         </div>
                                     </TableCell>
                                     <TableCell>{user.email}</TableCell>
+                                    <TableCell>
+                                        {user.isBanned && <Badge variant="destructive">محروم شده</Badge>}
+                                    </TableCell>
                                     <TableCell>{formatPersianDate(user.createdAt)}</TableCell>
-                                    <TableCell className="font-mono text-xs text-left" dir="ltr">{user.uid}</TableCell>
+                                    <TableCell className="text-left">
+                                         <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button
+                                                    variant={user.isBanned ? 'outline' : 'destructive'}
+                                                    size="sm"
+                                                    disabled={user.uid === ADMIN_USER_ID || isActionLoading}
+                                                >
+                                                    {isActionLoading && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
+                                                    {user.isBanned ? 'رفع محرومیت' : 'محروم کردن'}
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>آیا مطمئن هستید؟</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        {user.isBanned
+                                                            ? `این عمل کاربر ${user.displayName} را از محرومیت خارج می‌کند.`
+                                                            : `این عمل کاربر ${user.displayName} را محروم می‌کند.`
+                                                        }
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>لغو</AlertDialogCancel>
+                                                    <AlertDialogAction
+                                                        onClick={() => handleBanToggle(user)}
+                                                        className={user.isBanned ? '' : 'bg-destructive hover:bg-destructive/90'}
+                                                    >
+                                                        تایید
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+                                    </TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>

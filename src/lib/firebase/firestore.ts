@@ -339,6 +339,7 @@ export const createUserProfileDocument = async (user: {uid: string, email: strin
                 displayName,
                 photoURL,
                 createdAt: serverTimestamp(),
+                isBanned: false,
             });
         } catch (error) {
             console.error("Error creating user profile document:", error);
@@ -460,6 +461,16 @@ export const getAllUsers = async (): Promise<User[]> => {
       ...processSerializable(doc.data()),
     })) as User[];
 };
+
+export const banUser = async (userId: string): Promise<void> => {
+    const userRef = doc(db, 'users', userId);
+    await updateDoc(userRef, { isBanned: true });
+}
+
+export const unbanUser = async (userId: string): Promise<void> => {
+    const userRef = doc(db, 'users', userId);
+    await updateDoc(userRef, { isBanned: false });
+}
 
 export const getPlatformStats = async () => {
   const matchesQuery = query(matchesCollection);
