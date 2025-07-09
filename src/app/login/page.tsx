@@ -9,12 +9,13 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, sendEmailVerification, signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
+import { ToastAction } from '@/components/ui/toast';
 
 const formSchema = z.object({
   email: z.string().email({ message: 'لطفاً یک ایمیل معتبر وارد کنید.' }),
@@ -38,7 +39,27 @@ export default function LoginPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, values.email, values.password);
+      const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
+      
+      if (!userCredential.user.emailVerified) {
+        await signOut(auth); // Sign out the user
+        toast({
+          variant: 'destructive',
+          title: 'ایمیل تایید نشده',
+          description: 'لطفاً ایمیل خود را تایید کنید تا بتوانید وارد شوید.',
+          action: <ToastAction altText="ارسال مجدد ایمیل" onClick={async () => {
+              try {
+                await sendEmailVerification(userCredential.user);
+                toast({ title: 'موفق', description: 'ایمیل تایید مجددا ارسال شد.' });
+              } catch (e) {
+                toast({ variant: 'destructive', title: 'خطا', description: 'خطا در ارسال مجدد ایمیل.' });
+              }
+          }}>ارسال مجدد ایمیل</ToastAction>
+        });
+        setIsLoading(false);
+        return;
+      }
+      
       const redirect = searchParams.get('redirect');
       router.push(redirect || '/dashboard');
     } catch (error: any) {
@@ -67,7 +88,6 @@ export default function LoginPage() {
         title: 'خطا در ورود',
         description: description,
       });
-    } finally {
       setIsLoading(false);
     }
   }

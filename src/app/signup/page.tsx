@@ -9,7 +9,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from 'firebase/auth';
 import { auth } from '@/lib/firebase/config';
 import { createUserProfileDocument } from '@/lib/firebase/firestore';
 import { useRouter } from 'next/navigation';
@@ -46,8 +46,13 @@ export default function SignupPage() {
           displayName: values.name,
         });
         await createUserProfileDocument(userCredential.user);
+        await sendEmailVerification(userCredential.user);
       }
-      router.push('/role-selection');
+      router.push(`/verify-email?email=${encodeURIComponent(values.email)}`);
+      toast({
+        title: 'ثبت‌نام موفق',
+        description: 'ایمیل تایید برای شما ارسال شد.',
+      });
     } catch (error: any) {
       console.error("Firebase signup error:", error);
       let description = 'مشکلی پیش آمد. لطفا دوباره تلاش کنید.';
