@@ -36,6 +36,7 @@ export type Trip = {
   from_city: string;
   to_city: string;
   trip_date: string;
+  date_end?: string; // For sorting on homepage
   capacity: number;
   user: User;
   userId: string;
@@ -72,8 +73,9 @@ export interface Match {
   request: BookRequest;
   trip: Trip;
   status: 'active' | 'completed' | 'disputed' | 'cancelled';
-  paymentStatus: 'held' | 'released' | 'refunded';
+  paymentStatus: 'held' | 'released' | 'refunded' | 'disputed';
   deliveryCode: string;
   createdAt: string;
   updatedAt: string;
+  amount?: number; // For future payment integration
 }

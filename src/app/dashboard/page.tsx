@@ -1,6 +1,6 @@
 'use client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, Plane, Users, Loader2, ShieldAlert, BookOpen, Handshake } from 'lucide-react';
+import { Package, Plane, Users, Loader2, ShieldAlert, BookOpen, Handshake, CheckCircle, DollarSign } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/components/auth-provider';
 import { getUserRequests, getUserTrips, getMatchesForUser, getPlatformStats } from '@/lib/firebase/firestore';
@@ -9,9 +9,8 @@ const ADMIN_USER_ID = 'jwHiUx2XD3dcl3C0x7mobpkGOYy2';
 
 function AdminDashboard() {
   const [stats, setStats] = useState({
-    totalRequests: 0,
-    totalTrips: 0,
     totalMatches: 0,
+    completedMatches: 0,
     disputedMatches: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
@@ -24,39 +23,52 @@ function AdminDashboard() {
       .finally(() => setIsLoading(false));
   }, []);
 
+  const disputeRate = stats.totalMatches > 0 ? ((stats.disputedMatches / stats.totalMatches) * 100).toFixed(1) : 0;
+
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight font-headline">داشبورد ادمین</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
         <p className="text-muted-foreground">
-          در اینجا خلاصه‌ای از فعالیت‌های کل پلتفرم آمده است.
+          An overview of platform activity and key metrics.
         </p>
       </div>
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">کل تراکنش‌ها</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Matches</CardTitle>
             <Handshake className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            {isLoading ? (
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
-            ) : (
-              <div className="text-2xl font-bold">{stats.totalMatches}</div>
-            )}
+            {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : <div className="text-2xl font-bold">{stats.totalMatches}</div>}
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">تراکنش‌های مورد اختلاف</CardTitle>
+            <CardTitle className="text-sm font-medium">Completed Deliveries</CardTitle>
+            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : <div className="text-2xl font-bold">{stats.completedMatches}</div>}
+          </CardContent>
+        </Card>
+         <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Dispute Rate</CardTitle>
             <ShieldAlert className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            {isLoading ? (
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
-            ) : (
-              <div className="text-2xl font-bold">{stats.disputedMatches}</div>
-            )}
+            {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : <div className="text-2xl font-bold">{disputeRate}%</div>}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : <div className="text-2xl font-bold">$0.00</div>}
+             <p className="text-xs text-muted-foreground">Stripe integration not implemented</p>
           </CardContent>
         </Card>
       </div>

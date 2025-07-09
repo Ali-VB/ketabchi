@@ -61,11 +61,15 @@ export const addRequest = async (
 };
 
 // Add a new trip
-export const addTrip = async (tripData: Omit<Trip, 'id' | 'createdAt'>) => {
+export const addTrip = async (tripData: Omit<Trip, 'id' | 'createdAt' | 'date_end'>) => {
   try {
+    const tripDate = new Date(tripData.trip_date);
+    const dateEnd = new Date(tripDate.setDate(tripDate.getDate() + 30));
+
     const docRef = await addDoc(tripsCollection, {
       ...tripData,
       createdAt: Timestamp.now(),
+      date_end: dateEnd.toISOString().split('T')[0],
     });
     return docRef;
   } catch (e) {
@@ -272,13 +276,11 @@ export const getConversations = async (userId: string): Promise<Conversation[]> 
             const otherUser = otherUserDoc.exists() 
                 ? {
                     uid: otherUserDoc.id,
-                    displayName: otherUserDoc.data().displayName,
-                    photoURL: otherUserDoc.data().photoURL,
-                    email: otherUserDoc.data().email,
+                    ...processSerializable(otherUserDoc.data()),
                   }
                 : {
                     uid: otherUserId,
-                    displayName: 'کاربر ناشناس',
+                    displayName: 'Unknown User',
                     photoURL: null,
                     email: null,
                   };
@@ -355,6 +357,7 @@ export const createMatch = async (request: BookRequest, trip: Trip): Promise<str
         trip,
         status: 'active', // Assuming payment is completed upon creation for this implementation
         paymentStatus: 'held',
+        amount: 50.00, // Placeholder amount
         deliveryCode,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -437,8 +440,8 @@ export const disputeMatch = async (matchId: string, currentUserId: string): Prom
     const matchRef = doc(db, 'matches', matchId);
     const matchDoc = await getDoc(matchRef);
 
-     if (!matchDoc.exists() || matchDoc.data().requesterId !== currentUserId) {
-        throw new Error("Match not found or user is not the requester.");
+     if (!matchDoc.exists() || !(matchDoc.data().users.includes(currentUserId))) {
+        throw new Error("Match not found or user is not part of this match.");
     }
 
     await updateDoc(matchRef, {
@@ -451,38 +454,32 @@ export const disputeMatch = async (matchId: string, currentUserId: string): Prom
 // --- Admin Functions ---
 
 export const getAllUsers = async (): Promise<User[]> => {
-    const querySnapshot = await getDocs(usersCollection);
-    const users = querySnapshot.docs.map(doc => ({
-        ...(processSerializable(doc.data()) as Omit<User, 'uid'>),
-        uid: doc.id,
+    const querySnapshot = await getDocs(query(usersCollection, orderBy('createdAt', 'desc')));
+    return querySnapshot.docs.map(doc => ({
+      uid: doc.id,
+      ...processSerializable(doc.data()),
     })) as User[];
-    // Perform client-side sorting to avoid needing a composite index in Firestore
-    return users.sort((a,b) => (b.createdAt && a.createdAt) ? new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime() : 0);
 };
 
 export const getPlatformStats = async () => {
-  const requestsQuery = query(requestsCollection);
-  const tripsQuery = query(tripsCollection);
   const matchesQuery = query(matchesCollection);
   const disputedMatchesQuery = query(matchesCollection, where('status', '==', 'disputed'));
+  const completedMatchesQuery = query(matchesCollection, where('status', '==', 'completed'));
 
   const [
-    requestsSnapshot,
-    tripsSnapshot,
     matchesSnapshot,
     disputedMatchesSnapshot,
+    completedMatchesSnapshot,
   ] = await Promise.all([
-    getDocs(requestsQuery),
-    getDocs(tripsQuery),
     getDocs(matchesQuery),
     getDocs(disputedMatchesQuery),
+    getDocs(completedMatchesQuery),
   ]);
 
   return {
-    totalRequests: requestsSnapshot.size,
-    totalTrips: tripsSnapshot.size,
     totalMatches: matchesSnapshot.size,
     disputedMatches: disputedMatchesSnapshot.size,
+    completedMatches: completedMatchesSnapshot.size,
   };
 };
 
@@ -527,6 +524,19 @@ export const getStatsForDateRange = async (startDate: string, endDate: string) =
   };
 };
 
+export const getAllMatches = async (): Promise<Match[]> => {
+    const q = query(matchesCollection, orderBy('createdAt', 'desc'));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+            id: doc.id,
+            ...processSerializable(data),
+            request: processSerializable(data.request),
+            trip: processSerializable(data.trip),
+        } as Match
+    });
+};
 
 export const getDisputedMatches = async (): Promise<Match[]> => {
     const q = query(matchesCollection, where('status', '==', 'disputed'), orderBy('updatedAt', 'desc'));
@@ -545,6 +555,9 @@ export const getDisputedMatches = async (): Promise<Match[]> => {
 export const resolveDispute = async (matchId: string, resolution: 'release' | 'refund'): Promise<void> => {
     const matchRef = doc(db, 'matches', matchId);
     
+    // In a real app, this would trigger a Cloud Function to handle payment logic with Stripe.
+    console.log(`Resolving dispute for ${matchId} with resolution: ${resolution}`);
+
     let updateData = {};
     if (resolution === 'release') {
         updateData = {

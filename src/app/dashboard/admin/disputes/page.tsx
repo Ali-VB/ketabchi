@@ -10,7 +10,6 @@ import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Match } from '@/lib/types';
 import { getDisputedMatches, resolveDispute } from '@/lib/firebase/firestore';
-import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,11 +22,14 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
-const formatPersianDate = (dateString: string) => {
+// This is a temporary admin check. Replace with a robust role-based system.
+const ADMIN_USER_ID = 'jwHiUx2XD3dcl3C0x7mobpkGOYy2';
+
+const formatEnglishDate = (dateString: string) => {
     if (!dateString) return '';
     try {
         const date = new Date(dateString);
-        return new Intl.DateTimeFormat('fa-IR', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' }).format(date);
+        return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' }).format(date);
     } catch (e) {
         return dateString;
     }
@@ -41,17 +43,13 @@ export default function AdminDisputesPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isResolving, setIsResolving] = useState<string | null>(null);
 
-    // TODO: This is a temporary admin check. Replace with a robust role-based system.
-    // To access this page, replace the placeholder below with your own User UID from Firebase Authentication.
-    const ADMIN_USER_ID = 'jwHiUx2XD3dcl3C0x7mobpkGOYy2';
-
     const fetchDisputes = useCallback(() => {
         setIsLoading(true);
         getDisputedMatches()
             .then(setDisputedMatches)
             .catch(err => {
                 console.error(err);
-                toast({ variant: 'destructive', title: 'خطا', description: 'خطا در بارگذاری تراکنش‌های مورد اختلاف.' });
+                toast({ variant: 'destructive', title: 'Error', description: 'Failed to load disputed matches.' });
             })
             .finally(() => setIsLoading(false));
     }, [toast]);
@@ -59,7 +57,7 @@ export default function AdminDisputesPage() {
     useEffect(() => {
         if (!authLoading) {
             if (!user || user.uid !== ADMIN_USER_ID) {
-                toast({ variant: 'destructive', title: 'دسترسی غیرمجاز', description: 'شما اجازه دسترسی به این صفحه را ندارید.' });
+                toast({ variant: 'destructive', title: 'Unauthorized', description: 'You do not have permission to access this page.' });
                 router.push('/dashboard');
                 return;
             }
@@ -70,12 +68,13 @@ export default function AdminDisputesPage() {
     const handleResolve = async (matchId: string, resolution: 'release' | 'refund') => {
         setIsResolving(matchId);
         try {
+            // In a real app, this would trigger a Cloud Function to handle payment logic with Stripe.
             await resolveDispute(matchId, resolution);
-            toast({ title: 'موفق', description: `تراکنش با موفقیت ${resolution === 'release' ? 'تایید و پرداخت شد' : 'لغو و بازپرداخت شد'}.` });
+            toast({ title: 'Success', description: `The match has been resolved. Action: ${resolution}.` });
             fetchDisputes(); // Refresh the list
         } catch (error) {
             console.error(error);
-            toast({ variant: 'destructive', title: 'خطا', description: 'خطا در حل و فصل تراکنش.' });
+            toast({ variant: 'destructive', title: 'Error', description: 'Failed to resolve dispute.' });
         } finally {
             setIsResolving(null);
         }
@@ -93,22 +92,22 @@ export default function AdminDisputesPage() {
         <div className="space-y-6">
             <Card>
                 <CardHeader>
-                    <CardTitle>تراکنش‌های مورد اختلاف</CardTitle>
+                    <CardTitle>Dispute Resolution</CardTitle>
                     <CardDescription>
-                        در اینجا لیست تمام تراکنش‌هایی که وضعیت آنها "disputed" است نمایش داده می‌شود.
+                        Review and resolve all matches with a 'disputed' status.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     {disputedMatches.length === 0 ? (
-                        <p className="text-center text-muted-foreground p-8">هیچ تراکنش مورد اختلافی یافت نشد.</p>
+                        <p className="p-8 text-center text-muted-foreground">No disputed matches found.</p>
                     ) : (
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>درخواست‌دهنده</TableHead>
-                                    <TableHead>مسافر</TableHead>
-                                    <TableHead>تاریخ ثبت اختلاف</TableHead>
-                                    <TableHead className="text-left">عملیات</TableHead>
+                                    <TableHead>Requester</TableHead>
+                                    <TableHead>Traveler</TableHead>
+                                    <TableHead>Date Disputed</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -116,8 +115,8 @@ export default function AdminDisputesPage() {
                                     <TableRow key={match.id}>
                                         <TableCell>{match.request.user.displayName}</TableCell>
                                         <TableCell>{match.trip.user.displayName}</TableCell>
-                                        <TableCell>{formatPersianDate(match.updatedAt)}</TableCell>
-                                        <TableCell className="text-left space-x-2 space-x-reverse">
+                                        <TableCell>{formatEnglishDate(match.updatedAt)}</TableCell>
+                                        <TableCell className="text-right space-x-2">
                                             <AlertDialog>
                                                 <AlertDialogTrigger asChild>
                                                      <Button 
@@ -126,19 +125,19 @@ export default function AdminDisputesPage() {
                                                         disabled={isResolving === match.id}
                                                     >
                                                         {isResolving === match.id && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-                                                        بازپرداخت به درخواست‌دهنده
+                                                        Refund to Requester
                                                     </Button>
                                                 </AlertDialogTrigger>
                                                 <AlertDialogContent>
                                                     <AlertDialogHeader>
-                                                    <AlertDialogTitle>آیا مطمئن هستید؟</AlertDialogTitle>
+                                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                                                     <AlertDialogDescription>
-                                                        با این کار، تراکنش لغو شده و مبلغ به حساب درخواست‌دهنده بازگردانده می‌شود. این عمل غیرقابل بازگشت است.
+                                                        This action will cancel the match and refund the payment to the requester. This cannot be undone.
                                                     </AlertDialogDescription>
                                                     </AlertDialogHeader>
                                                     <AlertDialogFooter>
-                                                    <AlertDialogCancel>انصراف</AlertDialogCancel>
-                                                    <AlertDialogAction onClick={() => handleResolve(match.id, 'refund')} className="bg-destructive hover:bg-destructive/90">تایید بازپرداخت</AlertDialogAction>
+                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => handleResolve(match.id, 'refund')} className="bg-destructive hover:bg-destructive/90">Confirm Refund</AlertDialogAction>
                                                     </AlertDialogFooter>
                                                 </AlertDialogContent>
                                             </AlertDialog>
@@ -151,19 +150,19 @@ export default function AdminDisputesPage() {
                                                         disabled={isResolving === match.id}
                                                     >
                                                          {isResolving === match.id && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-                                                        آزادسازی برای مسافر
+                                                        Release to Traveler
                                                     </Button>
                                                 </AlertDialogTrigger>
                                                 <AlertDialogContent>
                                                     <AlertDialogHeader>
-                                                    <AlertDialogTitle>آیا مطمئن هستید؟</AlertDialogTitle>
+                                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                                                     <AlertDialogDescription>
-                                                        با این کار، تراکنش تکمیل شده و مبلغ به حساب مسافر واریز می‌شود. این عمل غیرقابل بازگشت است.
+                                                        This action will complete the match and release the payment to the traveler. This cannot be undone.
                                                     </AlertDialogDescription>
                                                     </AlertDialogHeader>
                                                     <AlertDialogFooter>
-                                                    <AlertDialogCancel>انصراف</AlertDialogCancel>
-                                                    <AlertDialogAction onClick={() => handleResolve(match.id, 'release')} className="bg-green-600 hover:bg-green-700">تایید و پرداخت</AlertDialogAction>
+                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => handleResolve(match.id, 'release')} className="bg-green-600 hover:bg-green-700">Confirm Release</AlertDialogAction>
                                                     </AlertDialogFooter>
                                                 </AlertDialogContent>
                                             </AlertDialog>

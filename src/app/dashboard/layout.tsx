@@ -15,15 +15,14 @@ import {
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Bell, ChevronDown, Home, Loader2, LogOut, Mail, Package, Plane, Settings, User, Users, ShieldAlert, Handshake } from 'lucide-react';
+import { Bell, ChevronDown, Home, Loader2, LogOut, Mail, Package, Plane, Settings, User, Users, ShieldAlert, Handshake, CheckCircle, DollarSign } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Logo } from '@/components/logo';
 import { useAuth } from '@/components/auth-provider';
 import { signOut } from '@/lib/firebase/auth';
 import { useEffect } from 'react';
 
-// TODO: Replace with a real admin check, e.g., from a custom claim in Firebase Auth.
-// To enable the admin link in the sidebar, replace the placeholder below with the User UID of the admin account.
+// This is a temporary admin check. Replace with a robust role-based system.
 const ADMIN_USER_ID = 'jwHiUx2XD3dcl3C0x7mobpkGOYy2';
 
 const userMenuItems = [
@@ -35,9 +34,10 @@ const userMenuItems = [
 ];
 
 const adminMenuItems = [
-    { href: '/dashboard', label: 'داشبورد ادمین', icon: Home },
-    { href: '/dashboard/admin/users', label: 'مدیریت کاربران', icon: Users },
-    { href: '/dashboard/admin', label: 'تراکنش‌های مورد اختلاف', icon: ShieldAlert },
+    { href: '/dashboard', label: 'Dashboard', icon: Home },
+    { href: '/dashboard/admin/matches', label: 'Matches', icon: Handshake },
+    { href: '/dashboard/admin/users', label: 'Users', icon: Users },
+    { href: '/dashboard/admin/disputes', label: 'Disputes', icon: ShieldAlert },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -68,10 +68,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const menuItems = isAdmin ? adminMenuItems : userMenuItems;
 
   const getPageTitle = (path: string) => {
-    const allItems = [...userMenuItems, ...adminMenuItems];
+    if (isAdmin) {
+        if (path.startsWith('/dashboard/admin/matches')) return 'Match Management';
+        if (path.startsWith('/dashboard/admin/users')) return 'User Management';
+        if (path.startsWith('/dashboard/admin/disputes')) return 'Dispute Resolution';
+        if (path === '/dashboard') return 'Admin Dashboard';
+    }
+    
+    const allItems = [...userMenuItems];
     const directMatch = allItems.find(item => item.href === path);
     if (directMatch) return directMatch.label;
-    if (path.startsWith('/dashboard/admin')) return 'ابزارهای ادمین';
     if (path.startsWith('/dashboard/profile')) return 'پروفایل کاربری';
     return 'داشبورد';
   }
@@ -81,14 +87,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <SidebarProvider>
       <div className="flex min-h-screen bg-background text-foreground">
-        <Sidebar side="right" collapsible="icon">
+        <Sidebar side={isAdmin ? "left" : "right"} collapsible="icon">
           <SidebarHeader>
             <Link href="/" className="flex items-center gap-2 p-2">
               <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
                 <Logo />
               </Button>
               <div className="grow overflow-hidden">
-                <p className="font-semibold font-headline">کتابچی</p>
+                <p className="font-semibold font-headline">Ketabchi</p>
               </div>
             </Link>
           </SidebarHeader>
@@ -125,14 +131,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </div>
               </DropdownMenuTrigger>
               <DropdownMenuContent side="top" align="start" className="w-56">
-                <DropdownMenuLabel>حساب کاربری من</DropdownMenuLabel>
+                <DropdownMenuLabel>{isAdmin ? 'Admin Account' : 'حساب کاربری من'}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild><Link href="/dashboard/profile"><User className="me-2 h-4 w-4" />پروفایل</Link></DropdownMenuItem>
-                <DropdownMenuItem><Settings className="me-2 h-4 w-4" />تنظیمات</DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href="/dashboard/profile"><User className="me-2 h-4 w-4" />{isAdmin ? 'Profile' : 'پروفایل'}</Link></DropdownMenuItem>
+                <DropdownMenuItem><Settings className="me-2 h-4 w-4" />{isAdmin ? 'Settings' : 'تنظیمات'}</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:text-red-500 focus:bg-red-500/10">
                   <LogOut className="me-2 h-4 w-4" />
-                  خروج
+                  {isAdmin ? 'Logout' : 'خروج'}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -146,7 +152,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                  </div>
                  <Button variant="ghost" size="icon" className="rounded-full">
                     <Bell className="h-5 w-5"/>
-                    <span className="sr-only">اعلان‌ها</span>
+                    <span className="sr-only">Notifications</span>
                  </Button>
             </header>
             <main className="flex-1 p-4 sm:p-6 bg-muted/20">{children}</main>
