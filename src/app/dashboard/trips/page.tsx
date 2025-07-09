@@ -2,15 +2,18 @@
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Loader2 } from "lucide-react";
 import { TripCard } from "@/components/trip-card";
-import { type Trip, type BookRequest } from "@/lib/types";
+import { type Trip, type BookRequest, type Match } from "@/lib/types";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { NewTripForm } from "@/components/new-trip-form";
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/components/auth-provider";
-import { getUserTrips, findMatches } from "@/lib/firebase/firestore";
+import { getUserTrips, findMatches, getMatchesForUser } from "@/lib/firebase/firestore";
 import { useSearchParams } from "next/navigation";
 
-type TripWithMatches = Trip & { matchingRequests: BookRequest[] };
+type TripWithMatches = Trip & { 
+  matchingRequests: BookRequest[];
+  isLocked?: boolean;
+};
 
 export default function MyTripsPage() {
   const searchParams = useSearchParams();
@@ -24,13 +27,21 @@ export default function MyTripsPage() {
       setIsLoading(true);
       Promise.all([
           getUserTrips(user.uid),
-          findMatches(user.uid)
-      ]).then(([userTrips, { tripMatches }]) => {
+          findMatches(user.uid),
+          getMatchesForUser(user.uid)
+      ]).then(([userTrips, { tripMatches }, userMatches]) => {
+        const lockedTripIds = new Set(
+          userMatches
+            .filter(m => m.status === 'completed' || m.status === 'cancelled')
+            .map(m => m.trip.id)
+        );
+
         const tripsWithMatchesData = userTrips.map(trip => {
             const matchData = tripMatches.find(m => m.id === trip.id);
             return {
                 ...trip,
                 matchingRequests: matchData ? matchData.matchingRequests : [],
+                isLocked: lockedTripIds.has(trip.id),
             };
         });
         setTrips(tripsWithMatchesData);
@@ -89,6 +100,7 @@ export default function MyTripsPage() {
               matchCount={trip.matchingRequests.length}
               matchingRequests={trip.matchingRequests}
               isDashboardView={true}
+              isLocked={trip.isLocked}
             />
           ))}
         </div>

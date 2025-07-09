@@ -1,7 +1,7 @@
 'use client';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CalendarDays, Package, Plane, Send, Users } from 'lucide-react';
+import { CalendarDays, Package, Plane, Send, Users, Lock } from 'lucide-react';
 import type { Trip, BookRequest } from '@/lib/types';
 import { Badge } from './ui/badge';
 import { useAuth } from './auth-provider';
@@ -25,6 +25,7 @@ interface TripCardProps {
   matchCount?: number;
   matchingRequests?: BookRequest[];
   isDashboardView?: boolean;
+  isLocked?: boolean;
 }
 
 const formatPersianDate = (dateString: string) => {
@@ -63,7 +64,7 @@ const getTripMatchText = (count: number) => {
   return `${countInPersian} درخواست با این سفر منطبق است`;
 };
 
-export function TripCard({ trip, showFooter = true, matchCount, matchingRequests = [], isDashboardView = false }: TripCardProps) {
+export function TripCard({ trip, showFooter = true, matchCount, matchingRequests = [], isDashboardView = false, isLocked = false }: TripCardProps) {
   const { user } = useAuth();
   const router = useRouter();
   const [isSendMessageDialogOpen, setIsSendMessageDialogOpen] = useState(false);
@@ -80,6 +81,17 @@ export function TripCard({ trip, showFooter = true, matchCount, matchingRequests
   const redirectUrl = encodeURIComponent('/dashboard/requests?action=new');
 
   const MatchBadgeComponent = () => {
+    if (isLocked) {
+      return (
+        <div className="group absolute inset-0 z-10 flex flex-col justify-end bg-black/30 p-4 text-right transition-all duration-300">
+          <div className="flex items-center gap-2 font-bold text-gray-300">
+            <Lock className="h-5 w-5" />
+            <p>این سفر بسته شده است</p>
+          </div>
+        </div>
+      );
+    }
+
     if (!matchCount || matchCount === 0) return null;
 
     const badgeContent = (

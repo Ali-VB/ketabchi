@@ -2,15 +2,18 @@
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Loader2 } from "lucide-react";
 import { RequestCard } from "@/components/request-card";
-import { type BookRequest, type Trip } from "@/lib/types";
+import { type BookRequest, type Trip, type Match } from "@/lib/types";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { NewRequestForm } from "@/components/new-request-form";
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/components/auth-provider";
-import { getUserRequests, findMatches } from "@/lib/firebase/firestore";
+import { getUserRequests, findMatches, getMatchesForUser } from "@/lib/firebase/firestore";
 import { useSearchParams } from "next/navigation";
 
-type RequestWithMatches = BookRequest & { matchingTrips: Trip[] };
+type RequestWithMatches = BookRequest & { 
+  matchingTrips: Trip[];
+  isLocked?: boolean;
+};
 
 export default function MyRequestsPage() {
   const searchParams = useSearchParams();
@@ -23,16 +26,24 @@ export default function MyRequestsPage() {
     if (user) {
       setIsLoading(true);
       try {
-        const [userRequests, { requestMatches }] = await Promise.all([
+        const [userRequests, { requestMatches }, userMatches] = await Promise.all([
             getUserRequests(user.uid),
-            findMatches(user.uid)
+            findMatches(user.uid),
+            getMatchesForUser(user.uid)
         ]);
         
+        const lockedRequestIds = new Set(
+          userMatches
+            .filter(m => m.status === 'completed' || m.status === 'cancelled')
+            .map(m => m.request.id)
+        );
+
         const requestsWithMatchesData = userRequests.map(request => {
           const matchData = requestMatches.find(m => m.id === request.id);
           return {
             ...request,
             matchingTrips: matchData ? matchData.matchingTrips : [],
+            isLocked: lockedRequestIds.has(request.id),
           };
         });
 
@@ -98,6 +109,7 @@ export default function MyRequestsPage() {
               matchCount={request.matchingTrips.length}
               matchingTrips={request.matchingTrips}
               isDashboardView={true}
+              isLocked={request.isLocked}
             />
           ))}
         </div>

@@ -1,7 +1,7 @@
 'use client';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CalendarDays, Loader2, MapPin, Send, Users } from 'lucide-react';
+import { CalendarDays, Loader2, MapPin, Send, Users, Lock } from 'lucide-react';
 import type { BookRequest, Trip } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from './auth-provider';
@@ -25,6 +25,7 @@ interface RequestCardProps {
   matchCount?: number;
   matchingTrips?: Trip[];
   isDashboardView?: boolean;
+  isLocked?: boolean;
 }
 
 const formatPersianDate = (dateString: string) => {
@@ -69,6 +70,7 @@ export function RequestCard({
   matchCount,
   matchingTrips = [],
   isDashboardView = false,
+  isLocked = false,
 }: RequestCardProps) {
   const { user } = useAuth();
   const router = useRouter();
@@ -98,6 +100,17 @@ export function RequestCard({
     : request.books?.reduce((sum, book) => sum + book.quantity, 0) || 0;
 
   const MatchBadgeComponent = () => {
+    if (isLocked) {
+      return (
+        <div className="absolute inset-0 z-10 flex flex-col justify-end bg-black/30 p-4 text-right transition-all duration-300">
+          <div className="flex items-center gap-2 font-bold text-gray-300">
+            <Lock className="h-5 w-5" />
+            <p>این درخواست بسته شده است</p>
+          </div>
+        </div>
+      );
+    }
+
     if (!matchCount || matchCount === 0) return null;
 
     const badgeContent = (
