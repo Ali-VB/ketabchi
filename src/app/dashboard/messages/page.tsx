@@ -223,7 +223,7 @@ export default function MessagesPage() {
               </Avatar>
               <h3 className="text-lg font-semibold">{selectedConversation.otherUser.name}</h3>
             </div>
-            <ScrollArea className="flex-1 p-4 lg:p-6 bg-muted/20">
+            <div className="flex-1 overflow-y-auto p-4 lg:p-6 bg-muted/20">
               <div className="space-y-4">
                 {isLoadingMessages ? (
                   <div className="flex justify-center items-center h-full"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
@@ -254,7 +254,7 @@ export default function MessagesPage() {
                 )}
                  <div ref={messagesEndRef} />
               </div>
-            </ScrollArea>
+            </div>
             {requestId && tripId && (
                 <div className="p-4 border-t bg-accent/10">
                     <div className="flex items-center justify-between gap-4">
