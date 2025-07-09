@@ -15,12 +15,15 @@ import {
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Bell, ChevronDown, Home, Loader2, LogOut, Mail, Package, Plane, Settings, User, Users } from 'lucide-react';
+import { Bell, ChevronDown, Home, Loader2, LogOut, Mail, Package, Plane, Settings, User, Users, Shield } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Logo } from '@/components/logo';
 import { useAuth } from '@/components/auth-provider';
 import { signOut } from '@/lib/firebase/auth';
 import { useEffect } from 'react';
+
+// TODO: Replace with a real admin check, e.g., from a custom claim in Firebase Auth.
+const ADMIN_USER_ID = 'fXzd77d1fvhU7agG4j66UACBvGY2';
 
 const menuItems = [
   { href: '/dashboard', label: 'داشبورد', icon: Home },
@@ -53,6 +56,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </div>
     );
   }
+  
+  const currentMenuItems = [...menuItems];
+  if (user.uid === ADMIN_USER_ID) {
+    currentMenuItems.push({ href: '/dashboard/admin', label: 'ادمین', icon: Shield });
+  }
 
   return (
     <SidebarProvider>
@@ -70,7 +78,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </SidebarHeader>
           <SidebarContent>
             <SidebarMenu>
-              {menuItems.map((item) => (
+              {currentMenuItems.map((item) => (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     asChild
@@ -118,7 +126,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <header className="flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:h-[60px] lg:px-6 sticky top-0 z-30">
                  <SidebarTrigger className="md:hidden me-4" />
                  <div className="flex-1">
-                    <h1 className="text-xl font-semibold">{menuItems.find(item => item.href === pathname)?.label || 'داشبورد'}</h1>
+                    <h1 className="text-xl font-semibold">{currentMenuItems.find(item => item.href === pathname)?.label || 'داشبورد'}</h1>
                  </div>
                  <Button variant="ghost" size="icon" className="rounded-full">
                     <Bell className="h-5 w-5"/>

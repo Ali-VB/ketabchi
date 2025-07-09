@@ -445,3 +445,42 @@ export const disputeMatch = async (matchId: string, currentUserId: string): Prom
         updatedAt: serverTimestamp(),
     });
 };
+
+// --- Admin Functions ---
+
+export const getDisputedMatches = async (): Promise<Match[]> => {
+    const q = query(matchesCollection, where('status', '==', 'disputed'), orderBy('updatedAt', 'desc'));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+            id: doc.id,
+            ...processSerializable(data),
+            request: processSerializable(data.request),
+            trip: processSerializable(data.trip),
+        } as Match
+    });
+};
+
+export const resolveDispute = async (matchId: string, resolution: 'release' | 'refund'): Promise<void> => {
+    const matchRef = doc(db, 'matches', matchId);
+    
+    let updateData = {};
+    if (resolution === 'release') {
+        updateData = {
+            status: 'completed',
+            paymentStatus: 'released',
+            updatedAt: serverTimestamp(),
+        };
+    } else if (resolution === 'refund') {
+        updateData = {
+            status: 'cancelled',
+            paymentStatus: 'refunded',
+            updatedAt: serverTimestamp(),
+        };
+    } else {
+        throw new Error("Invalid resolution type.");
+    }
+
+    await updateDoc(matchRef, updateData);
+};
