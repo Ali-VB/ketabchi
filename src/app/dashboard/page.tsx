@@ -33,33 +33,7 @@ function AdminDashboard() {
           در اینجا خلاصه‌ای از فعالیت‌های کل پلتفرم آمده است.
         </p>
       </div>
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">کل درخواست‌ها</CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
-            ) : (
-              <div className="text-2xl font-bold">{stats.totalRequests}</div>
-            )}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">کل سفرها</CardTitle>
-            <Plane className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
-            ) : (
-              <div className="text-2xl font-bold">{stats.totalTrips}</div>
-            )}
-          </CardContent>
-        </Card>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-2">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">کل تراکنش‌ها</CardTitle>
