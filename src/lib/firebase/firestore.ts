@@ -17,12 +17,14 @@ import {
   setDoc,
 } from 'firebase/firestore';
 import { db } from './config';
-import type { BookRequest, Trip, Conversation, Message, User, MatchedRequest, MatchedTrip } from '../types';
+import type { BookRequest, Trip, Conversation, Message, User, MatchedRequest, MatchedTrip, Match } from '../types';
 
 const requestsCollection = collection(db, 'requests');
 const tripsCollection = collection(db, 'trips');
 const conversationsCollection = collection(db, 'conversations');
 const usersCollection = collection(db, 'users');
+const matchesCollection = collection(db, 'matches');
+
 
 // Helper to convert non-serializable Firestore Timestamps to strings
 const processSerializable = (data: DocumentData) => {
@@ -320,4 +322,108 @@ export const createUserProfileDocument = async (user: {uid: string, email: strin
             console.error("Error creating user profile document:", error);
         }
     }
+};
+
+// --- Match Management Functions ---
+
+export const createMatch = async (request: BookRequest, trip: Trip): Promise<string> => {
+    const deliveryCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const matchData = {
+        requesterId: request.userId,
+        travelerId: trip.userId,
+        request,
+        trip,
+        status: 'active', // Assuming payment is completed upon creation for this implementation
+        paymentStatus: 'held',
+        deliveryCode,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+    };
+    const docRef = await addDoc(matchesCollection, matchData);
+    return docRef.id;
+};
+
+export const getMatchesForUser = async (userId: string): Promise<Match[]> => {
+    const requesterQuery = query(matchesCollection, where('requesterId', '==', userId));
+    const travelerQuery = query(matchesCollection, where('travelerId', '==', userId));
+
+    const [requesterSnapshot, travelerSnapshot] = await Promise.all([
+        getDocs(requesterQuery),
+        getDocs(travelerQuery),
+    ]);
+
+    const matches: Match[] = [];
+    const seenIds = new Set<string>();
+
+    const processSnapshot = (snapshot: any) => {
+        snapshot.docs.forEach((doc: any) => {
+            if (!seenIds.has(doc.id)) {
+                const data = doc.data();
+                matches.push({
+                    id: doc.id,
+                    ...processSerializable(data),
+                    request: processSerializable(data.request),
+                    trip: processSerializable(data.trip),
+                } as Match);
+                seenIds.add(doc.id);
+            }
+        });
+    };
+
+    processSnapshot(requesterSnapshot);
+    processSnapshot(travelerSnapshot);
+
+    return matches.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+};
+
+export const verifyDeliveryCode = async (matchId: string, code: string, currentUserId: string): Promise<boolean> => {
+    const matchRef = doc(db, 'matches', matchId);
+    const matchDoc = await getDoc(matchRef);
+
+    if (!matchDoc.exists() || matchDoc.data().travelerId !== currentUserId) {
+        console.error("Match not found or user is not the traveler.");
+        return false;
+    }
+
+    if (matchDoc.data().deliveryCode === code) {
+        await updateDoc(matchRef, {
+            status: 'completed',
+            paymentStatus: 'released',
+            updatedAt: serverTimestamp(),
+        });
+        return true;
+    }
+    
+    return false;
+};
+
+
+export const confirmDeliveryManually = async (matchId: string, currentUserId: string): Promise<void> => {
+    const matchRef = doc(db, 'matches', matchId);
+    const matchDoc = await getDoc(matchRef);
+
+    if (!matchDoc.exists() || matchDoc.data().requesterId !== currentUserId) {
+        throw new Error("Match not found or user is not the requester.");
+    }
+    
+    await updateDoc(matchRef, {
+        status: 'completed',
+        paymentStatus: 'released',
+        updatedAt: serverTimestamp(),
+    });
+};
+
+export const disputeMatch = async (matchId: string, currentUserId: string): Promise<void> => {
+    const matchRef = doc(db, 'matches', matchId);
+    const matchDoc = await getDoc(matchRef);
+
+     if (!matchDoc.exists() || matchDoc.data().requesterId !== currentUserId) {
+        throw new Error("Match not found or user is not the requester.");
+    }
+
+    await updateDoc(matchRef, {
+        status: 'disputed',
+        paymentStatus: 'disputed',
+        updatedAt: serverTimestamp(),
+    });
 };

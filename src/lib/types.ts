@@ -62,3 +62,16 @@ export type MatchedRequest = BookRequest & {
 export type MatchedTrip = Trip & {
   matchingRequests: BookRequest[];
 };
+
+export interface Match {
+  id: string;
+  requesterId: string;
+  travelerId: string;
+  request: BookRequest;
+  trip: Trip;
+  status: 'active' | 'completed' | 'disputed' | 'cancelled';
+  paymentStatus: 'held' | 'released' | 'refunded';
+  deliveryCode: string;
+  createdAt: string;
+  updatedAt: string;
+}
