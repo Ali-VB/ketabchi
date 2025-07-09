@@ -2,27 +2,39 @@
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Loader2 } from "lucide-react";
 import { TripCard } from "@/components/trip-card";
-import { type Trip } from "@/lib/types";
+import { type Trip, type BookRequest } from "@/lib/types";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { NewTripForm } from "@/components/new-trip-form";
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/components/auth-provider";
-import { getUserTrips } from "@/lib/firebase/firestore";
+import { getUserTrips, findMatches } from "@/lib/firebase/firestore";
 import { useSearchParams } from "next/navigation";
+
+type TripWithMatches = Trip & { matchingRequests: BookRequest[] };
 
 export default function MyTripsPage() {
   const searchParams = useSearchParams();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [trips, setTrips] = useState<Trip[]>([]);
+  const [trips, setTrips] = useState<TripWithMatches[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
 
   const fetchTrips = useCallback(() => {
     if (user) {
       setIsLoading(true);
-      getUserTrips(user.uid)
-        .then(setTrips)
-        .catch(console.error)
+      Promise.all([
+          getUserTrips(user.uid),
+          findMatches(user.uid)
+      ]).then(([userTrips, { tripMatches }]) => {
+        const tripsWithMatchesData = userTrips.map(trip => {
+            const matchData = tripMatches.find(m => m.id === trip.id);
+            return {
+                ...trip,
+                matchingRequests: matchData ? matchData.matchingRequests : [],
+            };
+        });
+        setTrips(tripsWithMatchesData);
+      }).catch(console.error)
         .finally(() => setIsLoading(false));
     }
   }, [user]);
@@ -42,7 +54,7 @@ export default function MyTripsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight font-headline">سفرهای من</h2>
-          <p className="text-muted-foreground">سفرهای اعلام‌شده خود را مدیریت کنید.</p>
+          <p className="text-muted-foreground">سفرهای اعلام‌شده خود را مدیریت کنید و درخواست‌های منطبق را ببینید.</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
@@ -70,7 +82,14 @@ export default function MyTripsPage() {
       ) : trips.length > 0 ? (
         <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {trips.map((trip) => (
-            <TripCard key={trip.id} trip={trip} showFooter={false} />
+            <TripCard 
+              key={trip.id} 
+              trip={trip} 
+              showFooter={false} 
+              matchCount={trip.matchingRequests.length}
+              matchingRequests={trip.matchingRequests}
+              isDashboardView={true}
+            />
           ))}
         </div>
       ) : (

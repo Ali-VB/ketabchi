@@ -2,7 +2,7 @@
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CalendarDays, Package, Plane, Send, Users } from 'lucide-react';
-import type { Trip } from '@/lib/types';
+import type { Trip, BookRequest } from '@/lib/types';
 import { Badge } from './ui/badge';
 import { useAuth } from './auth-provider';
 import { useRouter } from 'next/navigation';
@@ -13,13 +13,18 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from '@/components/ui/dialog';
 import Link from 'next/link';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+
 
 interface TripCardProps {
   trip: Trip;
   showFooter?: boolean;
   matchCount?: number;
+  matchingRequests?: BookRequest[];
+  isDashboardView?: boolean;
 }
 
 const formatPersianDate = (dateString: string) => {
@@ -58,20 +63,88 @@ const getTripMatchText = (count: number) => {
   return `${countInPersian} درخواست با این سفر منطبق است`;
 };
 
-export function TripCard({ trip, showFooter = true, matchCount }: TripCardProps) {
+export function TripCard({ trip, showFooter = true, matchCount, matchingRequests = [], isDashboardView = false }: TripCardProps) {
   const { user } = useAuth();
   const router = useRouter();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSendMessageDialogOpen, setIsSendMessageDialogOpen] = useState(false);
+  const [isMatchesDialogOpen, setIsMatchesDialogOpen] = useState(false);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = (recipientId: string) => {
     if (!user) {
-      setIsDialogOpen(true);
+      setIsSendMessageDialogOpen(true);
     } else {
-      router.push(`/dashboard/messages?recipient=${trip.userId}`);
+      router.push(`/dashboard/messages?recipient=${recipientId}`);
     }
   };
 
   const redirectUrl = encodeURIComponent('/dashboard/requests?action=new');
+
+  const MatchBadgeComponent = () => {
+    if (!matchCount || matchCount === 0) return null;
+
+    const badgeContent = (
+      <div className="flex items-center gap-2 font-bold text-primary-foreground">
+        <Users className="h-5 w-5 text-primary" />
+        <p>{getTripMatchText(matchCount)}</p>
+      </div>
+    );
+    
+    if (isDashboardView) {
+        return (
+            <Dialog open={isMatchesDialogOpen} onOpenChange={setIsMatchesDialogOpen}>
+                <DialogTrigger asChild>
+                     <button className="group absolute inset-0 z-10 flex w-full flex-col justify-end bg-black/20 p-4 transition-all duration-300 hover:bg-black/30">
+                        {badgeContent}
+                    </button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-lg">
+                    <DialogHeader>
+                        <DialogTitle>درخواست‌های منطبق با سفر شما</DialogTitle>
+                        <DialogDescription>
+                            این درخواست‌ها با سفر شما تطابق دارند. می‌توانید برای هماهنگی بیشتر به درخواست‌دهنده پیام دهید.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="max-h-[60vh] space-y-4 overflow-y-auto p-1">
+                        {matchingRequests.map(request => {
+                           const totalQuantity = request.books?.reduce((sum, book) => sum + book.quantity, 0) || request.quantity || 0;
+                           return (
+                            <div key={request.id} className="flex items-center justify-between rounded-lg border p-4">
+                               <div className="flex items-center gap-4">
+                                 <Avatar>
+                                    <AvatarImage src={request.user.avatar ?? `https://placehold.co/40x40.png`} data-ai-hint="user portrait" />
+                                    <AvatarFallback>{request.user.name.charAt(0)}</AvatarFallback>
+                                  </Avatar>
+                                  <div>
+                                      <p className="font-semibold">{request.user.name}</p>
+                                      <p className="text-sm text-muted-foreground">درخواست برای {totalQuantity} جلد کتاب</p>
+                                  </div>
+                              </div>
+                              <Button 
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleSendMessage(request.userId)}
+                              >
+                                  <Send className="me-2 h-4 w-4" />
+                                  ارسال پیام
+                              </Button>
+                            </div>
+                           )
+                        })}
+                    </div>
+                </DialogContent>
+            </Dialog>
+        )
+    }
+
+    return (
+      <Link
+        href="/dashboard"
+        className="group absolute inset-0 z-10 flex flex-col justify-end bg-black/20 p-4 transition-all duration-300 hover:bg-black/30"
+      >
+        {badgeContent}
+      </Link>
+    );
+  }
 
   return (
     <>
@@ -118,26 +191,16 @@ export function TripCard({ trip, showFooter = true, matchCount }: TripCardProps)
               variant="ghost"
               size="sm"
               className="text-muted-foreground hover:text-foreground"
-              onClick={handleSendMessage}
+              onClick={() => handleSendMessage(trip.userId)}
             >
               <Send className="me-2 h-4 w-4" />
               ارسال پیام
             </Button>
           </CardFooter>
         )}
-        {matchCount && matchCount > 0 && (
-          <Link
-            href="/dashboard/matches"
-            className="group absolute inset-0 z-10 flex flex-col justify-end bg-black/20 p-4 transition-all duration-300 hover:bg-black/30"
-          >
-            <div className="flex items-center gap-2 font-bold text-primary-foreground">
-              <Users className="h-5 w-5 text-primary" />
-              <p>{getTripMatchText(matchCount)}</p>
-            </div>
-          </Link>
-        )}
+        <MatchBadgeComponent />
       </Card>
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <Dialog open={isSendMessageDialogOpen} onOpenChange={setIsSendMessageDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>برای ادامه وارد شوید</DialogTitle>
@@ -148,7 +211,7 @@ export function TripCard({ trip, showFooter = true, matchCount }: TripCardProps)
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setIsSendMessageDialogOpen(false)}>
               انصراف
             </Button>
             <Button asChild variant="secondary">
