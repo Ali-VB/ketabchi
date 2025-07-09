@@ -17,6 +17,7 @@ type RequestWithMatches = BookRequest & {
 
 export default function MyRequestsPage() {
   const searchParams = useSearchParams();
+  const action = searchParams.get('action');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [requests, setRequests] = useState<RequestWithMatches[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -59,10 +60,10 @@ export default function MyRequestsPage() {
 
 
   useEffect(() => {
-    if (searchParams.get('action') === 'new') {
+    if (action === 'new') {
       setIsDialogOpen(true);
     }
-  }, [searchParams]);
+  }, [action]);
 
   useEffect(() => {
     fetchRequests();

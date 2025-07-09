@@ -17,6 +17,7 @@ type TripWithMatches = Trip & {
 
 export default function MyTripsPage() {
   const searchParams = useSearchParams();
+  const action = searchParams.get('action');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [trips, setTrips] = useState<TripWithMatches[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -51,10 +52,10 @@ export default function MyTripsPage() {
   }, [user]);
 
   useEffect(() => {
-    if (searchParams.get('action') === 'new') {
+    if (action === 'new') {
       setIsDialogOpen(true);
     }
-  }, [searchParams]);
+  }, [action]);
 
   useEffect(() => {
     fetchTrips();
