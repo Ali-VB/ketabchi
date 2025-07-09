@@ -66,21 +66,12 @@ export default function LoginPage() {
       console.error('Firebase login error:', error);
       let description = 'مشکلی در هنگام ورود پیش آمد. لطفا دوباره تلاش کنید.';
       
-      switch (error.code) {
-        case 'auth/invalid-credential':
-        case 'auth/user-not-found':
-        case 'auth/wrong-password':
-          description = 'ایمیل یا رمز عبور اشتباه است.';
-          break;
-        case 'auth/invalid-email':
-          description = 'فرمت ایمیل وارد شده معتبر نیست.';
-          break;
-        case 'auth/network-request-failed':
-          description = 'خطای شبکه. لطفاً اتصال اینترنت خود را بررسی کرده و دوباره تلاش کنید.';
-          break;
-        default:
-          // Keep the generic message for other unexpected errors
-          break;
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        description = 'ایمیل یا رمز عبور اشتباه است.';
+      } else if (error.code === 'auth/invalid-email') {
+        description = 'فرمت ایمیل وارد شده معتبر نیست.';
+      } else if (error.code === 'auth/network-request-failed') {
+        description = 'خطای شبکه. لطفاً اتصال اینترنت خود را بررسی کرده و دوباره تلاش کنید.';
       }
 
       toast({
@@ -88,6 +79,7 @@ export default function LoginPage() {
         title: 'خطا در ورود',
         description: description,
       });
+    } finally {
       setIsLoading(false);
     }
   }
