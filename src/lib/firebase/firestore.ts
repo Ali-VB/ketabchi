@@ -104,6 +104,24 @@ export const getAllTrips = async (docLimit = 10): Promise<Trip[]> => {
   })) as Trip[];
 };
 
+export const getRequestById = async (requestId: string): Promise<BookRequest | null> => {
+    const docRef = doc(db, 'requests', requestId);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+        return { id: docSnap.id, ...processSerializable(docSnap.data()) } as BookRequest;
+    }
+    return null;
+};
+
+export const getTripById = async (tripId: string): Promise<Trip | null> => {
+    const docRef = doc(db, 'trips', tripId);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+        return { id: docSnap.id, ...processSerializable(docSnap.data()) } as Trip;
+    }
+    return null;
+};
+
 // Fetch requests for a specific user
 export const getUserRequests = async (
   userId: string

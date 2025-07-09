@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { Send, Mail, Loader2 } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/components/auth-provider';
 import type { Conversation, Message, User } from '@/lib/types';
 import { 
@@ -15,13 +15,22 @@ import {
   getMessages, 
   sendMessage, 
   getOrCreateConversation,
-  getUserProfile
+  getUserProfile,
+  getRequestById,
+  getTripById,
+  createMatch
 } from '@/lib/firebase/firestore';
+import { useToast } from '@/hooks/use-toast';
+
 
 export default function MessagesPage() {
   const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
+  const { toast } = useToast();
   const searchParams = useSearchParams();
   const recipientId = searchParams.get('recipient');
+  const requestId = searchParams.get('requestId');
+  const tripId = searchParams.get('tripId');
   
   const [conversations, setConversations] = React.useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = React.useState<Conversation | null>(null);
@@ -30,6 +39,7 @@ export default function MessagesPage() {
   const [isLoadingConversations, setIsLoadingConversations] = React.useState(true);
   const [isSending, setIsSending] = React.useState(false);
   const [isLoadingMessages, setIsLoadingMessages] = React.useState(false);
+  const [isCreatingMatch, setIsCreatingMatch] = React.useState(false);
   
   const messagesEndRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -124,6 +134,48 @@ export default function MessagesPage() {
     }
   };
 
+  const handleCreateMatch = async () => {
+    if (!requestId || !tripId || !user) return;
+
+    setIsCreatingMatch(true);
+    try {
+        const request = await getRequestById(requestId);
+        const trip = await getTripById(tripId);
+
+        if (!request || !trip) {
+            toast({ variant: 'destructive', title: 'خطا', description: 'درخواست یا سفر مورد نظر یافت نشد.' });
+            throw new Error("Request or Trip not found.");
+        }
+
+        // A user can only accept a match for their own request
+        if (request.userId !== user.uid) {
+            toast({
+                variant: 'destructive',
+                title: 'خطای مجوز',
+                description: 'شما مجاز به ایجاد این تراکنش نیستید.',
+            });
+            return;
+        }
+
+        await createMatch(request, trip);
+        toast({
+            title: "تراکنش با موفقیت ایجاد شد!",
+            description: "اکنون می‌توانید وضعیت آن را در صفحه تطبیق‌ها ببینید.",
+        });
+        router.push('/dashboard/matches');
+
+    } catch (error) {
+        console.error("Error creating match:", error);
+        toast({
+            variant: "destructive",
+            title: "خطا در ایجاد تراکنش",
+            description: "متاسفانه مشکلی در هنگام ایجاد تراکنش پیش آمد.",
+        });
+    } finally {
+        setIsCreatingMatch(false);
+    }
+}
+
   if (authLoading) {
     return <div className="flex h-full w-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
@@ -169,6 +221,14 @@ export default function MessagesPage() {
                 <AvatarFallback>{selectedConversation.otherUser.name.charAt(0)}</AvatarFallback>
               </Avatar>
               <h3 className="text-lg font-semibold">{selectedConversation.otherUser.name}</h3>
+               <div className="ms-auto">
+                {requestId && tripId && (
+                    <Button onClick={handleCreateMatch} disabled={isCreatingMatch}>
+                        {isCreatingMatch && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
+                        شروع تراکنش
+                    </Button>
+                )}
+              </div>
             </div>
             <ScrollArea className="flex-1 p-4 lg:p-6 bg-muted/20">
               <div className="space-y-4">

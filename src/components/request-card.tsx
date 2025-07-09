@@ -16,8 +16,6 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import Link from 'next/link';
-import { createMatch } from '@/lib/firebase/firestore';
-import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 
 
@@ -74,10 +72,8 @@ export function RequestCard({
 }: RequestCardProps) {
   const { user } = useAuth();
   const router = useRouter();
-  const { toast } = useToast();
   const [isSendMessageDialogOpen, setIsSendMessageDialogOpen] = useState(false);
   const [isMatchesDialogOpen, setIsMatchesDialogOpen] = useState(false);
-  const [isAccepting, setIsAccepting] = useState<string | null>(null);
 
   const handleSendMessage = () => {
     if (!user) {
@@ -87,27 +83,11 @@ export function RequestCard({
     }
   };
   
-  const handleAcceptMatch = async (trip: Trip) => {
-    setIsAccepting(trip.id);
-    try {
-        await createMatch(request, trip);
-        toast({
-            title: "تطبیق پذیرفته شد!",
-            description: "تراکنش شما ایجاد شد. اکنون می‌توانید وضعیت آن را در صفحه تطبیق‌ها ببینید.",
-        });
-        setIsMatchesDialogOpen(false);
-        router.push('/dashboard/matches');
-    } catch (error) {
-        console.error("Error accepting match:", error);
-        toast({
-            variant: "destructive",
-            title: "خطا",
-            description: "خطا در پذیرش تطبیق. لطفا دوباره تلاش کنید.",
-        });
-    } finally {
-        setIsAccepting(null);
-    }
+  const handleStartConversation = (trip: Trip) => {
+    router.push(`/dashboard/messages?recipient=${trip.userId}&requestId=${request.id}&tripId=${trip.id}`);
+    setIsMatchesDialogOpen(false);
   };
+
 
   const redirectUrl = encodeURIComponent('/dashboard/trips?action=new');
 
@@ -139,7 +119,7 @@ export function RequestCard({
             <DialogHeader>
               <DialogTitle>سفرهای منطبق با درخواست شما</DialogTitle>
               <DialogDescription>
-                یکی از سفرهای زیر را برای تحویل کتاب‌هایتان انتخاب و تایید کنید. با این کار وارد مرحله پرداخت می‌شوید.
+                با یکی از مسافران زیر برای هماهنگی گفتگو کنید. پس از توافق، می‌توانید تراکنش را نهایی کنید.
               </DialogDescription>
             </DialogHeader>
             <div className="max-h-[60vh] space-y-4 overflow-y-auto p-1">
@@ -156,11 +136,12 @@ export function RequestCard({
                       </div>
                   </div>
                   <Button 
-                      size="sm" 
-                      onClick={() => handleAcceptMatch(trip)}
-                      disabled={!!isAccepting}
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleStartConversation(trip)}
                   >
-                    {isAccepting === trip.id ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : 'پذیرش و پرداخت'}
+                      <Send className="me-2 h-4 w-4" />
+                      ارسال پیام
                   </Button>
                 </div>
               ))}
