@@ -1,0 +1,46 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Publicly readable for homepage, but only owner can write.
+    match /requests/{requestId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+
+    match /trips/{tripId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+    
+    // User profiles are public readable, but only owner can write.
+    match /users/{userId} {
+      allow read: if true;
+      allow create, update: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Users can interact with conversations they are part of.
+    match /conversations/{conversationId} {
+      allow read, create, update: if request.auth != null && request.auth.uid in resource.data.users;
+
+      match /messages/{messageId} {
+        allow read, create: if request.auth != null && request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.users;
+      }
+    }
+    
+    // Escrow/match documents can only be accessed by participants.
+    match /matches/{matchId} {
+        // Assume match is created by a trusted server process or the requester
+        allow create: if request.auth != null && request.resource.data.requesterId == request.auth.uid;
+        
+        // Allow read if user is either the requester or the traveler
+        allow read: if request.auth != null && (request.auth.uid == resource.data.requesterId || request.auth.uid == resource.data.travelerId);
+
+        // Allow update (confirm, dispute) if user is requester or traveler
+        allow update: if request.auth != null && (request.auth.uid == resource.data.requesterId || request.auth.uid == resource.data.travelerId);
+    }
+  }
+}
