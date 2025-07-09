@@ -150,7 +150,7 @@ export function TripCard({ trip, showFooter = true, matchCount, matchingRequests
 
     return (
       <Link
-        href="/dashboard"
+        href="/dashboard/trips"
         className="group absolute inset-0 z-10 flex flex-col justify-end bg-black/20 p-4 transition-all duration-300 hover:bg-black/30"
       >
         {badgeContent}
