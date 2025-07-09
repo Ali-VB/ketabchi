@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Package, Plane, Users, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/components/auth-provider';
-import { getUserRequests, getUserTrips, findMatches } from '@/lib/firebase/firestore';
+import { getUserRequests, getUserTrips, getMatchesForUser } from '@/lib/firebase/firestore';
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -18,13 +18,12 @@ export default function DashboardPage() {
       Promise.all([
         getUserRequests(user.uid),
         getUserTrips(user.uid),
-        findMatches(user.uid),
+        getMatchesForUser(user.uid),
       ])
-        .then(([requests, trips, { requestMatches, tripMatches }]) => {
+        .then(([requests, trips, matches]) => {
           setRequestCount(requests.length);
           setTripCount(trips.length);
-          const totalMatches = requestMatches.length + tripMatches.length;
-          setMatchCount(totalMatches);
+          setMatchCount(matches.length);
         })
         .catch(console.error)
         .finally(() => setIsLoading(false));
