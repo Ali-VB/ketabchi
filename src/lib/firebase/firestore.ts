@@ -187,7 +187,7 @@ export const findMatches = async (userId: string): Promise<{
   const requestMatches: MatchedRequest[] = myRequests.map(myRequest => {
     const matchingTrips = allTrips.filter(trip => {
       // A trip matches a request if the destination city is the same. The origin city in Iran does not need to match.
-      const cityMatch = myRequest.to_city && trip.to_city && myRequest.to_city.trim().toLowerCase() === trip.to_city.trim().toLowerCase();
+      const cityMatch = myRequest.to_city && trip.to_city && myRequest.to_city.replace(/\s/g, '').toLowerCase() === trip.to_city.replace(/\s/g, '').toLowerCase();
 
       // And if the traveler's date is within the requester's deadline range.
       // Comparing YYYY-MM-DD strings is safe and avoids timezone issues.
@@ -207,7 +207,7 @@ export const findMatches = async (userId: string): Promise<{
   const tripMatches: MatchedTrip[] = myTrips.map(myTrip => {
     const matchingRequests = allRequests.filter(request => {
       // A request matches a trip if the destination city is the same. The origin city in Iran does not need to match.
-      const cityMatch = request.to_city && myTrip.to_city && request.to_city.trim().toLowerCase() === myTrip.to_city.trim().toLowerCase();
+      const cityMatch = request.to_city && myTrip.to_city && request.to_city.replace(/\s/g, '').toLowerCase() === myTrip.to_city.replace(/\s/g, '').toLowerCase();
 
       // And if the traveler's date is within the requester's deadline range.
       // Comparing YYYY-MM-DD strings is safe and avoids timezone issues.
@@ -477,7 +477,7 @@ export const getPlatformStats = async () => {
     completedMatchesSnapshot,
   ] = await Promise.all([
     getDocs(matchesQuery),
-    getDocs(disputedMatchesQuery),
+    getDocs(disputedMatchesSnapshot),
     getDocs(completedMatchesQuery),
   ]);
 
