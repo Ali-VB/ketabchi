@@ -2,28 +2,47 @@
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Loader2 } from "lucide-react";
 import { RequestCard } from "@/components/request-card";
-import { type BookRequest } from "@/lib/types";
+import { type BookRequest, type Trip } from "@/lib/types";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { NewRequestForm } from "@/components/new-request-form";
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/components/auth-provider";
-import { getUserRequests } from "@/lib/firebase/firestore";
+import { getUserRequests, findMatches } from "@/lib/firebase/firestore";
 import { useSearchParams } from "next/navigation";
+
+type RequestWithMatches = BookRequest & { matchingTrips: Trip[] };
 
 export default function MyRequestsPage() {
   const searchParams = useSearchParams();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [requests, setRequests] = useState<BookRequest[]>([]);
+  const [requests, setRequests] = useState<RequestWithMatches[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
 
-  const fetchRequests = useCallback(() => {
+  const fetchRequests = useCallback(async () => {
     if (user) {
       setIsLoading(true);
-      getUserRequests(user.uid)
-        .then(setRequests)
-        .catch(console.error)
-        .finally(() => setIsLoading(false));
+      try {
+        const [userRequests, { requestMatches }] = await Promise.all([
+            getUserRequests(user.uid),
+            findMatches(user.uid)
+        ]);
+        
+        const requestsWithMatchesData = userRequests.map(request => {
+          const matchData = requestMatches.find(m => m.id === request.id);
+          return {
+            ...request,
+            matchingTrips: matchData ? matchData.matchingTrips : [],
+          };
+        });
+
+        setRequests(requestsWithMatchesData);
+
+      } catch (error) {
+        console.error("Failed to fetch requests with matches:", error);
+      } finally {
+        setIsLoading(false);
+      }
     }
   }, [user]);
 
@@ -44,7 +63,7 @@ export default function MyRequestsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight font-headline">درخواست‌های من</h2>
-          <p className="text-muted-foreground">درخواست‌های کتاب خود را مدیریت کنید.</p>
+          <p className="text-muted-foreground">درخواست‌های کتاب خود را مدیریت کنید و سفرهای منطبق را ببینید.</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
@@ -72,7 +91,14 @@ export default function MyRequestsPage() {
       ) : requests.length > 0 ? (
         <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {requests.map((request) => (
-            <RequestCard key={request.id} request={request} showFooter={false} />
+            <RequestCard 
+              key={request.id} 
+              request={request} 
+              showFooter={false}
+              matchCount={request.matchingTrips.length}
+              matchingTrips={request.matchingTrips}
+              isDashboardView={true}
+            />
           ))}
         </div>
       ) : (
