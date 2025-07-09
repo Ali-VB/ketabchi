@@ -15,11 +15,11 @@ import { Badge } from '@/components/ui/badge';
 // This is a temporary admin check. Replace with a robust role-based system.
 const ADMIN_USER_ID = 'jwHiUx2XD3dcl3C0x7mobpkGOYy2';
 
-const formatEnglishDate = (dateString: string | undefined) => {
-    if (!dateString) return 'N/A';
+const formatPersianDate = (dateString: string | undefined) => {
+    if (!dateString) return 'نامشخص';
     try {
         const date = new Date(dateString);
-        return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'long', day: 'numeric' }).format(date);
+        return new Intl.DateTimeFormat('fa-IR', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' }).format(date);
     } catch (e) {
         return dateString;
     }
@@ -35,7 +35,7 @@ export default function UserManagementPage() {
     useEffect(() => {
         if (!authLoading) {
             if (!authUser || authUser.uid !== ADMIN_USER_ID) {
-                toast({ variant: 'destructive', title: 'Unauthorized', description: 'You do not have permission to view this page.' });
+                toast({ variant: 'destructive', title: 'غیرمجاز', description: 'شما اجازه دسترسی به این صفحه را ندارید.' });
                 router.push('/dashboard');
                 return;
             }
@@ -45,7 +45,7 @@ export default function UserManagementPage() {
                 .then(setUsers)
                 .catch(err => {
                     console.error(err);
-                    toast({ variant: 'destructive', title: 'Error', description: 'Failed to load user list. Please check Firestore security rules.' });
+                    toast({ variant: 'destructive', title: 'خطا', description: 'خطا در بارگذاری لیست کاربران. لطفا قوانین امنیتی Firestore را بررسی کنید.' });
                 })
                 .finally(() => setIsLoading(false));
         }
@@ -62,22 +62,22 @@ export default function UserManagementPage() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>User Management</CardTitle>
+                <CardTitle>مدیریت کاربران</CardTitle>
                 <CardDescription>
-                    A list of all registered users on the platform.
+                    لیستی از تمام کاربران ثبت‌نام کرده در پلتفرم.
                 </CardDescription>
             </CardHeader>
             <CardContent>
                 {users.length === 0 && !isLoading ? (
-                    <p className="p-8 text-center text-muted-foreground">No users found.</p>
+                    <p className="p-8 text-center text-muted-foreground">هیچ کاربری یافت نشد.</p>
                 ) : (
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>User</TableHead>
-                                <TableHead>Email</TableHead>
-                                <TableHead>Joined Date</TableHead>
-                                <TableHead>UID</TableHead>
+                                <TableHead>کاربر</TableHead>
+                                <TableHead>ایمیل</TableHead>
+                                <TableHead>تاریخ عضویت</TableHead>
+                                <TableHead>شناسه کاربر (UID)</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -90,13 +90,13 @@ export default function UserManagementPage() {
                                                 <AvatarFallback>{user.displayName?.charAt(0) ?? 'U'}</AvatarFallback>
                                             </Avatar>
                                             <div className="font-medium">{user.displayName}
-                                                {user.uid === ADMIN_USER_ID && <Badge variant="destructive" className="ms-2">Admin</Badge>}
+                                                {user.uid === ADMIN_USER_ID && <Badge variant="destructive" className="ms-2">ادمین</Badge>}
                                             </div>
                                         </div>
                                     </TableCell>
                                     <TableCell>{user.email}</TableCell>
-                                    <TableCell>{formatEnglishDate(user.createdAt)}</TableCell>
-                                    <TableCell className="font-mono text-xs">{user.uid}</TableCell>
+                                    <TableCell>{formatPersianDate(user.createdAt)}</TableCell>
+                                    <TableCell className="font-mono text-xs text-left" dir="ltr">{user.uid}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>

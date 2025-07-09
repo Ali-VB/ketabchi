@@ -17,11 +17,11 @@ import { cn } from '@/lib/utils';
 // This is a temporary admin check. Replace with a robust role-based system.
 const ADMIN_USER_ID = 'jwHiUx2XD3dcl3C0x7mobpkGOYy2';
 
-const formatEnglishDate = (dateString: string) => {
+const formatPersianDate = (dateString: string) => {
     if (!dateString) return '';
     try {
         const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        return new Intl.DateTimeFormat('fa-IR', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' }).format(date);
     } catch (e) {
         return dateString;
     }
@@ -34,7 +34,13 @@ const getStatusBadge = (status: Match['status']) => {
     disputed: "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300 hover:bg-red-100",
     cancelled: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-100",
   }
-  return <Badge variant="secondary" className={cn("capitalize", statusStyles[status])}>{status}</Badge>;
+  const statusText = {
+      active: 'فعال',
+      completed: 'تکمیل شده',
+      disputed: 'مورد اختلاف',
+      cancelled: 'لغو شده',
+  }
+  return <Badge variant="secondary" className={cn("capitalize", statusStyles[status])}>{statusText[status]}</Badge>;
 };
 
 export default function MatchManagementPage() {
@@ -62,7 +68,7 @@ export default function MatchManagementPage() {
                 })
                 .catch(err => {
                     console.error(err);
-                    toast({ variant: 'destructive', title: 'Error', description: 'Failed to load matches.' });
+                    toast({ variant: 'destructive', title: 'خطا', description: 'خطا در بارگذاری تراکنش‌ها.' });
                 })
                 .finally(() => setIsLoading(false));
         }
@@ -87,35 +93,35 @@ export default function MatchManagementPage() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Match Management</CardTitle>
+                <CardTitle>مدیریت تراکنش‌ها</CardTitle>
                 <CardDescription>
-                    View and manage all matches on the platform.
+                    تمام تراکنش‌های روی پلتفرم را مشاهده و مدیریت کنید.
                 </CardDescription>
             </CardHeader>
             <CardContent>
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                     <TabsList>
-                        <TabsTrigger value="all">All</TabsTrigger>
-                        <TabsTrigger value="active">Active</TabsTrigger>
-                        <TabsTrigger value="completed">Completed</TabsTrigger>
-                        <TabsTrigger value="disputed">Disputed</TabsTrigger>
-                        <TabsTrigger value="cancelled">Cancelled</TabsTrigger>
+                        <TabsTrigger value="all">همه</TabsTrigger>
+                        <TabsTrigger value="active">فعال</TabsTrigger>
+                        <TabsTrigger value="completed">تکمیل‌شده</TabsTrigger>
+                        <TabsTrigger value="disputed">مورد اختلاف</TabsTrigger>
+                        <TabsTrigger value="cancelled">لغو شده</TabsTrigger>
                     </TabsList>
                     <TabsContent value={activeTab} className="mt-4">
                         {filteredMatches.length === 0 && !isLoading ? (
                             <div className="py-12 text-center">
-                               <p className="text-muted-foreground">No matches found for this status.</p>
+                               <p className="text-muted-foreground">هیچ تراکنشی برای این وضعیت یافت نشد.</p>
                             </div>
                         ) : (
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Requester</TableHead>
-                                        <TableHead>Traveler</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead>Amount</TableHead>
-                                        <TableHead>Created At</TableHead>
-                                        <TableHead className="text-right">Actions</TableHead>
+                                        <TableHead>درخواست‌دهنده</TableHead>
+                                        <TableHead>مسافر</TableHead>
+                                        <TableHead>وضعیت</TableHead>
+                                        <TableHead>مبلغ</TableHead>
+                                        <TableHead>تاریخ ایجاد</TableHead>
+                                        <TableHead className="text-left">اقدامات</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -125,9 +131,9 @@ export default function MatchManagementPage() {
                                             <TableCell className="font-medium">{match.trip.user.displayName}</TableCell>
                                             <TableCell>{getStatusBadge(match.status)}</TableCell>
                                             <TableCell>${(match.amount ?? 0).toFixed(2)}</TableCell>
-                                            <TableCell>{formatEnglishDate(match.createdAt)}</TableCell>
-                                            <TableCell className="text-right">
-                                                <Button variant="outline" size="sm">View Details</Button>
+                                            <TableCell>{formatPersianDate(match.createdAt)}</TableCell>
+                                            <TableCell className="text-left">
+                                                <Button variant="outline" size="sm">مشاهده جزئیات</Button>
                                             </TableCell>
                                         </TableRow>
                                     ))}

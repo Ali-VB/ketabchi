@@ -34,10 +34,10 @@ const userMenuItems = [
 ];
 
 const adminMenuItems = [
-    { href: '/dashboard', label: 'Dashboard', icon: Home },
-    { href: '/dashboard/admin/matches', label: 'Matches', icon: Handshake },
-    { href: '/dashboard/admin/users', label: 'Users', icon: Users },
-    { href: '/dashboard/admin/disputes', label: 'Disputes', icon: ShieldAlert },
+    { href: '/dashboard', label: 'داشبورد', icon: Home },
+    { href: '/dashboard/admin/matches', label: 'تراکنش‌ها', icon: Handshake },
+    { href: '/dashboard/admin/users', label: 'کاربران', icon: Users },
+    { href: '/dashboard/admin/disputes', label: 'اختلافات', icon: ShieldAlert },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -69,10 +69,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const getPageTitle = (path: string) => {
     if (isAdmin) {
-        if (path.startsWith('/dashboard/admin/matches')) return 'Match Management';
-        if (path.startsWith('/dashboard/admin/users')) return 'User Management';
-        if (path.startsWith('/dashboard/admin/disputes')) return 'Dispute Resolution';
-        if (path === '/dashboard') return 'Admin Dashboard';
+        if (path.startsWith('/dashboard/admin/matches')) return 'مدیریت تراکنش‌ها';
+        if (path.startsWith('/dashboard/admin/users')) return 'مدیریت کاربران';
+        if (path.startsWith('/dashboard/admin/disputes')) return 'رسیدگی به اختلافات';
+        if (path === '/dashboard') return 'داشبورد ادمین';
     }
     
     const allItems = [...userMenuItems];
@@ -87,7 +87,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <SidebarProvider>
       <div className="flex min-h-screen bg-background text-foreground">
-        <Sidebar side={isAdmin ? "left" : "right"} collapsible="icon">
+        <Sidebar side="right" collapsible="icon">
           <SidebarHeader>
             <Link href="/" className="flex items-center gap-2 p-2">
               <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
@@ -131,14 +131,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </div>
               </DropdownMenuTrigger>
               <DropdownMenuContent side="top" align="start" className="w-56">
-                <DropdownMenuLabel>{isAdmin ? 'Admin Account' : 'حساب کاربری من'}</DropdownMenuLabel>
+                <DropdownMenuLabel>{isAdmin ? 'حساب ادمین' : 'حساب کاربری من'}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild><Link href="/dashboard/profile"><User className="me-2 h-4 w-4" />{isAdmin ? 'Profile' : 'پروفایل'}</Link></DropdownMenuItem>
-                <DropdownMenuItem><Settings className="me-2 h-4 w-4" />{isAdmin ? 'Settings' : 'تنظیمات'}</DropdownMenuItem>
+                <DropdownMenuItem asChild><Link href="/dashboard/profile"><User className="me-2 h-4 w-4" />پروفایل</Link></DropdownMenuItem>
+                <DropdownMenuItem><Settings className="me-2 h-4 w-4" />تنظیمات</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:text-red-500 focus:bg-red-500/10">
                   <LogOut className="me-2 h-4 w-4" />
-                  {isAdmin ? 'Logout' : 'خروج'}
+                  خروج
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
