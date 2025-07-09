@@ -10,12 +10,19 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { getStatsForDateRange } from '@/lib/firebase/firestore';
 
 const GeneratePlatformReportInputSchema = z.object({
   startDate: z.string().describe('The start date for the weekly report (YYYY-MM-DD).'),
   endDate: z.string().describe('The end date for the weekly report (YYYY-MM-DD).'),
 });
 export type GeneratePlatformReportInput = z.infer<typeof GeneratePlatformReportInputSchema>;
+
+const PromptInputSchema = GeneratePlatformReportInputSchema.extend({
+    newRequests: z.number(),
+    newTrips: z.number(),
+    completedMatches: z.number(),
+})
 
 const GeneratePlatformReportOutputSchema = z.object({
   report: z.string().describe('The generated weekly platform usage report.'),
@@ -28,18 +35,19 @@ export async function generatePlatformReport(input: GeneratePlatformReportInput)
 
 const prompt = ai.definePrompt({
   name: 'generatePlatformReportPrompt',
-  input: {schema: GeneratePlatformReportInputSchema},
+  input: {schema: PromptInputSchema},
   output: {schema: GeneratePlatformReportOutputSchema},
   prompt: `You are a data analyst tasked with generating a weekly platform usage report for a P2P book delivery service called Ketabchi.
 
-The report should summarize user activity, including:
-- Total number of new book requests created between {{startDate}} and {{endDate}}.
-- Total number of new trips announced between {{startDate}} and {{endDate}}.
-- Number of successful book deliveries (matches with status = done) completed between {{startDate}} and {{endDate}}.
-- Highlight any success stories or interesting trends observed during the week.
+Use the following data to generate your report:
+- Total number of new book requests: {{newRequests}}
+- Total number of new trips announced: {{newTrips}}
+- Number of successful book deliveries (completed matches): {{completedMatches}}
 
-Format the report in a clear and concise manner, suitable for presentation to platform administrators.
+Based on this data, generate a summary for the period from {{startDate}} to {{endDate}}.
+Highlight any interesting trends, successes, or potential areas for improvement. For instance, if there are many requests but few trips, you could mention that. If many deliveries were successful, highlight it as a success story.
 
+Format the report in a clear and concise manner, suitable for presentation to platform administrators. Start with a title.
 Weekly Platform Usage Report ({{startDate}} - {{endDate}})
 `,config: {
     safetySettings: [
@@ -70,7 +78,11 @@ const generatePlatformReportFlow = ai.defineFlow(
     outputSchema: GeneratePlatformReportOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    const stats = await getStatsForDateRange(input.startDate, input.endDate);
+    const {output} = await prompt({
+        ...input,
+        ...stats,
+    });
     return output!;
   }
 );

@@ -448,6 +448,74 @@ export const disputeMatch = async (matchId: string, currentUserId: string): Prom
 
 // --- Admin Functions ---
 
+export const getPlatformStats = async () => {
+  const requestsQuery = query(requestsCollection);
+  const tripsQuery = query(tripsCollection);
+  const matchesQuery = query(matchesCollection);
+  const disputedMatchesQuery = query(matchesCollection, where('status', '==', 'disputed'));
+
+  const [
+    requestsSnapshot,
+    tripsSnapshot,
+    matchesSnapshot,
+    disputedMatchesSnapshot,
+  ] = await Promise.all([
+    getDocs(requestsQuery),
+    getDocs(tripsQuery),
+    getDocs(matchesQuery),
+    getDocs(disputedMatchesQuery),
+  ]);
+
+  return {
+    totalRequests: requestsSnapshot.size,
+    totalTrips: tripsSnapshot.size,
+    totalMatches: matchesSnapshot.size,
+    disputedMatches: disputedMatchesSnapshot.size,
+  };
+};
+
+export const getStatsForDateRange = async (startDate: string, endDate: string) => {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  end.setHours(23, 59, 59, 999);
+
+  const requestsQuery = query(
+    requestsCollection,
+    where('createdAt', '>=', Timestamp.fromDate(start)),
+    where('createdAt', '<=', Timestamp.fromDate(end))
+  );
+
+  const tripsQuery = query(
+    tripsCollection,
+    where('createdAt', '>=', Timestamp.fromDate(start)),
+    where('createdAt', '<=', Timestamp.fromDate(end))
+  );
+
+  const completedMatchesQuery = query(
+    matchesCollection,
+    where('status', '==', 'completed'),
+    where('updatedAt', '>=', Timestamp.fromDate(start)),
+    where('updatedAt', '<=', Timestamp.fromDate(end))
+  );
+
+  const [
+    requestsSnapshot,
+    tripsSnapshot,
+    completedMatchesSnapshot,
+  ] = await Promise.all([
+    getDocs(requestsQuery),
+    getDocs(tripsQuery),
+    getDocs(completedMatchesQuery),
+  ]);
+
+  return {
+    newRequests: requestsSnapshot.size,
+    newTrips: tripsSnapshot.size,
+    completedMatches: completedMatchesSnapshot.size,
+  };
+};
+
+
 export const getDisputedMatches = async (): Promise<Match[]> => {
     const q = query(matchesCollection, where('status', '==', 'disputed'), orderBy('updatedAt', 'desc'));
     const querySnapshot = await getDocs(q);

@@ -22,6 +22,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { ReportGenerator } from '@/components/report-generator';
 
 const formatPersianDate = (dateString: string) => {
     if (!dateString) return '';
@@ -103,8 +104,8 @@ export default function AdminPage() {
     return (
         <div className="space-y-6">
              <div>
-                <h2 className="text-2xl font-bold tracking-tight font-headline">مدیریت اختلافات</h2>
-                <p className="text-muted-foreground">تراکنش‌هایی که توسط کاربران مورد اختلاف قرار گرفته‌اند را مدیریت کنید.</p>
+                <h2 className="text-2xl font-bold tracking-tight font-headline">ابزارهای ادمین</h2>
+                <p className="text-muted-foreground">تراکنش‌های مورد اختلاف را مدیریت کرده و گزارش‌های پلتفرم را ایجاد کنید.</p>
             </div>
             <Card>
                 <CardHeader>
@@ -190,6 +191,9 @@ export default function AdminPage() {
                     )}
                 </CardContent>
             </Card>
+            <div className="pt-4">
+                <ReportGenerator />
+            </div>
         </div>
     );
 }
