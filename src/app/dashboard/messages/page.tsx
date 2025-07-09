@@ -258,7 +258,7 @@ export default function MessagesPage() {
                 <div className="p-4 border-t bg-accent/10">
                     <div className="flex items-center justify-between gap-4">
                         <div className="text-accent">
-                            <p className="font-bold">مرحله بعد: شروع تراکنش</p>
+                            <p className="font-bold">شروع تراکنش با {selectedConversation.otherUser.name}</p>
                             <p className="text-sm text-accent/80">پس از توافق، برای امن‌سازی پرداخت روی دکمه کلیک کنید.</p>
                         </div>
                         <Button 
