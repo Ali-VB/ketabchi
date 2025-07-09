@@ -272,13 +272,15 @@ export const getConversations = async (userId: string): Promise<Conversation[]> 
             const otherUser = otherUserDoc.exists() 
                 ? {
                     uid: otherUserDoc.id,
-                    name: otherUserDoc.data().displayName,
-                    avatar: otherUserDoc.data().photoURL
+                    displayName: otherUserDoc.data().displayName,
+                    photoURL: otherUserDoc.data().photoURL,
+                    email: otherUserDoc.data().email,
                   }
                 : {
                     uid: otherUserId,
-                    name: 'کاربر ناشناس',
-                    avatar: null
+                    displayName: 'کاربر ناشناس',
+                    photoURL: null,
+                    email: null,
                   };
             
             return {
@@ -447,6 +449,16 @@ export const disputeMatch = async (matchId: string, currentUserId: string): Prom
 };
 
 // --- Admin Functions ---
+
+export const getAllUsers = async (): Promise<User[]> => {
+    const querySnapshot = await getDocs(usersCollection);
+    const users = querySnapshot.docs.map(doc => ({
+        ...(processSerializable(doc.data()) as Omit<User, 'uid'>),
+        uid: doc.id,
+    })) as User[];
+    // Perform client-side sorting to avoid needing a composite index in Firestore
+    return users.sort((a,b) => (b.createdAt && a.createdAt) ? new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime() : 0);
+};
 
 export const getPlatformStats = async () => {
   const requestsQuery = query(requestsCollection);

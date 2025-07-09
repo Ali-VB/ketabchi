@@ -111,11 +111,11 @@ export function TripCard({ trip, showFooter = true, matchCount, matchingRequests
                             <div key={request.id} className="flex items-center justify-between rounded-lg border p-4">
                                <div className="flex items-center gap-4">
                                  <Avatar>
-                                    <AvatarImage src={request.user.avatar ?? `https://placehold.co/40x40.png`} data-ai-hint="user portrait" />
-                                    <AvatarFallback>{request.user.name.charAt(0)}</AvatarFallback>
+                                    <AvatarImage src={request.user.photoURL ?? `https://placehold.co/40x40.png`} data-ai-hint="user portrait" />
+                                    <AvatarFallback>{request.user.displayName.charAt(0)}</AvatarFallback>
                                   </Avatar>
                                   <div>
-                                      <p className="font-semibold">{request.user.name}</p>
+                                      <p className="font-semibold">{request.user.displayName}</p>
                                       <p className="text-sm text-muted-foreground">درخواست برای {totalQuantity} جلد کتاب</p>
                                   </div>
                               </div>
@@ -186,7 +186,7 @@ export function TripCard({ trip, showFooter = true, matchCount, matchingRequests
         </CardContent>
         {showFooter && (
           <CardFooter className="flex items-center justify-between border-t bg-accent/10 p-4">
-            <span className="text-sm font-medium">{trip.user.name}</span>
+            <span className="text-sm font-medium">{trip.user.displayName}</span>
             <Button
               variant="ghost"
               size="sm"

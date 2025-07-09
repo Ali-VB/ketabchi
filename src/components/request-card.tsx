@@ -127,11 +127,11 @@ export function RequestCard({
                 <div key={trip.id} className="flex items-center justify-between rounded-lg border p-4">
                   <div className="flex items-center gap-4">
                      <Avatar>
-                        <AvatarImage src={trip.user.avatar ?? `https://placehold.co/40x40.png`} data-ai-hint="user portrait" />
-                        <AvatarFallback>{trip.user.name.charAt(0)}</AvatarFallback>
+                        <AvatarImage src={trip.user.photoURL ?? `https://placehold.co/40x40.png`} data-ai-hint="user portrait" />
+                        <AvatarFallback>{trip.user.displayName.charAt(0)}</AvatarFallback>
                       </Avatar>
                       <div>
-                          <p className="font-semibold">{trip.user.name}</p>
+                          <p className="font-semibold">{trip.user.displayName}</p>
                           <p className="text-sm text-muted-foreground">تاریخ سفر: {formatPersianDate(trip.trip_date)}</p>
                       </div>
                   </div>
@@ -217,7 +217,7 @@ export function RequestCard({
         </CardContent>
         {showFooter && (
           <CardFooter className="flex items-center justify-between border-t bg-primary/10 p-4">
-            <span className="text-sm font-medium">{request.user.name}</span>
+            <span className="text-sm font-medium">{request.user.displayName}</span>
             <Button
               variant="ghost"
               size="sm"

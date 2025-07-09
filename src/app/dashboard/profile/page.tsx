@@ -23,9 +23,9 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
 const profileSchema = z.object({
-  name: z.string().min(2, { message: 'نام باید حداقل ۲ حرف داشته باشد.' }),
+  displayName: z.string().min(2, { message: 'نام باید حداقل ۲ حرف داشته باشد.' }),
   email: z.string().email(),
-  avatar: z.string().url({ message: 'لطفاً یک آدرس معتبر وارد کنید.' }).or(z.literal('')),
+  photoURL: z.string().url({ message: 'لطفاً یک آدرس معتبر وارد کنید.' }).or(z.literal('')),
 });
 
 export default function ProfilePage() {
@@ -41,18 +41,18 @@ export default function ProfilePage() {
   } = useForm({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: '',
+      displayName: '',
       email: '',
-      avatar: '',
+      photoURL: '',
     },
   });
 
   useEffect(() => {
     if (user) {
       reset({
-        name: user.displayName || '',
+        displayName: user.displayName || '',
         email: user.email || '',
-        avatar: user.photoURL || '',
+        photoURL: user.photoURL || '',
       });
     }
   }, [user, reset]);
@@ -75,7 +75,7 @@ export default function ProfilePage() {
   const onSubmit = async (data: z.infer<typeof profileSchema>) => {
     setIsLoading(true);
     try {
-      await updateUserProfile(data.name, data.avatar);
+      await updateUserProfile(data.displayName, data.photoURL);
       toast({
         title: 'موفقیت‌آمیز',
         description: 'اطلاعات پروفایل شما با موفقیت به‌روزرسانی شد.',
@@ -135,13 +135,13 @@ export default function ProfilePage() {
                 className="space-y-4 max-w-lg"
               >
                 <div className="space-y-2">
-                  <Label htmlFor="name">نام</Label>
+                  <Label htmlFor="displayName">نام</Label>
                    <Controller
-                    name="name"
+                    name="displayName"
                     control={control}
-                    render={({ field }) => <Input id="name" {...field} />}
+                    render={({ field }) => <Input id="displayName" {...field} />}
                   />
-                  {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
+                  {errors.displayName && <p className="text-sm text-destructive">{errors.displayName.message}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">ایمیل</Label>
@@ -152,13 +152,13 @@ export default function ProfilePage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="avatar">آدرس تصویر پروفایل</Label>
+                  <Label htmlFor="photoURL">آدرس تصویر پروفایل</Label>
                    <Controller
-                    name="avatar"
+                    name="photoURL"
                     control={control}
-                    render={({ field }) => <Input id="avatar" {...field} />}
+                    render={({ field }) => <Input id="photoURL" {...field} />}
                   />
-                  {errors.avatar && <p className="text-sm text-destructive">{errors.avatar.message}</p>}
+                  {errors.photoURL && <p className="text-sm text-destructive">{errors.photoURL.message}</p>}
                 </div>
                 <Button type="submit" disabled={isLoading}>
                   {isLoading && <Loader2 className="me-2 h-4 w-4 animate-spin" />}

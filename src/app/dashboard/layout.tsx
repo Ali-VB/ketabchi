@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Bell, ChevronDown, Home, Loader2, LogOut, Mail, Package, Plane, Settings, User, Users, Shield } from 'lucide-react';
+import { Bell, ChevronDown, Home, Loader2, LogOut, Mail, Package, Plane, Settings, User, Users, ShieldAlert, Handshake } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Logo } from '@/components/logo';
 import { useAuth } from '@/components/auth-provider';
@@ -26,12 +26,18 @@ import { useEffect } from 'react';
 // To enable the admin link in the sidebar, replace the placeholder below with the User UID of the admin account.
 const ADMIN_USER_ID = 'jwHiUx2XD3dcl3C0x7mobpkGOYy2';
 
-const menuItems = [
+const userMenuItems = [
   { href: '/dashboard', label: 'داشبورد', icon: Home },
   { href: '/dashboard/requests', label: 'درخواست‌های من', icon: Package },
   { href: '/dashboard/trips', label: 'سفرهای من', icon: Plane },
-  { href: '/dashboard/matches', label: 'تطبیق‌ها', icon: Users },
+  { href: '/dashboard/matches', label: 'تراکنش‌ها', icon: Handshake },
   { href: '/dashboard/messages', label: 'پیام‌ها', icon: Mail },
+];
+
+const adminMenuItems = [
+    { href: '/dashboard', label: 'داشبورد ادمین', icon: Home },
+    { href: '/dashboard/admin/users', label: 'مدیریت کاربران', icon: Users },
+    { href: '/dashboard/admin', label: 'تراکنش‌های مورد اختلاف', icon: ShieldAlert },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -58,10 +64,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     );
   }
   
-  const currentMenuItems = [...menuItems];
-  if (user.uid === ADMIN_USER_ID) {
-    currentMenuItems.push({ href: '/dashboard/admin', label: 'ادمین', icon: Shield });
+  const isAdmin = user.uid === ADMIN_USER_ID;
+  const menuItems = isAdmin ? adminMenuItems : userMenuItems;
+
+  const getPageTitle = (path: string) => {
+    const allItems = [...userMenuItems, ...adminMenuItems];
+    const directMatch = allItems.find(item => item.href === path);
+    if (directMatch) return directMatch.label;
+    if (path.startsWith('/dashboard/admin')) return 'ابزارهای ادمین';
+    if (path.startsWith('/dashboard/profile')) return 'پروفایل کاربری';
+    return 'داشبورد';
   }
+  const pageTitle = getPageTitle(pathname);
+
 
   return (
     <SidebarProvider>
@@ -79,7 +94,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </SidebarHeader>
           <SidebarContent>
             <SidebarMenu>
-              {currentMenuItems.map((item) => (
+              {menuItems.map((item) => (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     asChild
@@ -127,7 +142,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <header className="flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:h-[60px] lg:px-6 sticky top-0 z-30">
                  <SidebarTrigger className="md:hidden me-4" />
                  <div className="flex-1">
-                    <h1 className="text-xl font-semibold">{currentMenuItems.find(item => item.href === pathname)?.label || 'داشبورد'}</h1>
+                    <h1 className="text-xl font-semibold">{pageTitle}</h1>
                  </div>
                  <Button variant="ghost" size="icon" className="rounded-full">
                     <Bell className="h-5 w-5"/>

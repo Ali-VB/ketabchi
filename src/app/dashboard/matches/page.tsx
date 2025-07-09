@@ -85,7 +85,7 @@ const RequesterMatchCard = ({ match, onUpdate }: { match: Match, onUpdate: () =>
                 <div className="flex justify-between items-start">
                     <div>
                         <CardTitle>سفر از {match.trip.from_city} به {match.trip.to_city}</CardTitle>
-                        <CardDescription>مسافر: {match.trip.user.name}</CardDescription>
+                        <CardDescription>مسافر: {match.trip.user.displayName}</CardDescription>
                     </div>
                     <Badge variant="secondary"><StatusBadge.icon className="h-4 w-4 me-1" />{StatusBadge.text}</Badge>
                 </div>
@@ -206,7 +206,7 @@ const TravelerMatchCard = ({ match, onUpdate }: { match: Match, onUpdate: () => 
                 <div className="flex justify-between items-start">
                     <div>
                         <CardTitle>درخواست کتاب به {match.request.to_city}</CardTitle>
-                        <CardDescription>درخواست‌دهنده: {match.request.user.name}</CardDescription>
+                        <CardDescription>درخواست‌دهنده: {match.request.user.displayName}</CardDescription>
                     </div>
                      <Badge variant="secondary"><StatusBadge.icon className="h-4 w-4 me-1" />{StatusBadge.text}</Badge>
                 </div>

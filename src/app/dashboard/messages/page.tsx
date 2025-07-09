@@ -13,11 +13,11 @@ import {
   getConversations, 
   getMessages, 
   sendMessage, 
-  getOrCreateConversation,
-  getUserProfile,
-  getRequestById,
-  getTripById,
-  createMatch
+  getOrCreateConversation, 
+  getUserProfile, 
+  getRequestById, 
+  getTripById, 
+  createMatch 
 } from '@/lib/firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 
@@ -200,7 +200,7 @@ export default function MessagesPage() {
                 onClick={() => setSelectedConversation(convo)}
               >
                 <div className="flex-1 overflow-hidden">
-                  <p className="font-semibold truncate">{convo.otherUser.name}</p>
+                  <p className="font-semibold truncate">{convo.otherUser.displayName}</p>
                   <p className="text-sm text-muted-foreground truncate">{convo.lastMessage}</p>
                 </div>
               </button>
@@ -212,7 +212,7 @@ export default function MessagesPage() {
         {selectedConversation ? (
           <>
             <div className="p-3 border-b">
-              <h3 className="text-lg font-semibold">{selectedConversation.otherUser.name}</h3>
+              <h3 className="text-lg font-semibold">{selectedConversation.otherUser.displayName}</h3>
             </div>
             <div className="flex-1 overflow-y-auto p-4 lg:p-6 bg-muted/20">
               <div className="space-y-4 overflow-y-auto h-[calc(100vh-400px)]">
@@ -258,7 +258,7 @@ export default function MessagesPage() {
                 <div className="p-4 border-t bg-accent/10">
                     <div className="flex items-center justify-between gap-4">
                         <div className="text-accent">
-                            <p className="font-bold">شروع تراکنش با {selectedConversation.otherUser.name}</p>
+                            <p className="font-bold">شروع تراکنش با {selectedConversation.otherUser.displayName}</p>
                             <p className="text-sm text-accent/80">پس از توافق، برای امن‌سازی پرداخت روی دکمه کلیک کنید.</p>
                         </div>
                         <Button 

@@ -68,8 +68,9 @@ export function NewTripForm({ setDialogOpen, onTripAdded }: { setDialogOpen: (op
         userId: user.uid,
         user: {
             uid: user.uid,
-            name: user.displayName || 'کاربر بی‌نام',
-            avatar: user.photoURL
+            displayName: user.displayName || 'کاربر بی‌نام',
+            photoURL: user.photoURL,
+            email: user.email,
         }
       });
         

@@ -34,7 +34,7 @@ const formatPersianDate = (dateString: string) => {
     }
 };
 
-export default function AdminPage() {
+export default function AdminDisputesPage() {
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
@@ -89,24 +89,9 @@ export default function AdminPage() {
             </div>
         );
     }
-    
-    if (ADMIN_USER_ID === 'YOUR_ADMIN_USER_ID_HERE') {
-        return (
-             <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-destructive/50 bg-destructive/10 p-12 text-center h-80">
-                <h3 className="text-xl font-bold tracking-tight text-destructive">پیکربندی ادمین لازم است</h3>
-                <p className="text-sm text-destructive/80 mt-2 max-w-md">
-                   برای استفاده از این صفحه، لطفاً فایل <code className="font-mono text-xs bg-destructive/20 p-1 rounded">src/app/dashboard/admin/page.tsx</code> را ویرایش کرده و شناسه کاربری ادمین را جایگزین کنید.
-                </p>
-            </div>
-        )
-    }
 
     return (
         <div className="space-y-6">
-             <div>
-                <h2 className="text-2xl font-bold tracking-tight font-headline">ابزارهای ادمین</h2>
-                <p className="text-muted-foreground">تراکنش‌های مورد اختلاف را مدیریت کرده و گزارش‌های پلتفرم را ایجاد کنید.</p>
-            </div>
             <Card>
                 <CardHeader>
                     <CardTitle>تراکنش‌های مورد اختلاف</CardTitle>
@@ -130,8 +115,8 @@ export default function AdminPage() {
                             <TableBody>
                                 {disputedMatches.map(match => (
                                     <TableRow key={match.id}>
-                                        <TableCell>{match.request.user.name}</TableCell>
-                                        <TableCell>{match.trip.user.name}</TableCell>
+                                        <TableCell>{match.request.user.displayName}</TableCell>
+                                        <TableCell>{match.trip.user.displayName}</TableCell>
                                         <TableCell>{formatPersianDate(match.updatedAt)}</TableCell>
                                         <TableCell className="text-left space-x-2 space-x-reverse">
                                             <AlertDialog>

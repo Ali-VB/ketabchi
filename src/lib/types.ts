@@ -1,7 +1,9 @@
 export type User = {
   uid: string;
-  name: string;
-  avatar: string | null;
+  displayName: string;
+  email: string | null;
+  photoURL: string | null;
+  createdAt?: string;
 };
 
 export type Book = {
