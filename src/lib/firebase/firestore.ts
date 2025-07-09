@@ -186,7 +186,7 @@ export const findMatches = async (userId: string): Promise<{
   // 3. Find matches for user's requests
   const requestMatches: MatchedRequest[] = myRequests.map(myRequest => {
     const matchingTrips = allTrips.filter(trip => {
-      // A trip matches a request if the destination city is the same. The origin city in Iran does not need to match.
+      // A trip matches a request if the destination city is the same.
       const cityMatch = myRequest.to_city && trip.to_city && myRequest.to_city.replace(/\s/g, '').toLowerCase() === trip.to_city.replace(/\s/g, '').toLowerCase();
 
       // And if the traveler's date is within the requester's deadline range.
@@ -206,7 +206,7 @@ export const findMatches = async (userId: string): Promise<{
   // 4. Find matches for user's trips
   const tripMatches: MatchedTrip[] = myTrips.map(myTrip => {
     const matchingRequests = allRequests.filter(request => {
-      // A request matches a trip if the destination city is the same. The origin city in Iran does not need to match.
+      // A request matches a trip if the destination city is the same.
       const cityMatch = request.to_city && myTrip.to_city && request.to_city.replace(/\s/g, '').toLowerCase() === myTrip.to_city.replace(/\s/g, '').toLowerCase();
 
       // And if the traveler's date is within the requester's deadline range.
@@ -257,36 +257,49 @@ export const getOrCreateConversation = async (currentUserId: string, recipientId
 export const getConversations = async (userId: string): Promise<Conversation[]> => {
     const q = query(
         conversationsCollection,
-        where('users', 'array-contains', userId),
-        orderBy('lastMessageTimestamp', 'desc')
+        where('users', 'array-contains', userId)
+        // NOTE: orderBy was removed to prevent a complex query that can cause permission errors without a specific index.
+        // Sorting is now handled on the client.
     );
     const querySnapshot = await getDocs(q);
     
-    const conversations = await Promise.all(
-        querySnapshot.docs.map(async (docSnap) => {
-            const data = docSnap.data();
-            const otherUserId = data.users.find((uid: string) => uid !== userId);
-            const otherUserDoc = await getDoc(doc(db, 'users', otherUserId));
-            const otherUser = otherUserDoc.exists() 
-                ? {
-                    uid: otherUserDoc.id,
-                    ...processSerializable(otherUserDoc.data()),
-                  }
-                : {
-                    uid: otherUserId,
-                    displayName: 'Unknown User',
-                    photoURL: null,
-                    email: null,
-                  };
-            
-            return {
-                id: docSnap.id,
-                ...processSerializable(data),
-                otherUser,
-            } as Conversation;
-        })
-    );
-    return conversations;
+    const conversationsPromises = querySnapshot.docs.map(async (docSnap) => {
+        const data = docSnap.data();
+        const otherUserId = data.users.find((uid: string) => uid !== userId);
+        
+        // Handle cases where there's no other user, though this shouldn't happen in a valid conversation.
+        if (!otherUserId) {
+            return null;
+        }
+
+        const otherUserDoc = await getDoc(doc(db, 'users', otherUserId));
+        const otherUser = otherUserDoc.exists() 
+            ? {
+                uid: otherUserDoc.id,
+                ...processSerializable(otherUserDoc.data()),
+                }
+            : {
+                uid: otherUserId,
+                displayName: 'Unknown User',
+                photoURL: null,
+                email: null,
+                };
+        
+        return {
+            id: docSnap.id,
+            ...processSerializable(data),
+            otherUser,
+        } as Conversation;
+    });
+
+    const conversations = (await Promise.all(conversationsPromises)).filter((c): c is Conversation => c !== null);
+
+    // Sort conversations by the last message timestamp, descending.
+    return conversations.sort((a, b) => {
+        const timeA = a.lastMessageTimestamp ? new Date(a.lastMessageTimestamp).getTime() : 0;
+        const timeB = b.lastMessageTimestamp ? new Date(b.lastMessageTimestamp).getTime() : 0;
+        return timeB - timeA;
+    });
 };
 
 export const getMessages = (conversationId: string, callback: (messages: Message[]) => void): (() => void) => {
