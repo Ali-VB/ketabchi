@@ -128,10 +128,10 @@ export function RequestCard({
                   <div className="flex items-center gap-4">
                      <Avatar>
                         <AvatarImage src={trip.user.photoURL ?? `https://placehold.co/40x40.png`} data-ai-hint="user portrait" />
-                        <AvatarFallback>{trip.user.displayName.charAt(0)}</AvatarFallback>
+                        <AvatarFallback>{trip.user.displayName?.charAt(0) || 'T'}</AvatarFallback>
                       </Avatar>
                       <div>
-                          <p className="font-semibold">{trip.user.displayName}</p>
+                          <p className="font-semibold">{trip.user.displayName || 'مسافر بی‌نام'}</p>
                           <p className="text-sm text-muted-foreground">تاریخ سفر: {formatPersianDate(trip.trip_date)}</p>
                       </div>
                   </div>
@@ -217,7 +217,7 @@ export function RequestCard({
         </CardContent>
         {showFooter && (
           <CardFooter className="flex items-center justify-between border-t bg-primary/10 p-4">
-            <span className="text-sm font-medium">{request.user.displayName}</span>
+            <span className="text-sm font-medium">{request.user.displayName || 'درخواست‌کننده بی‌نام'}</span>
             <Button
               variant="ghost"
               size="sm"
