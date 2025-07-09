@@ -441,8 +441,8 @@ export const disputeMatch = async (matchId: string, currentUserId: string): Prom
     const matchRef = doc(db, 'matches', matchId);
     const matchDoc = await getDoc(matchRef);
 
-     if (!matchDoc.exists() || !(matchDoc.data().users.includes(currentUserId))) {
-        throw new Error("Match not found or user is not part of this match.");
+     if (!matchDoc.exists() || matchDoc.data().requesterId !== currentUserId) {
+        throw new Error("Match not found or user is not the requester of this match.");
     }
 
     await updateDoc(matchRef, {
