@@ -221,14 +221,6 @@ export default function MessagesPage() {
                 <AvatarFallback>{selectedConversation.otherUser.name.charAt(0)}</AvatarFallback>
               </Avatar>
               <h3 className="text-lg font-semibold">{selectedConversation.otherUser.name}</h3>
-               <div className="ms-auto">
-                {requestId && tripId && (
-                    <Button onClick={handleCreateMatch} disabled={isCreatingMatch}>
-                        {isCreatingMatch && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-                        شروع تراکنش
-                    </Button>
-                )}
-              </div>
             </div>
             <ScrollArea className="flex-1 p-4 lg:p-6 bg-muted/20">
               <div className="space-y-4">
@@ -262,6 +254,24 @@ export default function MessagesPage() {
                  <div ref={messagesEndRef} />
               </div>
             </ScrollArea>
+            {requestId && tripId && (
+                <div className="p-4 border-t bg-accent/10">
+                    <div className="flex items-center justify-between gap-4">
+                        <div className="text-accent">
+                            <p className="font-bold">مرحله بعد: شروع تراکنش</p>
+                            <p className="text-sm text-accent/80">پس از توافق، برای امن‌سازی پرداخت روی دکمه کلیک کنید.</p>
+                        </div>
+                        <Button 
+                            onClick={handleCreateMatch} 
+                            disabled={isCreatingMatch} 
+                            className="bg-accent text-accent-foreground hover:bg-accent/90 shrink-0"
+                        >
+                            {isCreatingMatch && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
+                            شروع تراکنش
+                        </Button>
+                    </div>
+                </div>
+            )}
             <div className="p-4 border-t bg-background">
               <form onSubmit={handleSendMessage} className="flex items-center gap-2">
                 <Input 
