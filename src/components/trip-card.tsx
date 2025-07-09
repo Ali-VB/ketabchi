@@ -83,8 +83,8 @@ export function TripCard({ trip, showFooter = true, matchCount, matchingRequests
   const MatchBadgeComponent = () => {
     if (isLocked) {
       return (
-        <div className="group absolute inset-0 z-10 flex flex-col justify-end bg-black/30 p-4 text-right transition-all duration-300">
-          <div className="flex items-center gap-2 font-bold text-gray-300">
+        <div className="absolute inset-0 z-10 flex flex-col items-end justify-end bg-black/30 p-4 text-right transition-all duration-300">
+          <div className="inline-flex items-center gap-2 rounded-md bg-black/60 px-3 py-1.5 font-bold text-gray-200">
             <Lock className="h-5 w-5" />
             <p>این سفر بسته شده است</p>
           </div>

@@ -102,8 +102,8 @@ export function RequestCard({
   const MatchBadgeComponent = () => {
     if (isLocked) {
       return (
-        <div className="absolute inset-0 z-10 flex flex-col justify-end bg-black/30 p-4 text-right transition-all duration-300">
-          <div className="flex items-center gap-2 font-bold text-gray-300">
+        <div className="absolute inset-0 z-10 flex flex-col items-end justify-end bg-black/30 p-4 text-right transition-all duration-300">
+          <div className="inline-flex items-center gap-2 rounded-md bg-black/60 px-3 py-1.5 font-bold text-gray-200">
             <Lock className="h-5 w-5" />
             <p>این درخواست بسته شده است</p>
           </div>
@@ -167,7 +167,7 @@ export function RequestCard({
     return (
       <Link
         href="/dashboard"
-        className="group absolute inset-0 z-10 flex flex-col justify-end bg-black/5 p-4 transition-all duration-300 hover:bg-black/10"
+        className="group absolute inset-0 z-10 flex flex-col justify-end bg-black/20 p-4 transition-all duration-300 hover:bg-black/30"
       >
         {badgeContent}
       </Link>
