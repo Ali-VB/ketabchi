@@ -121,7 +121,7 @@ export default function MatchManagementPage() {
     );
 
     const renderEmptyState = () => (
-         <div className="flex h-full flex-col items-center justify-center rounded-md border border-dashed">
+         <div className="flex min-h-[400px] flex-col items-center justify-center rounded-md border border-dashed">
             <div className="text-center">
                 <PackageSearch className="mx-auto h-12 w-12 text-muted-foreground/50" />
                 <p className="mt-4 font-medium text-muted-foreground">هیچ تراکنشی برای این وضعیت یافت نشد.</p>
@@ -146,7 +146,7 @@ export default function MatchManagementPage() {
                         <TabsTrigger value="disputed">مورد اختلاف</TabsTrigger>
                         <TabsTrigger value="cancelled">لغو شده</TabsTrigger>
                     </TabsList>
-                    <TabsContent value={activeTab} className="mt-4 min-h-[400px]">
+                    <TabsContent value={activeTab} className="mt-4">
                         {filteredMatches.length > 0 ? renderTable() : renderEmptyState()}
                     </TabsContent>
                 </Tabs>
