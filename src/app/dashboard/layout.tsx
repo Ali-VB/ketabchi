@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Bell, ChevronDown, Home, Loader2, LogOut, Mail, Package, Plane, Settings, User, Users, ShieldAlert, Handshake, CheckCircle, DollarSign } from 'lucide-react';
+import { Bell, ChevronDown, Home, Loader2, LogOut, Mail, Package, Plane, Settings, User, Users, ShieldAlert, Handshake, BookOpen } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Logo } from '@/components/logo';
 import { useAuth } from '@/components/auth-provider';
@@ -38,6 +38,7 @@ const adminMenuItems = [
     { href: '/dashboard/admin/matches', label: 'تراکنش‌ها', icon: Handshake },
     { href: '/dashboard/admin/users', label: 'کاربران', icon: Users },
     { href: '/dashboard/admin/disputes', label: 'اختلافات', icon: ShieldAlert },
+    { href: '/dashboard/admin/reports', label: 'گزارش‌ها', icon: BookOpen },
     { href: '/dashboard/admin/settings', label: 'تنظیمات', icon: Settings },
 ];
 
@@ -73,6 +74,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         if (path.startsWith('/dashboard/admin/matches')) return 'مدیریت تراکنش‌ها';
         if (path.startsWith('/dashboard/admin/users')) return 'مدیریت کاربران';
         if (path.startsWith('/dashboard/admin/disputes')) return 'رسیدگی به اختلافات';
+        if (path.startsWith('/dashboard/admin/reports')) return 'گزارش‌های پلتفرم';
         if (path.startsWith('/dashboard/admin/settings')) return 'تنظیمات پلتفرم';
         if (path === '/dashboard') return 'داشبورد ادمین';
     }
