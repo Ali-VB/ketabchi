@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -7,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import { Loader2, PackageSearch } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Match } from '@/lib/types';
 import { getAllMatches } from '@/lib/firebase/firestore';
@@ -90,6 +91,44 @@ export default function MatchManagementPage() {
         );
     }
 
+    const renderTable = () => (
+        <Table>
+            <TableHeader>
+                <TableRow>
+                    <TableHead>درخواست‌دهنده</TableHead>
+                    <TableHead>مسافر</TableHead>
+                    <TableHead>وضعیت</TableHead>
+                    <TableHead>مبلغ</TableHead>
+                    <TableHead>تاریخ ایجاد</TableHead>
+                    <TableHead className="text-left">اقدامات</TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {filteredMatches.map(match => (
+                    <TableRow key={match.id}>
+                        <TableCell className="font-medium">{match.request.user.displayName}</TableCell>
+                        <TableCell className="font-medium">{match.trip.user.displayName}</TableCell>
+                        <TableCell>{getStatusBadge(match.status)}</TableCell>
+                        <TableCell>${(match.amount ?? 0).toFixed(2)}</TableCell>
+                        <TableCell>{formatPersianDate(match.createdAt)}</TableCell>
+                        <TableCell className="text-left">
+                            <Button variant="outline" size="sm">مشاهده جزئیات</Button>
+                        </TableCell>
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
+    );
+
+    const renderEmptyState = () => (
+         <div className="flex h-96 flex-col items-center justify-center rounded-md border border-dashed">
+            <div className="text-center">
+                <PackageSearch className="mx-auto h-12 w-12 text-muted-foreground/50" />
+                <p className="mt-4 font-medium text-muted-foreground">هیچ تراکنشی برای این وضعیت یافت نشد.</p>
+            </div>
+        </div>
+    );
+
     return (
         <Card>
             <CardHeader>
@@ -108,38 +147,7 @@ export default function MatchManagementPage() {
                         <TabsTrigger value="cancelled">لغو شده</TabsTrigger>
                     </TabsList>
                     <TabsContent value={activeTab} className="mt-4">
-                        {filteredMatches.length === 0 && !isLoading ? (
-                            <div className="py-12 text-center">
-                               <p className="text-muted-foreground">هیچ تراکنشی برای این وضعیت یافت نشد.</p>
-                            </div>
-                        ) : (
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>درخواست‌دهنده</TableHead>
-                                        <TableHead>مسافر</TableHead>
-                                        <TableHead>وضعیت</TableHead>
-                                        <TableHead>مبلغ</TableHead>
-                                        <TableHead>تاریخ ایجاد</TableHead>
-                                        <TableHead className="text-left">اقدامات</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {filteredMatches.map(match => (
-                                        <TableRow key={match.id}>
-                                            <TableCell className="font-medium">{match.request.user.displayName}</TableCell>
-                                            <TableCell className="font-medium">{match.trip.user.displayName}</TableCell>
-                                            <TableCell>{getStatusBadge(match.status)}</TableCell>
-                                            <TableCell>${(match.amount ?? 0).toFixed(2)}</TableCell>
-                                            <TableCell>{formatPersianDate(match.createdAt)}</TableCell>
-                                            <TableCell className="text-left">
-                                                <Button variant="outline" size="sm">مشاهده جزئیات</Button>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        )}
+                        {filteredMatches.length > 0 ? renderTable() : renderEmptyState()}
                     </TabsContent>
                 </Tabs>
             </CardContent>

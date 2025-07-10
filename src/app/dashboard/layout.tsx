@@ -148,18 +148,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </DropdownMenu>
           </SidebarFooter>
         </Sidebar>
-        <SidebarInset>
+        <SidebarInset className="flex-1">
             <header className="flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:h-[60px] lg:px-6 sticky top-0 z-30">
                  <SidebarTrigger className="md:hidden me-4" />
                  <div className="flex-1">
                     <h1 className="text-xl font-semibold">{pageTitle}</h1>
                  </div>
-                 <Button variant="ghost" size="icon" className="rounded-full">
+                 <Button variant="ghost" size="icon" className="rounded-full ms-auto">
                     <Bell className="h-5 w-5"/>
                     <span className="sr-only">Notifications</span>
                  </Button>
             </header>
-            <main className="flex-1 p-4 sm:p-6 bg-muted/20">{children}</main>
+            <main className="flex-grow p-4 sm:p-6 bg-muted/20">{children}</main>
         </SidebarInset>
       </div>
     </SidebarProvider>
