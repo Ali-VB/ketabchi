@@ -91,43 +91,33 @@ export default function MatchManagementPage() {
         );
     }
 
-    const renderTable = () => (
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead>درخواست‌دهنده</TableHead>
-                    <TableHead>مسافر</TableHead>
-                    <TableHead>وضعیت</TableHead>
-                    <TableHead>مبلغ</TableHead>
-                    <TableHead>تاریخ ایجاد</TableHead>
-                    <TableHead className="text-left">اقدامات</TableHead>
+    const renderTableContent = () => {
+        if (filteredMatches.length === 0) {
+            return (
+                 <TableRow>
+                    <TableCell colSpan={6} className="h-24 text-center">
+                       هیچ تراکنشی برای این وضعیت یافت نشد.
+                    </TableCell>
                 </TableRow>
-            </TableHeader>
-            <TableBody>
-                {filteredMatches.map(match => (
-                    <TableRow key={match.id}>
-                        <TableCell className="font-medium">{match.request.user.displayName}</TableCell>
-                        <TableCell className="font-medium">{match.trip.user.displayName}</TableCell>
-                        <TableCell>{getStatusBadge(match.status)}</TableCell>
-                        <TableCell>${(match.amount ?? 0).toFixed(2)}</TableCell>
-                        <TableCell>{formatPersianDate(match.createdAt)}</TableCell>
-                        <TableCell className="text-left">
-                            <Button variant="outline" size="sm">مشاهده جزئیات</Button>
-                        </TableCell>
-                    </TableRow>
-                ))}
-            </TableBody>
-        </Table>
-    );
-
-    const renderEmptyState = () => (
-         <div className="flex min-h-[400px] flex-col items-center justify-center rounded-md border border-dashed">
-            <div className="text-center">
-                <PackageSearch className="mx-auto h-12 w-12 text-muted-foreground/50" />
-                <p className="mt-4 font-medium text-muted-foreground">هیچ تراکنشی برای این وضعیت یافت نشد.</p>
-            </div>
-        </div>
-    );
+            )
+        }
+        return (
+            <>
+            {filteredMatches.map(match => (
+                <TableRow key={match.id}>
+                    <TableCell className="font-medium">{match.request.user.displayName}</TableCell>
+                    <TableCell className="font-medium">{match.trip.user.displayName}</TableCell>
+                    <TableCell>{getStatusBadge(match.status)}</TableCell>
+                    <TableCell>${(match.amount ?? 0).toFixed(2)}</TableCell>
+                    <TableCell>{formatPersianDate(match.createdAt)}</TableCell>
+                    <TableCell className="text-left">
+                        <Button variant="outline" size="sm">مشاهده جزئیات</Button>
+                    </TableCell>
+                </TableRow>
+            ))}
+            </>
+        )
+    }
 
     return (
         <Card>
@@ -147,7 +137,23 @@ export default function MatchManagementPage() {
                         <TabsTrigger value="cancelled">لغو شده</TabsTrigger>
                     </TabsList>
                     <TabsContent value={activeTab} className="mt-4">
-                        {filteredMatches.length > 0 ? renderTable() : renderEmptyState()}
+                       <div className="rounded-md border">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>درخواست‌دهنده</TableHead>
+                                        <TableHead>مسافر</TableHead>
+                                        <TableHead>وضعیت</TableHead>
+                                        <TableHead>مبلغ</TableHead>
+                                        <TableHead>تاریخ ایجاد</TableHead>
+                                        <TableHead className="text-left">اقدامات</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {renderTableContent()}
+                                </TableBody>
+                            </Table>
+                        </div>
                     </TabsContent>
                 </Tabs>
             </CardContent>
