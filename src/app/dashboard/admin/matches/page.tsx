@@ -14,6 +14,8 @@ import type { Match } from '@/lib/types';
 import { getAllMatches } from '@/lib/firebase/firestore';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Separator } from '@/components/ui/separator';
 
 // This is a temporary admin check. Replace with a robust role-based system.
 const ADMIN_USER_ID = 'jwHiUx2XD3dcl3C0x7mobpkGOYy2';
@@ -52,6 +54,7 @@ export default function MatchManagementPage() {
     const [filteredMatches, setFilteredMatches] = useState<Match[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('all');
+    const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
 
     useEffect(() => {
         if (!authLoading) {
@@ -90,6 +93,43 @@ export default function MatchManagementPage() {
             </div>
         );
     }
+    
+    const renderMatchDetails = (match: Match) => (
+        <div className="space-y-4 text-sm">
+            <div className="grid grid-cols-2 gap-4">
+                <div>
+                    <h4 className="font-semibold">درخواست‌دهنده</h4>
+                    <p>{match.request.user.displayName}</p>
+                    <p className="text-muted-foreground">{match.request.user.email}</p>
+                </div>
+                <div>
+                    <h4 className="font-semibold">مسافر</h4>
+                    <p>{match.trip.user.displayName}</p>
+                    <p className="text-muted-foreground">{match.trip.user.email}</p>
+                </div>
+            </div>
+            
+            <Separator />
+
+            <div>
+                 <h4 className="font-semibold mb-2">جزئیات درخواست</h4>
+                 <div className="space-y-1">
+                    {match.request.books?.map((book, index) => (
+                        <p key={index} className="text-muted-foreground"> - {book.quantity}x {book.title} ({book.author})</p>
+                    ))}
+                 </div>
+                 <p className="text-muted-foreground mt-2">از <span className="font-medium text-foreground">{match.request.from_city}</span> به <span className="font-medium text-foreground">{match.request.to_city}</span></p>
+            </div>
+            
+            <Separator />
+
+            <div>
+                 <h4 className="font-semibold mb-2">جزئیات سفر</h4>
+                 <p className="text-muted-foreground">از <span className="font-medium text-foreground">{match.trip.from_city}</span> به <span className="font-medium text-foreground">{match.trip.to_city}</span></p>
+                 <p className="text-muted-foreground">تاریخ سفر: <span className="font-medium text-foreground">{formatPersianDate(match.trip.trip_date)}</span></p>
+            </div>
+        </div>
+    );
 
     const renderTableContent = () => {
         if (filteredMatches.length === 0) {
@@ -111,7 +151,7 @@ export default function MatchManagementPage() {
                     <TableCell>${(match.amount ?? 0).toFixed(2)}</TableCell>
                     <TableCell>{formatPersianDate(match.createdAt)}</TableCell>
                     <TableCell className="text-left">
-                        <Button variant="outline" size="sm">مشاهده جزئیات</Button>
+                        <Button variant="outline" size="sm" onClick={() => setSelectedMatch(match)}>مشاهده جزئیات</Button>
                     </TableCell>
                 </TableRow>
             ))}
@@ -120,6 +160,7 @@ export default function MatchManagementPage() {
     }
 
     return (
+        <>
         <Card>
             <CardHeader>
                 <CardTitle>مدیریت تراکنش‌ها</CardTitle>
@@ -160,5 +201,17 @@ export default function MatchManagementPage() {
                 </Tabs>
             </CardContent>
         </Card>
+        <Dialog open={!!selectedMatch} onOpenChange={(isOpen) => !isOpen && setSelectedMatch(null)}>
+            <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle>جزئیات تراکنش</DialogTitle>
+                     <DialogDescription>
+                        اطلاعات کامل تراکنش بین درخواست‌دهنده و مسافر.
+                    </DialogDescription>
+                </DialogHeader>
+                {selectedMatch && renderMatchDetails(selectedMatch)}
+            </DialogContent>
+        </Dialog>
+        </>
     );
 }
