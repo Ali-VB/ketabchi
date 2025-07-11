@@ -16,7 +16,8 @@ import {
   getOrCreateConversationAndMatch, 
   getRequestById, 
   getTripById, 
-  createMatch 
+  createMatch,
+  getUserProfile, 
 } from '@/lib/firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 

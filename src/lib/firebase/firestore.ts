@@ -230,9 +230,12 @@ export const findMatches = async (userId: string): Promise<{
 
 // --- Messaging Functions ---
 
-export const getUserProfile = async (userId: string) => {
+export const getUserProfile = async (userId: string): Promise<User | null> => {
     const userDoc = await getDoc(doc(db, 'users', userId));
-    return userDoc.exists() ? userDoc.data() : null;
+    if (userDoc.exists()) {
+        return { uid: userDoc.id, ...processSerializable(userDoc.data()) } as User;
+    }
+    return null;
 }
 
 export const getOrCreateConversationAndMatch = async (
@@ -253,11 +256,33 @@ export const getOrCreateConversationAndMatch = async (
     if (conversation) {
         conversationId = conversation.id;
     } else {
-        const newConversation = await addDoc(conversationsCollection, {
+        const [currentUserProfile, recipientProfile] = await Promise.all([
+            getUserProfile(currentUserId),
+            getUserProfile(recipientId)
+        ]);
+
+        if (!currentUserProfile || !recipientProfile) {
+            throw new Error("Could not find user profiles to create conversation.");
+        }
+
+        const newConversationData = {
             users: [currentUserId, recipientId],
+            // Store user info directly in the conversation to avoid extra reads and permission issues
+            userInfo: {
+                [currentUserId]: {
+                    displayName: currentUserProfile.displayName,
+                    photoURL: currentUserProfile.photoURL,
+                },
+                [recipientId]: {
+                    displayName: recipientProfile.displayName,
+                    photoURL: recipientProfile.photoURL,
+                }
+            },
             lastMessage: '',
             lastMessageTimestamp: serverTimestamp(),
-        });
+        }
+
+        const newConversation = await addDoc(conversationsCollection, newConversationData);
         conversationId = newConversation.id;
     }
 
@@ -284,49 +309,29 @@ export const getOrCreateConversationAndMatch = async (
 export const getConversations = async (userId: string): Promise<Conversation[]> => {
     const q = query(
         conversationsCollection,
-        where('users', 'array-contains', userId)
-        // NOTE: orderBy was removed to prevent a complex query that can cause permission errors without a specific index.
-        // Sorting is now handled on the client.
+        where('users', 'array-contains', userId),
+        orderBy('lastMessageTimestamp', 'desc')
     );
     const querySnapshot = await getDocs(q);
     
-    const conversationsPromises = querySnapshot.docs.map(async (docSnap) => {
+    const conversations = querySnapshot.docs.map(docSnap => {
         const data = docSnap.data();
         const otherUserId = data.users.find((uid: string) => uid !== userId);
         
-        // Handle cases where there's no other user, though this shouldn't happen in a valid conversation.
-        if (!otherUserId) {
-            return null;
-        }
-
-        const otherUserDoc = await getDoc(doc(db, 'users', otherUserId));
-        const otherUser = otherUserDoc.exists() 
-            ? {
-                uid: otherUserDoc.id,
-                ...processSerializable(otherUserDoc.data()),
-                }
-            : {
-                uid: otherUserId,
-                displayName: 'Unknown User',
-                photoURL: null,
-                email: null,
-                };
+        const otherUserInfo = data.userInfo?.[otherUserId] || { displayName: 'کاربر ناشناس', photoURL: null };
         
         return {
             id: docSnap.id,
             ...processSerializable(data),
-            otherUser,
+            otherUser: {
+                uid: otherUserId,
+                displayName: otherUserInfo.displayName,
+                photoURL: otherUserInfo.photoURL,
+            },
         } as Conversation;
     });
 
-    const conversations = (await Promise.all(conversationsPromises)).filter((c): c is Conversation => c !== null);
-
-    // Sort conversations by the last message timestamp, descending.
-    return conversations.sort((a, b) => {
-        const timeA = a.lastMessageTimestamp ? new Date(a.lastMessageTimestamp).getTime() : 0;
-        const timeB = b.lastMessageTimestamp ? new Date(b.lastMessageTimestamp).getTime() : 0;
-        return timeB - timeA;
-    });
+    return conversations.filter(c => c.otherUser.uid);
 };
 
 export const getMessages = (conversationId: string, callback: (messages: Message[]) => void): (() => void) => {
