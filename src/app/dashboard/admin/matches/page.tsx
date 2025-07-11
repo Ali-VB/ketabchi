@@ -173,8 +173,8 @@ export default function MatchManagementPage() {
                     <div className="flex justify-end">
                         <TabsList>
                             <TabsTrigger value="all">همه</TabsTrigger>
-                            <TabsTrigger value="active">فعال</TabsTrigger>
                             <TabsTrigger value="completed">تکمیل‌شده</TabsTrigger>
+                            <TabsTrigger value="active">فعال</TabsTrigger>
                             <TabsTrigger value="disputed">مورد اختلاف</TabsTrigger>
                             <TabsTrigger value="cancelled">لغو شده</TabsTrigger>
                         </TabsList>
