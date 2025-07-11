@@ -24,6 +24,7 @@ const requestsCollection = collection(db, 'requests');
 const tripsCollection = collection(db, 'trips');
 const usersCollection = collection(db, 'users');
 const matchesCollection = collection(db, 'matches');
+const conversationsCollection = collection(db, 'conversations');
 
 
 // Helper to convert non-serializable Firestore Timestamps to strings
@@ -241,71 +242,72 @@ export const getOrCreateConversation = async (
     currentUserId: string,
     recipientId: string
 ): Promise<Conversation> => {
-    // Generate a consistent, unique conversation ID for this pair of users
     const conversationId = [currentUserId, recipientId].sort().join('_');
-    const currentUserConvRef = doc(db, 'users', currentUserId, 'conversations', conversationId);
-    const currentUserConvSnap = await getDoc(currentUserConvRef);
+    const conversationRef = doc(conversationsCollection, conversationId);
+    const conversationSnap = await getDoc(conversationRef);
 
-    if (currentUserConvSnap.exists()) {
-        return { id: conversationId, ...processSerializable(currentUserConvSnap.data()) } as Conversation;
+    if (conversationSnap.exists()) {
+        const conversationData = conversationSnap.data();
+        const otherUserId = conversationData.users.find((id: string) => id !== currentUserId);
+        const otherUser = await getUserProfile(otherUserId);
+        return { id: conversationId, ...processSerializable(conversationData), otherUser } as Conversation;
+    } else {
+        const [currentUserProfile, recipientProfile] = await Promise.all([
+            getUserProfile(currentUserId),
+            getUserProfile(recipientId)
+        ]);
+
+        if (!currentUserProfile || !recipientProfile) {
+            throw new Error("Could not find user profiles to create conversation.");
+        }
+
+        const newConversationData = {
+            users: [currentUserId, recipientId],
+            userProfiles: {
+                [currentUserId]: {
+                    displayName: currentUserProfile.displayName,
+                    photoURL: currentUserProfile.photoURL,
+                },
+                [recipientId]: {
+                    displayName: recipientProfile.displayName,
+                    photoURL: recipientProfile.photoURL,
+                },
+            },
+            lastMessage: '',
+            lastMessageTimestamp: serverTimestamp(),
+        };
+
+        await setDoc(conversationRef, newConversationData);
+        
+        const otherUser = recipientProfile;
+        
+        return {
+            id: conversationId,
+            ...processSerializable(await getDoc(conversationRef).then(snap => snap.data())),
+            otherUser
+        } as Conversation;
     }
-
-    // Conversation doesn't exist for the current user, so create it for both users.
-    const [currentUserProfile, recipientProfile] = await Promise.all([
-        getUserProfile(currentUserId),
-        getUserProfile(recipientId)
-    ]);
-    
-    if (!currentUserProfile || !recipientProfile) {
-        throw new Error("Could not find user profiles to create conversation.");
-    }
-    
-    const now = new Date();
-    const conversationForCurrentUser: Omit<Conversation, 'id'> = {
-        users: [currentUserId, recipientId],
-        otherUser: {
-            uid: recipientProfile.uid,
-            displayName: recipientProfile.displayName,
-            photoURL: recipientProfile.photoURL,
-            email: recipientProfile.email,
-        },
-        lastMessage: '',
-        lastMessageTimestamp: now.toISOString(),
-    };
-    
-    const conversationForRecipient: Omit<Conversation, 'id'> = {
-        users: [currentUserId, recipientId],
-        otherUser: {
-            uid: currentUserProfile.uid,
-            displayName: currentUserProfile.displayName,
-            photoURL: currentUserProfile.photoURL,
-            email: currentUserProfile.email,
-        },
-        lastMessage: '',
-        lastMessageTimestamp: now.toISOString(),
-    };
-    
-    const batch = writeBatch(db);
-    batch.set(currentUserConvRef, conversationForCurrentUser);
-    const recipientConvRef = doc(db, 'users', recipientId, 'conversations', conversationId);
-    batch.set(recipientConvRef, conversationForRecipient);
-    await batch.commit();
-
-    return { id: conversationId, ...conversationForCurrentUser };
 };
 
-
 export const getConversations = (userId: string, callback: (conversations: Conversation[]) => void): (() => void) => {
-    const conversationsRef = collection(db, 'users', userId, 'conversations');
-    const q = query(conversationsRef, orderBy('lastMessageTimestamp', 'desc'));
+    const q = query(conversationsCollection, 
+        where('users', 'array-contains', userId), 
+        orderBy('lastMessageTimestamp', 'desc')
+    );
 
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        const conversations = querySnapshot.docs.map(docSnap => {
+    const unsubscribe = onSnapshot(q, async (querySnapshot) => {
+        const conversationsPromises = querySnapshot.docs.map(async (docSnap) => {
+            const data = docSnap.data();
+            const otherUserId = data.users.find((id: string) => id !== userId);
+            const otherUser = await getUserProfile(otherUserId);
             return {
                 id: docSnap.id,
-                ...processSerializable(docSnap.data()),
+                ...processSerializable(data),
+                otherUser,
             } as Conversation;
         });
+
+        const conversations = await Promise.all(conversationsPromises);
         callback(conversations);
     }, (error) => {
         console.error("Error fetching conversations:", error);
@@ -316,8 +318,8 @@ export const getConversations = (userId: string, callback: (conversations: Conve
 };
 
 export const getMessages = (conversationId: string, callback: (messages: Message[]) => void): (() => void) => {
-    const messagesCollection = collection(db, 'conversations', conversationId, 'messages');
-    const q = query(messagesCollection, orderBy('timestamp', 'asc'));
+    const messagesCollectionRef = collection(db, 'conversations', conversationId, 'messages');
+    const q = query(messagesCollectionRef, orderBy('timestamp', 'asc'));
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
         const messages = querySnapshot.docs.map(doc => ({
@@ -332,25 +334,21 @@ export const getMessages = (conversationId: string, callback: (messages: Message
 };
 
 export const sendMessage = async (conversationId: string, message: { text: string, senderId: string }) => {
+    const conversationRef = doc(conversationsCollection, conversationId);
+    const messagesRef = collection(conversationRef, 'messages');
+
     const batch = writeBatch(db);
-    
-    // Add message to the shared messages subcollection
-    const messagesRef = doc(collection(db, 'conversations', conversationId, 'messages'));
-    batch.set(messagesRef, { ...message, timestamp: serverTimestamp() });
-    
-    // Update the last message in both users' conversation documents
-    const users = conversationId.split('_');
-    const now = serverTimestamp();
-    const updatePayload = {
+
+    // Add new message to the messages subcollection
+    const newMessageRef = doc(messagesRef);
+    batch.set(newMessageRef, { ...message, timestamp: serverTimestamp() });
+
+    // Update the last message details on the parent conversation document
+    batch.update(conversationRef, {
         lastMessage: message.text,
-        lastMessageTimestamp: now,
-    };
-    
-    users.forEach(userId => {
-        const userConvRef = doc(db, 'users', userId, 'conversations', conversationId);
-        batch.update(userConvRef, updatePayload);
+        lastMessageTimestamp: serverTimestamp(),
     });
-    
+
     await batch.commit();
 };
 

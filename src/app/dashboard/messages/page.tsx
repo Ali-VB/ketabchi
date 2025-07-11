@@ -75,18 +75,22 @@ export default function MessagesPage() {
         }
       } catch (error) {
         console.error("Failed to create/get conversation:", error);
-        toast({ variant: "destructive", title: "خطا", description: "امکان بارگزاری گفتگوها وجود ندارد." });
+        toast({ variant: "destructive", title: "خطا", description: "امکان بارگزاری گفتگو وجود ندارد." });
       } finally {
-        setIsLoadingConversations(false);
+        // We set loading to false here, but the listener below will also do it.
+        // This ensures the UI updates even if there are no existing conversations.
+        setIsLoadingConversations(false); 
       }
   
       unsubscribeConversations = getConversations(user.uid, (allConversations) => {
         setConversations(allConversations);
         if (!selectedConversation && recipientId) {
-           const found = allConversations.find(c => c.users.includes(recipientId));
+           const conversationId = [user.uid, recipientId].sort().join('_');
+           const found = allConversations.find(c => c.id === conversationId);
            if(found) setSelectedConversation(found);
-        } else if (!selectedConversation && allConversations.length > 0) {
-          setSelectedConversation(allConversations[0]);
+        } else if (!selectedConversation && !recipientId && allConversations.length > 0) {
+            // Default to selecting the first conversation if none is specified in URL
+            setSelectedConversation(allConversations[0]);
         }
         setIsLoadingConversations(false);
       });
@@ -99,7 +103,7 @@ export default function MessagesPage() {
         unsubscribeConversations();
       }
     };
-  }, [user, authLoading, recipientId, requestId, tripId, toast]);
+  }, [user, authLoading, recipientId, requestId, tripId, toast, selectedConversation]);
 
 
   // Listen for messages in the selected conversation
