@@ -1,19 +1,27 @@
-// To run this script, you must first have a .env file with the following variable set:
+// To run this script, you must first have a .env or .env.local file with the following variable set:
 // FIREBASE_SERVICE_ACCOUNT_KEY='{...}'
 // Then, from your terminal, run `npm run clean:db`
 
 import { config } from 'dotenv';
 import * as admin from 'firebase-admin';
 import type { CollectionReference } from 'firebase-admin/firestore';
+import * as fs from 'fs';
+import * as path from 'path';
 
-// Load environment variables from .env file
-config();
+// --- Environment Variable Loading ---
+// Load .env.local first if it exists, then .env
+const envLocalPath = path.resolve(process.cwd(), '.env.local');
+if (fs.existsSync(envLocalPath)) {
+  config({ path: envLocalPath });
+} else {
+  config(); // Loads .env by default
+}
 
 // --- Firebase Admin Initialization ---
 const serviceAccountString = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
 if (!serviceAccountString) {
     console.error('🔴 ERROR: FIREBASE_SERVICE_ACCOUNT_KEY environment variable not set.');
-    console.error('Please add your Firebase service account key to the .env file.');
+    console.error('Please add your Firebase service account key to your .env.local or .env file.');
     process.exit(1);
 }
 
@@ -27,7 +35,7 @@ try {
     }
 } catch (error: any) {
     console.error('🔴 ERROR: Failed to parse or initialize Firebase Admin SDK.');
-    console.error('Ensure the FIREBASE_SERVICE_ACCOUNT_KEY in your .env file is a valid JSON object.');
+    console.error('Ensure the FIREBASE_SERVICE_ACCOUNT_KEY in your .env.local or .env file is a valid JSON object.');
     console.error('Original Error:', error.message);
     process.exit(1);
 }
