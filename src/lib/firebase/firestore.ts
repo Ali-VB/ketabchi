@@ -297,7 +297,7 @@ export const getOrCreateConversationAndMatch = async (
         conversation = { id: conversationId, ...processSerializable(currentUserConvSnap.data()) } as Conversation
     }
 
-    // Find existing match
+    // Find or create match
     let match: Match | null = null;
     if (requestId && tripId) {
         const matchQuery = query(
@@ -310,6 +310,17 @@ export const getOrCreateConversationAndMatch = async (
         if (!matchSnapshot.empty) {
             const doc = matchSnapshot.docs[0];
             match = { id: doc.id, ...processSerializable(doc.data()) } as Match;
+        } else {
+            // If match doesn't exist, create it
+            const request = await getRequestById(requestId);
+            const trip = await getTripById(tripId);
+            if(request && trip) {
+                const matchId = await createMatch(request, trip);
+                const matchDoc = await getDoc(doc(db, 'matches', matchId));
+                if (matchDoc.exists()) {
+                    match = { id: matchDoc.id, ...processSerializable(matchDoc.data()) } as Match;
+                }
+            }
         }
     }
 

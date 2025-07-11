@@ -16,9 +16,7 @@ import {
   sendMessage, 
   getOrCreateConversationAndMatch, 
   getRequestById, 
-  getTripById, 
-  createMatch,
-  getUserProfile, 
+  getTripById,
 } from '@/lib/firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -55,57 +53,49 @@ export default function MessagesPage() {
 
 
   React.useEffect(() => {
-    if (!user) {
+    if (authLoading || !user) {
       if (!authLoading) setIsLoadingConversations(false);
       return;
     }
-
+  
+    let unsubscribeConversations: (() => void) | undefined;
+  
     const handleInitialLoad = async () => {
-        setIsLoadingConversations(true);
-        const unsubscribe = getConversations(user.uid, (allConversations) => {
-            setConversations(allConversations);
-
-            if (recipientId && user.uid !== recipientId) {
-                // Find or create conversation with the specified recipient
-                const targetConversation = allConversations.find(c => c.otherUser.uid === recipientId);
-                if (targetConversation) {
-                    setSelectedConversation(targetConversation);
-                } else {
-                    // This indicates a new conversation needs to be created, which should be handled by getOrCreate
-                }
-            } else if (allConversations.length > 0 && !selectedConversation) {
-                setSelectedConversation(allConversations[0]);
-            }
-            setIsLoadingConversations(false);
-        });
-
-        // If a recipient is specified, ensure the conversation and match exist.
+      try {
         if (recipientId && user.uid !== recipientId) {
-            try {
-                const { conversation, match } = await getOrCreateConversationAndMatch(user.uid, recipientId, requestId, tripId);
-                setExistingMatch(match);
-                // This might trigger the onSnapshot listener above if a new conversation was created.
-                // We set it as selected here to ensure the UI updates.
-                if (conversation && !conversations.some(c => c.id === conversation.id)) {
-                    setConversations(prev => [conversation, ...prev]);
-                }
-                setSelectedConversation(conversation);
-
-            } catch (error) {
-                console.error("Failed to ensure conversation exists:", error);
-                toast({ variant: "destructive", title: "خطا", description: "امکان ایجاد یا یافتن گفتگو وجود نداشت." });
-            }
+          setIsLoadingConversations(true);
+          const { conversation, match } = await getOrCreateConversationAndMatch(user.uid, recipientId, requestId, tripId);
+          setSelectedConversation(conversation);
+          if (match) {
+            setExistingMatch(match);
+          }
         }
-        return unsubscribe;
-    }
-
-    const unsubscribePromise = handleInitialLoad();
-
-    return () => {
-        unsubscribePromise.then(unsubscribe => unsubscribe && unsubscribe());
+      } catch (error) {
+        console.error("Failed to create/get conversation:", error);
+        toast({ variant: "destructive", title: "خطا", description: "؛امکان بارگزاری گفتگوها وجود ندارد؛" });
+        setIsLoadingConversations(false);
+      }
+  
+      unsubscribeConversations = getConversations(user.uid, (allConversations) => {
+        setConversations(allConversations);
+        if (!selectedConversation && recipientId) {
+           const found = allConversations.find(c => c.id.includes(recipientId));
+           if(found) setSelectedConversation(found);
+        } else if (!selectedConversation && allConversations.length > 0) {
+          setSelectedConversation(allConversations[0]);
+        }
+        setIsLoadingConversations(false);
+      });
     };
-}, [user, authLoading, recipientId, requestId, tripId]);
-
+  
+    handleInitialLoad();
+  
+    return () => {
+      if (unsubscribeConversations) {
+        unsubscribeConversations();
+      }
+    };
+  }, [user, authLoading, recipientId, requestId, tripId, toast]);
 
 
   // Listen for messages in the selected conversation
@@ -166,8 +156,11 @@ export default function MessagesPage() {
                 toast({ variant: 'destructive', title: 'خطا', description: 'سفر مورد نظر یافت نشد.' });
                 return;
             }
-            
-            matchId = await createMatch(request, trip);
+             const { match: newMatch } = await getOrCreateConversationAndMatch(user.uid, trip.userId, requestId, tripId);
+             if(!newMatch) {
+                throw new Error("Failed to create a new match.");
+             }
+             matchId = newMatch.id;
         }
         
         const bookTitles = request?.books?.map(b => b.title).join(', ') || 'کتاب';
