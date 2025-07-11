@@ -28,10 +28,19 @@ export default function AdminSettingsPage() {
     }, [user, authLoading, router]);
     
     const handleCleanDatabase = async () => {
+        if (!user) {
+            toast({ variant: 'destructive', title: 'خطا', description: 'برای انجام این عملیات باید وارد شده باشید.' });
+            return;
+        }
+
         setIsCleaning(true);
         try {
+            const token = await user.getIdToken();
             const response = await fetch('/api/admin/clean-database', {
                 method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
             });
             const result = await response.json();
             if (!response.ok) {

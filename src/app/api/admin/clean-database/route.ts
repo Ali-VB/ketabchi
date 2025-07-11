@@ -2,30 +2,31 @@
 // It should only be accessible to administrators.
 
 import { NextResponse, NextRequest } from 'next/server';
-import { collection, getDocs, writeBatch, query, where } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase/config'; // Using server-side config
-import { headers } from 'next/headers';
+import { collection, getDocs, writeBatch, query, where, CollectionReference } from 'firebase-admin/firestore';
+import { getAuth } from 'firebase-admin/auth';
+import { adminDb, initializeAdminApp } from '@/lib/firebase/admin-config';
 
 const ADMIN_USER_ID = 'jwHiUx2XD3dcl3C0x7mobpkGOYy2';
 
-// Note: In a production environment, you would use a more robust
-// authentication and authorization mechanism, likely involving custom claims
-// or a server-side Firebase Admin SDK to verify the user's role.
-// For this project, we are simply checking the UID.
+async function deleteCollection(collectionPath: string, batch: FirebaseFirestore.WriteBatch) {
+    const collectionRef = adminDb.collection(collectionPath) as CollectionReference;
+    const snapshot = await collectionRef.get();
+    
+    if (snapshot.empty) {
+        console.log(`Collection ${collectionPath} is already empty.`);
+        return;
+    }
 
-async function deleteCollection(collectionPath: string, batch: any) {
-    const collectionRef = collection(db, collectionPath);
-    const snapshot = await getDocs(collectionRef);
     snapshot.docs.forEach(doc => {
         batch.delete(doc.ref);
     });
-    console.log(`Batched deletion for all documents in ${collectionPath}.`);
+    console.log(`Batched deletion for ${snapshot.size} documents in ${collectionPath}.`);
 }
 
-async function deleteNonAdminUsers(batch: any) {
-    const usersRef = collection(db, 'users');
-    const q = query(usersRef, where('uid', '!=', ADMIN_USER_ID));
-    const snapshot = await getDocs(q);
+async function deleteNonAdminUsers(batch: FirebaseFirestore.WriteBatch) {
+    const usersRef = adminDb.collection('users') as CollectionReference;
+    const q = usersRef.where('uid', '!=', ADMIN_USER_ID);
+    const snapshot = await q.get();
     
     if (snapshot.empty) {
         console.log('No non-admin users to delete.');
@@ -35,34 +36,33 @@ async function deleteNonAdminUsers(batch: any) {
     snapshot.docs.forEach(doc => {
         batch.delete(doc.ref);
     });
-    console.log(`Batched deletion for ${snapshot.size} non-admin users.`);
+    console.log(`Batched deletion for ${snapshot.size} non-admin users from Firestore.`);
 }
 
 export async function POST(req: NextRequest) {
-    // A simple check to ensure the user is the admin.
-    // In a real app, you'd want a more secure method like checking a custom claim
-    // on the decoded ID token.
-    const user = auth.currentUser;
-    if (!user || user.uid !== ADMIN_USER_ID) {
-      // Note: This check relies on the client-side auth state being passed.
-      // A more robust solution involves Firebase Admin SDK and token verification.
-      // For the scope of this project, this provides a basic layer of security.
-      // A user spoofing this might be possible if they knew the admin UID, but they'd
-      // need to be logged in. A truly secure way is server-side token validation.
-      // This is a placeholder for a more robust admin check.
-    }
-    
-    console.log('Starting database cleanup via API route...');
-    const batch = writeBatch(db);
+    initializeAdminApp();
+    const auth = getAuth();
 
     try {
+        const idToken = req.headers.get('Authorization')?.split('Bearer ')[1];
+        if (!idToken) {
+            return NextResponse.json({ error: 'Authorization token not provided.' }, { status: 401 });
+        }
+
+        const decodedToken = await auth.verifyIdToken(idToken);
+        if (decodedToken.uid !== ADMIN_USER_ID) {
+            return NextResponse.json({ error: 'Unauthorized user.' }, { status: 403 });
+        }
+    
+        console.log('Starting database cleanup via API route...');
+        const batch = adminDb.batch();
+
         await deleteCollection('requests', batch);
         await deleteCollection('trips', batch);
         await deleteCollection('matches', batch);
         
-        // This collection does not exist in the new structure, but leaving it here to be safe
-        // in case old data exists.
         try {
+            // This collection might not exist in all versions, so handle potential errors.
             await deleteCollection('conversations', batch);
         } catch (e) {
             console.log('`conversations` collection not found, skipping.');
@@ -74,8 +74,13 @@ export async function POST(req: NextRequest) {
 
         console.log('Database cleanup completed successfully!');
         return NextResponse.json({ message: 'Database cleaned successfully.' }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error during database cleanup:', error);
+        
+        if (error.code === 'auth/id-token-expired' || error.code === 'auth/argument-error') {
+            return NextResponse.json({ error: 'Invalid or expired authorization token.' }, { status: 401 });
+        }
+
         return NextResponse.json({ error: 'Failed to clean database.' }, { status: 500 });
     }
 }
