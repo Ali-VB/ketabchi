@@ -237,94 +237,61 @@ export const getUserProfile = async (userId: string): Promise<User | null> => {
     return null;
 }
 
-export const getOrCreateConversationAndMatch = async (
+export const getOrCreateConversation = async (
     currentUserId: string,
-    recipientId: string,
-    requestId: string | null,
-    tripId: string | null
-): Promise<{ conversation: Conversation; match: Match | null }> => {
+    recipientId: string
+): Promise<Conversation> => {
     // Generate a consistent, unique conversation ID for this pair of users
     const conversationId = [currentUserId, recipientId].sort().join('_');
     const currentUserConvRef = doc(db, 'users', currentUserId, 'conversations', conversationId);
     const currentUserConvSnap = await getDoc(currentUserConvRef);
+
+    if (currentUserConvSnap.exists()) {
+        return { id: conversationId, ...processSerializable(currentUserConvSnap.data()) } as Conversation;
+    }
+
+    // Conversation doesn't exist for the current user, so create it for both users.
+    const [currentUserProfile, recipientProfile] = await Promise.all([
+        getUserProfile(currentUserId),
+        getUserProfile(recipientId)
+    ]);
     
-    let conversation: Conversation;
-
-    if (!currentUserConvSnap.exists()) {
-        // Conversation doesn't exist for the current user, so create it for both users.
-        const [currentUserProfile, recipientProfile] = await Promise.all([
-            getUserProfile(currentUserId),
-            getUserProfile(recipientId)
-        ]);
-        
-        if (!currentUserProfile || !recipientProfile) {
-            throw new Error("Could not find user profiles to create conversation.");
-        }
-        
-        const now = new Date();
-        const conversationForCurrentUser: Omit<Conversation, 'id'> = {
-            users: [currentUserId, recipientId],
-            otherUser: {
-                uid: recipientProfile.uid,
-                displayName: recipientProfile.displayName,
-                photoURL: recipientProfile.photoURL,
-                email: recipientProfile.email,
-            },
-            lastMessage: '',
-            lastMessageTimestamp: now.toISOString(),
-        };
-        
-        const conversationForRecipient: Omit<Conversation, 'id'> = {
-            users: [currentUserId, recipientId],
-            otherUser: {
-                uid: currentUserProfile.uid,
-                displayName: currentUserProfile.displayName,
-                photoURL: currentUserProfile.photoURL,
-                email: currentUserProfile.email,
-            },
-            lastMessage: '',
-            lastMessageTimestamp: now.toISOString(),
-        };
-        
-        const batch = writeBatch(db);
-        batch.set(currentUserConvRef, conversationForCurrentUser);
-        const recipientConvRef = doc(db, 'users', recipientId, 'conversations', conversationId);
-        batch.set(recipientConvRef, conversationForRecipient);
-        await batch.commit();
-
-        conversation = { id: conversationId, ...conversationForCurrentUser };
-    } else {
-        conversation = { id: conversationId, ...processSerializable(currentUserConvSnap.data()) } as Conversation
+    if (!currentUserProfile || !recipientProfile) {
+        throw new Error("Could not find user profiles to create conversation.");
     }
+    
+    const now = new Date();
+    const conversationForCurrentUser: Omit<Conversation, 'id'> = {
+        users: [currentUserId, recipientId],
+        otherUser: {
+            uid: recipientProfile.uid,
+            displayName: recipientProfile.displayName,
+            photoURL: recipientProfile.photoURL,
+            email: recipientProfile.email,
+        },
+        lastMessage: '',
+        lastMessageTimestamp: now.toISOString(),
+    };
+    
+    const conversationForRecipient: Omit<Conversation, 'id'> = {
+        users: [currentUserId, recipientId],
+        otherUser: {
+            uid: currentUserProfile.uid,
+            displayName: currentUserProfile.displayName,
+            photoURL: currentUserProfile.photoURL,
+            email: currentUserProfile.email,
+        },
+        lastMessage: '',
+        lastMessageTimestamp: now.toISOString(),
+    };
+    
+    const batch = writeBatch(db);
+    batch.set(currentUserConvRef, conversationForCurrentUser);
+    const recipientConvRef = doc(db, 'users', recipientId, 'conversations', conversationId);
+    batch.set(recipientConvRef, conversationForRecipient);
+    await batch.commit();
 
-    // Find or create match
-    let match: Match | null = null;
-    if (requestId && tripId) {
-        const matchQuery = query(
-            matchesCollection,
-            where('request.id', '==', requestId),
-            where('trip.id', '==', tripId),
-            limit(1)
-        );
-        const matchSnapshot = await getDocs(matchQuery);
-        if (!matchSnapshot.empty) {
-            const doc = matchSnapshot.docs[0];
-            match = { id: doc.id, ...processSerializable(doc.data()) } as Match;
-        } else {
-            // If match doesn't exist, create it
-            const request = await getRequestById(requestId);
-            const trip = await getTripById(tripId);
-            if(request && trip) {
-                const matchId = await createMatch(request, trip);
-                const matchDoc = await getDoc(doc(db, 'matches', matchId));
-                if (matchDoc.exists()) {
-                    match = { id: matchDoc.id, ...processSerializable(matchDoc.data()) } as Match;
-                }
-            }
-        }
-    }
-
-    return { conversation, match };
+    return { id: conversationId, ...conversationForCurrentUser };
 };
 
 
@@ -409,21 +376,28 @@ export const createUserProfileDocument = async (user: {uid: string, email: strin
 
 // --- Match Management Functions ---
 
-export const createMatch = async (request: BookRequest, trip: Trip): Promise<string> => {
-    // Check if a match already exists
+export const getMatchByRequestAndTrip = async (requestId: string, tripId: string): Promise<Match | null> => {
     const q = query(
-        matchesCollection, 
-        where('request.id', '==', request.id),
-        where('trip.id', '==', trip.id),
+        matchesCollection,
+        where('request.id', '==', requestId),
+        where('trip.id', '==', tripId),
         limit(1)
     );
-    const existingMatchSnapshot = await getDocs(q);
-
-    if (!existingMatchSnapshot.empty) {
-        // Return existing match ID if it already exists to avoid duplicates
-        return existingMatchSnapshot.docs[0].id;
+    const matchSnapshot = await getDocs(q);
+    if (!matchSnapshot.empty) {
+        const doc = matchSnapshot.docs[0];
+        return { id: doc.id, ...processSerializable(doc.data()) } as Match;
     }
+    return null;
+}
 
+
+export const createMatch = async (request: BookRequest, trip: Trip): Promise<string> => {
+    // Check if a match already exists to avoid duplicates
+    const existingMatch = await getMatchByRequestAndTrip(request.id, trip.id);
+    if (existingMatch) {
+        return existingMatch.id;
+    }
 
     const deliveryCode = Math.floor(100000 + Math.random() * 900000).toString();
     const matchData = {
@@ -576,7 +550,7 @@ export const getPlatformStats = async () => {
     completedMatchesSnapshot,
   ] = await Promise.all([
     getDocs(matchesQuery),
-    getDocs(disputedMatchesQuery),
+    getDocs(disputedMatchesSnapshot),
     getDocs(completedMatchesQuery),
   ]);
 
@@ -680,4 +654,20 @@ export const resolveDispute = async (matchId: string, resolution: 'release' | 'r
     }
 
     await updateDoc(matchRef, updateData);
+};
+
+export const cleanDatabase = async (adminUserId: string) => {
+    const batch = writeBatch(db);
+
+    const collectionsToDelete = ['requests', 'trips', 'matches', 'conversations'];
+    for (const collectionName of collectionsToDelete) {
+        const querySnapshot = await getDocs(collection(db, collectionName));
+        querySnapshot.forEach(doc => batch.delete(doc.ref));
+    }
+
+    const usersQuery = query(collection(db, 'users'), where('uid', '!=', adminUserId));
+    const usersSnapshot = await getDocs(usersQuery);
+    usersSnapshot.forEach(doc => batch.delete(doc.ref));
+
+    await batch.commit();
 };

@@ -14,7 +14,9 @@ import {
   getConversations, 
   getMessages, 
   sendMessage, 
-  getOrCreateConversationAndMatch, 
+  getOrCreateConversation,
+  getMatchByRequestAndTrip,
+  createMatch,
   getRequestById, 
   getTripById,
 } from '@/lib/firebase/firestore';
@@ -64,22 +66,24 @@ export default function MessagesPage() {
       try {
         if (recipientId && user.uid !== recipientId) {
           setIsLoadingConversations(true);
-          const { conversation, match } = await getOrCreateConversationAndMatch(user.uid, recipientId, requestId, tripId);
+          const conversation = await getOrCreateConversation(user.uid, recipientId);
           setSelectedConversation(conversation);
-          if (match) {
-            setExistingMatch(match);
+          if (requestId && tripId) {
+              const match = await getMatchByRequestAndTrip(requestId, tripId);
+              setExistingMatch(match);
           }
         }
       } catch (error) {
         console.error("Failed to create/get conversation:", error);
-        toast({ variant: "destructive", title: "خطا", description: "؛امکان بارگزاری گفتگوها وجود ندارد؛" });
+        toast({ variant: "destructive", title: "خطا", description: "امکان بارگزاری گفتگوها وجود ندارد." });
+      } finally {
         setIsLoadingConversations(false);
       }
   
       unsubscribeConversations = getConversations(user.uid, (allConversations) => {
         setConversations(allConversations);
         if (!selectedConversation && recipientId) {
-           const found = allConversations.find(c => c.id.includes(recipientId));
+           const found = allConversations.find(c => c.users.includes(recipientId));
            if(found) setSelectedConversation(found);
         } else if (!selectedConversation && allConversations.length > 0) {
           setSelectedConversation(allConversations[0]);
@@ -156,11 +160,13 @@ export default function MessagesPage() {
                 toast({ variant: 'destructive', title: 'خطا', description: 'سفر مورد نظر یافت نشد.' });
                 return;
             }
-             const { match: newMatch } = await getOrCreateConversationAndMatch(user.uid, trip.userId, requestId, tripId);
-             if(!newMatch) {
+             const newMatchId = await createMatch(request, trip);
+             if(!newMatchId) {
                 throw new Error("Failed to create a new match.");
              }
-             matchId = newMatch.id;
+             matchId = newMatchId;
+             const newMatch = await getMatchByRequestAndTrip(requestId, tripId);
+             setExistingMatch(newMatch);
         }
         
         const bookTitles = request?.books?.map(b => b.title).join(', ') || 'کتاب';
@@ -185,7 +191,9 @@ export default function MessagesPage() {
         const { url } = await res.json();
         
         if (url) {
-            window.open(url, '_blank');
+            // Instead of opening a new tab, redirect the current page to Stripe.
+            // This is often a better UX for payment flows.
+            window.location.href = url;
         } else {
              throw new Error('Checkout URL not received from server.');
         }
