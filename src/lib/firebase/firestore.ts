@@ -230,9 +230,10 @@ export const findMatches = async (userId: string): Promise<{
 // --- Messaging Functions ---
 
 export const getUserProfile = async (userId: string): Promise<User | null> => {
-    const userDoc = await getDoc(doc(db, 'users', userId));
-    if (userDoc.exists()) {
-        return { uid: userDoc.id, ...processSerializable(userDoc.data()) } as User;
+    const userDocRef = doc(usersCollection, userId);
+    const userDocSnap = await getDoc(userDocRef);
+    if (userDocSnap.exists()) {
+        return { uid: userDocSnap.id, ...processSerializable(userDocSnap.data()) } as User;
     }
     return null;
 }
@@ -280,9 +281,11 @@ export const getOrCreateConversation = async (
         
         const otherUser = recipientProfile;
         
+        // Fetch the just-created doc to get server-generated timestamps
+        const newSnap = await getDoc(conversationRef);
         return {
             id: conversationId,
-            ...processSerializable(await getDoc(conversationRef).then(snap => snap.data())),
+            ...processSerializable(newSnap.data()),
             otherUser
         } as Conversation;
     }
@@ -352,7 +355,7 @@ export const sendMessage = async (conversationId: string, message: { text: strin
 };
 
 export const createUserProfileDocument = async (user: {uid: string, email: string | null, displayName: string | null, photoURL: string | null}) => {
-    const userDocRef = doc(db, 'users', user.uid);
+    const userDocRef = doc(usersCollection, user.uid);
     const userDoc = await getDoc(userDocRef);
     if (!userDoc.exists()) {
         const { uid, email, displayName, photoURL } = user;
@@ -547,7 +550,7 @@ export const getPlatformStats = async () => {
     completedMatchesSnapshot,
   ] = await Promise.all([
     getDocs(matchesQuery),
-    getDocs(disputedMatchesSnapshot),
+    getDocs(disputedMatchesQuery),
     getDocs(completedMatchesQuery),
   ]);
 
@@ -668,3 +671,5 @@ export const cleanDatabase = async (adminUserId: string) => {
 
     await batch.commit();
 };
+
+    
