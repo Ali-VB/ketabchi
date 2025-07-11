@@ -1,3 +1,4 @@
+
 'use client';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,6 +56,7 @@ export function NewRequestForm({ setDialogOpen, onPostSuccess }: { setDialogOpen
       books: [{ title: '', author: '', quantity: 1 }],
       from_city: '',
       to_city: '',
+      weight: 0.5,
       description: '',
     },
   });
