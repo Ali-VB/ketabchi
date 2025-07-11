@@ -234,25 +234,51 @@ export const getUserProfile = async (userId: string) => {
     return userDoc.exists() ? userDoc.data() : null;
 }
 
-export const getOrCreateConversation = async (currentUserId: string, recipientId: string): Promise<string> => {
+export const getOrCreateConversationAndMatch = async (
+    currentUserId: string,
+    recipientId: string,
+    requestId: string | null,
+    tripId: string | null
+): Promise<{ conversationId: string; match: Match | null }> => {
+    // Find or create conversation
     const conversationQuery = query(
         conversationsCollection,
         where('users', 'array-contains', currentUserId)
     );
     const querySnapshot = await getDocs(conversationQuery);
-    const conversation = querySnapshot.docs.find(doc => doc.data().users.includes(recipientId));
+    let conversation = querySnapshot.docs.find(doc => doc.data().users.includes(recipientId));
+    let conversationId: string;
 
     if (conversation) {
-        return conversation.id;
+        conversationId = conversation.id;
     } else {
         const newConversation = await addDoc(conversationsCollection, {
             users: [currentUserId, recipientId],
             lastMessage: '',
             lastMessageTimestamp: serverTimestamp(),
         });
-        return newConversation.id;
+        conversationId = newConversation.id;
     }
+
+    // Find existing match
+    let match: Match | null = null;
+    if (requestId && tripId) {
+        const matchQuery = query(
+            matchesCollection,
+            where('request.id', '==', requestId),
+            where('trip.id', '==', tripId),
+            limit(1)
+        );
+        const matchSnapshot = await getDocs(matchQuery);
+        if (!matchSnapshot.empty) {
+            const doc = matchSnapshot.docs[0];
+            match = { id: doc.id, ...processSerializable(doc.data()) } as Match;
+        }
+    }
+
+    return { conversationId, match };
 };
+
 
 export const getConversations = async (userId: string): Promise<Conversation[]> => {
     const q = query(
@@ -357,6 +383,21 @@ export const createUserProfileDocument = async (user: {uid: string, email: strin
 // --- Match Management Functions ---
 
 export const createMatch = async (request: BookRequest, trip: Trip): Promise<string> => {
+    // Check if a match already exists
+    const q = query(
+        matchesCollection, 
+        where('request.id', '==', request.id),
+        where('trip.id', '==', trip.id),
+        limit(1)
+    );
+    const existingMatchSnapshot = await getDocs(q);
+
+    if (!existingMatchSnapshot.empty) {
+        // Return existing match ID if it already exists to avoid duplicates
+        return existingMatchSnapshot.docs[0].id;
+    }
+
+
     const deliveryCode = Math.floor(100000 + Math.random() * 900000).toString();
     const matchData = {
         requesterId: request.userId,

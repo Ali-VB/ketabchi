@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
 
         const session = await stripe.checkout.sessions.retrieve(session_id);
 
-        if (session.payment_status === 'paid' && session.metadata?.match_id) {
+        if ((session.payment_status === 'paid' || session.status === 'complete') && session.metadata?.match_id) {
             const matchRef = doc(db, 'matches', session.metadata.match_id);
             await updateDoc(matchRef, {
                 status: 'active',

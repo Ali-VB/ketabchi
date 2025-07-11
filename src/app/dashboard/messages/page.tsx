@@ -8,21 +8,17 @@ import { cn } from '@/lib/utils';
 import { Send, Mail, Loader2, ExternalLink } from 'lucide-react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/components/auth-provider';
-import type { Conversation, Message, User } from '@/lib/types';
+import type { Conversation, Message, User, Match } from '@/lib/types';
 import { 
   getConversations, 
   getMessages, 
   sendMessage, 
-  getOrCreateConversation, 
-  getUserProfile, 
+  getOrCreateConversationAndMatch, 
   getRequestById, 
   getTripById, 
   createMatch 
 } from '@/lib/firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { loadStripe } from '@stripe/stripe-js';
-
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 export default function MessagesPage() {
   const { user, loading: authLoading } = useAuth();
@@ -41,6 +37,7 @@ export default function MessagesPage() {
   const [isSending, setIsSending] = React.useState(false);
   const [isLoadingMessages, setIsLoadingMessages] = React.useState(false);
   const [isCreatingMatch, setIsCreatingMatch] = React.useState(false);
+  const [existingMatch, setExistingMatch] = React.useState<Match | null>(null);
   
   const messagesEndRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -65,7 +62,10 @@ export default function MessagesPage() {
       try {
         // If a recipient is specified in the URL, ensure the conversation exists first.
         if (recipientId) {
-          await getOrCreateConversation(user.uid, recipientId);
+            const { conversationId, match } = await getOrCreateConversationAndMatch(user.uid, recipientId, requestId, tripId);
+            if (isMounted) {
+                setExistingMatch(match);
+            }
         }
 
         // Then, fetch the complete and up-to-date list of all conversations.
@@ -101,7 +101,7 @@ export default function MessagesPage() {
     return () => {
       isMounted = false;
     };
-  }, [user, recipientId, toast]);
+  }, [user, recipientId, requestId, tripId, toast]);
 
 
   // Listen for messages in the selected conversation
@@ -137,27 +137,31 @@ export default function MessagesPage() {
   };
 
   const handleCreateMatchAndPay = async () => {
-    if (!requestId || !tripId || !user || !user.email) return;
+    if (!requestId || !tripId || !user) return;
 
     setIsCreatingMatch(true);
     try {
+        let matchId = existingMatch?.id;
+
+        if (!matchId) {
+            const request = await getRequestById(requestId);
+            const trip = await getTripById(tripId);
+
+            if (!request || !trip) {
+                toast({ variant: 'destructive', title: 'خطا', description: 'درخواست یا سفر مورد نظر یافت نشد.' });
+                return;
+            }
+
+            if (request.userId !== user.uid) {
+                toast({ variant: 'destructive', title: 'خطای مجوز', description: 'شما مجاز به ایجاد این تراکنش نیستید.' });
+                return;
+            }
+            
+            matchId = await createMatch(request, trip);
+        }
+        
         const request = await getRequestById(requestId);
-        const trip = await getTripById(tripId);
-
-        if (!request || !trip) {
-            toast({ variant: 'destructive', title: 'خطا', description: 'درخواست یا سفر مورد نظر یافت نشد.' });
-            return;
-        }
-
-        if (request.userId !== user.uid) {
-            toast({ variant: 'destructive', title: 'خطای مجوز', description: 'شما مجاز به ایجاد این تراکنش نیستید.' });
-            return;
-        }
-        
-        // This now creates the match in Firestore first to get a matchId
-        const matchId = await createMatch(request, trip);
-        
-        const bookTitles = request.books?.map(b => b.title).join(', ') || 'کتاب';
+        const bookTitles = request?.books?.map(b => b.title).join(', ') || 'کتاب';
         const amount = 50.00; // Placeholder amount
 
         // Create a checkout session
@@ -199,6 +203,17 @@ export default function MessagesPage() {
   if (authLoading) {
     return <div className="flex h-full w-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
+  
+  const paymentButtonDisabled = isCreatingMatch || (!!existingMatch && existingMatch.status !== 'pending_payment');
+  const getPaymentButtonText = () => {
+    if (isCreatingMatch) return "در حال آماده‌سازی..."
+    if (existingMatch?.status === 'active') return "تراکنش فعال است";
+    if (existingMatch?.status === 'completed') return "تراکنش تکمیل شده";
+    if (existingMatch?.status === 'disputed') return "تراکنش مورد اختلاف";
+    if (existingMatch?.status === 'pending_payment') return "ادامه پرداخت";
+    return "پرداخت و شروع تراکنش";
+  }
+
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 h-[calc(100vh-120px)] rounded-lg border bg-card text-card-foreground shadow-sm">
@@ -282,11 +297,11 @@ export default function MessagesPage() {
                         </div>
                         <Button 
                             onClick={handleCreateMatchAndPay} 
-                            disabled={isCreatingMatch} 
+                            disabled={paymentButtonDisabled} 
                             className="bg-accent text-accent-foreground hover:bg-accent/90 shrink-0"
                         >
                             {isCreatingMatch ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <ExternalLink className="me-2 h-4 w-4" />}
-                            پرداخت و شروع تراکنش
+                            {getPaymentButtonText()}
                         </Button>
                     </div>
                 </div>
