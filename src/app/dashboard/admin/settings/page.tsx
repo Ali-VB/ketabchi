@@ -63,18 +63,6 @@ export default function AdminSettingsPage() {
                     </form>
                 </CardContent>
             </Card>
-
-            <Card className="border-destructive">
-                <CardHeader>
-                    <CardTitle>منطقه خطر</CardTitle>
-                    <CardDescription>
-                        برای پاکسازی پایگاه داده، از اسکریپت ارائه شده استفاده کنید.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                     <p className="text-sm text-muted-foreground">برای اجرای عملیات پاکسازی، لطفاً دستور <code className="bg-muted px-2 py-1 rounded-md font-mono">npm run clean:db</code> را در ترمینال اجرا کنید.</p>
-                </CardContent>
-            </Card>
         </div>
     )
 }
