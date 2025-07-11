@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -59,52 +60,52 @@ export default function MessagesPage() {
       return;
     }
 
-    setIsLoadingConversations(true);
-    const unsubscribe = getConversations(user.uid, async (allConversations) => {
-        
-        if (recipientId) {
-            try {
-                const { conversationId, match } = await getOrCreateConversationAndMatch(user.uid, recipientId, requestId, tripId);
-                setExistingMatch(match);
-                const targetConversation = allConversations.find(c => c.id === conversationId);
+    const handleInitialLoad = async () => {
+        setIsLoadingConversations(true);
+        const unsubscribe = getConversations(user.uid, (allConversations) => {
+            setConversations(allConversations);
+
+            if (recipientId && user.uid !== recipientId) {
+                // Find or create conversation with the specified recipient
+                const targetConversation = allConversations.find(c => c.otherUser.uid === recipientId);
                 if (targetConversation) {
                     setSelectedConversation(targetConversation);
                 } else {
-                    // It's a new conversation, we need to find it in the freshly fetched list
-                    // which might not be immediately available. Let's wait for the main list update.
-                    const newConvo = await getUserProfile(recipientId);
-                    if(newConvo) {
-                        const newConversationObject: Conversation = {
-                            id: conversationId,
-                            users: [user.uid, recipientId],
-                            lastMessage: '',
-                            lastMessageTimestamp: new Date().toISOString(),
-                            otherUser: {
-                                uid: newConvo.uid,
-                                displayName: newConvo.displayName || 'New User',
-                                email: newConvo.email,
-                                photoURL: newConvo.photoURL
-                            }
-                        };
-                        const updatedConversations = [...allConversations, newConversationObject];
-                        setConversations(updatedConversations);
-                        setSelectedConversation(newConversationObject);
-                    }
+                    // This indicates a new conversation needs to be created, which should be handled by getOrCreate
                 }
+            } else if (allConversations.length > 0 && !selectedConversation) {
+                setSelectedConversation(allConversations[0]);
+            }
+            setIsLoadingConversations(false);
+        });
+
+        // If a recipient is specified, ensure the conversation and match exist.
+        if (recipientId && user.uid !== recipientId) {
+            try {
+                const { conversation, match } = await getOrCreateConversationAndMatch(user.uid, recipientId, requestId, tripId);
+                setExistingMatch(match);
+                // This might trigger the onSnapshot listener above if a new conversation was created.
+                // We set it as selected here to ensure the UI updates.
+                if (conversation && !conversations.some(c => c.id === conversation.id)) {
+                    setConversations(prev => [conversation, ...prev]);
+                }
+                setSelectedConversation(conversation);
+
             } catch (error) {
                 console.error("Failed to ensure conversation exists:", error);
                 toast({ variant: "destructive", title: "خطا", description: "امکان ایجاد یا یافتن گفتگو وجود نداشت." });
             }
-        } else if (allConversations.length > 0 && !selectedConversation) {
-            setSelectedConversation(allConversations[0]);
         }
-        
-        setConversations(allConversations);
-        setIsLoadingConversations(false);
-    });
+        return unsubscribe;
+    }
 
-    return () => unsubscribe();
-  }, [user, authLoading, recipientId, requestId, tripId, toast]);
+    const unsubscribePromise = handleInitialLoad();
+
+    return () => {
+        unsubscribePromise.then(unsubscribe => unsubscribe && unsubscribe());
+    };
+}, [user, authLoading, recipientId, requestId, tripId]);
+
 
 
   // Listen for messages in the selected conversation

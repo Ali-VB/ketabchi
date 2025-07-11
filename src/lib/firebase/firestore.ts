@@ -242,17 +242,16 @@ export const getOrCreateConversationAndMatch = async (
     recipientId: string,
     requestId: string | null,
     tripId: string | null
-): Promise<{ conversationId: string; match: Match | null }> => {
+): Promise<{ conversation: Conversation; match: Match | null }> => {
     // Generate a consistent, unique conversation ID for this pair of users
     const conversationId = [currentUserId, recipientId].sort().join('_');
-
     const currentUserConvRef = doc(db, 'users', currentUserId, 'conversations', conversationId);
-    const recipientConvRef = doc(db, 'users', recipientId, 'conversations', conversationId);
-
     const currentUserConvSnap = await getDoc(currentUserConvRef);
     
+    let conversation: Conversation;
+
     if (!currentUserConvSnap.exists()) {
-        // Conversation doesn't exist, so create it for both users.
+        // Conversation doesn't exist for the current user, so create it for both users.
         const [currentUserProfile, recipientProfile] = await Promise.all([
             getUserProfile(currentUserId),
             getUserProfile(recipientId)
@@ -262,38 +261,41 @@ export const getOrCreateConversationAndMatch = async (
             throw new Error("Could not find user profiles to create conversation.");
         }
         
-        const now = serverTimestamp();
-        
-        const newConversationDataForCurrentUser = {
-            id: conversationId,
+        const now = new Date();
+        const conversationForCurrentUser: Omit<Conversation, 'id'> = {
             users: [currentUserId, recipientId],
             otherUser: {
                 uid: recipientProfile.uid,
                 displayName: recipientProfile.displayName,
                 photoURL: recipientProfile.photoURL,
+                email: recipientProfile.email,
             },
             lastMessage: '',
-            lastMessageTimestamp: now,
+            lastMessageTimestamp: now.toISOString(),
         };
         
-        const newConversationDataForRecipient = {
-             id: conversationId,
+        const conversationForRecipient: Omit<Conversation, 'id'> = {
             users: [currentUserId, recipientId],
             otherUser: {
                 uid: currentUserProfile.uid,
                 displayName: currentUserProfile.displayName,
                 photoURL: currentUserProfile.photoURL,
+                email: currentUserProfile.email,
             },
             lastMessage: '',
-            lastMessageTimestamp: now,
+            lastMessageTimestamp: now.toISOString(),
         };
         
         const batch = writeBatch(db);
-        batch.set(currentUserConvRef, newConversationDataForCurrentUser);
-        batch.set(recipientConvRef, newConversationDataForRecipient);
+        batch.set(currentUserConvRef, conversationForCurrentUser);
+        const recipientConvRef = doc(db, 'users', recipientId, 'conversations', conversationId);
+        batch.set(recipientConvRef, conversationForRecipient);
         await batch.commit();
-    }
 
+        conversation = { id: conversationId, ...conversationForCurrentUser };
+    } else {
+        conversation = { id: conversationId, ...processSerializable(currentUserConvSnap.data()) } as Conversation
+    }
 
     // Find existing match
     let match: Match | null = null;
@@ -311,7 +313,7 @@ export const getOrCreateConversationAndMatch = async (
         }
     }
 
-    return { conversationId, match };
+    return { conversation, match };
 };
 
 
@@ -322,13 +324,13 @@ export const getConversations = (userId: string, callback: (conversations: Conve
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
         const conversations = querySnapshot.docs.map(docSnap => {
             return {
+                id: docSnap.id,
                 ...processSerializable(docSnap.data()),
             } as Conversation;
         });
         callback(conversations);
     }, (error) => {
         console.error("Error fetching conversations:", error);
-        // Pass an empty array to the callback on error to clear the list and prevent stale data.
         callback([]); 
     });
 
@@ -336,7 +338,6 @@ export const getConversations = (userId: string, callback: (conversations: Conve
 };
 
 export const getMessages = (conversationId: string, callback: (messages: Message[]) => void): (() => void) => {
-    // Both users will now read from a single, shared messages subcollection
     const messagesCollection = collection(db, 'conversations', conversationId, 'messages');
     const q = query(messagesCollection, orderBy('timestamp', 'asc'));
 
@@ -355,26 +356,22 @@ export const getMessages = (conversationId: string, callback: (messages: Message
 export const sendMessage = async (conversationId: string, message: { text: string, senderId: string }) => {
     const batch = writeBatch(db);
     
-    const users = conversationId.split('_');
-    const user1Id = users[0];
-    const user2Id = users[1];
-
     // Add message to the shared messages subcollection
     const messagesRef = doc(collection(db, 'conversations', conversationId, 'messages'));
     batch.set(messagesRef, { ...message, timestamp: serverTimestamp() });
     
-    // Update the conversation document for both users
+    // Update the last message in both users' conversation documents
+    const users = conversationId.split('_');
     const now = serverTimestamp();
     const updatePayload = {
         lastMessage: message.text,
         lastMessageTimestamp: now,
     };
     
-    const user1ConvRef = doc(db, 'users', user1Id, 'conversations', conversationId);
-    batch.update(user1ConvRef, updatePayload);
-
-    const user2ConvRef = doc(db, 'users', user2Id, 'conversations', conversationId);
-    batch.update(user2ConvRef, updatePayload);
+    users.forEach(userId => {
+        const userConvRef = doc(db, 'users', userId, 'conversations', conversationId);
+        batch.update(userConvRef, updatePayload);
+    });
     
     await batch.commit();
 };
