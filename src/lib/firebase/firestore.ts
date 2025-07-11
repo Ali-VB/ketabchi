@@ -315,19 +315,24 @@ export const getOrCreateConversationAndMatch = async (
 };
 
 
-export const getConversations = async (userId: string): Promise<Conversation[]> => {
+export const getConversations = (userId: string, callback: (conversations: Conversation[]) => void): (() => void) => {
     const conversationsRef = collection(db, 'users', userId, 'conversations');
     const q = query(conversationsRef, orderBy('lastMessageTimestamp', 'desc'));
-    
-    const querySnapshot = await getDocs(q);
-    
-    const conversations = querySnapshot.docs.map(docSnap => {
-        return {
-            ...processSerializable(docSnap.data()),
-        } as Conversation;
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const conversations = querySnapshot.docs.map(docSnap => {
+            return {
+                ...processSerializable(docSnap.data()),
+            } as Conversation;
+        });
+        callback(conversations);
+    }, (error) => {
+        console.error("Error fetching conversations:", error);
+        // Pass an empty array to the callback on error to clear the list and prevent stale data.
+        callback([]); 
     });
 
-    return conversations;
+    return unsubscribe;
 };
 
 export const getMessages = (conversationId: string, callback: (messages: Message[]) => void): (() => void) => {

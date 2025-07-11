@@ -55,56 +55,33 @@ export default function MessagesPage() {
 
   React.useEffect(() => {
     if (!user) {
+      if (!authLoading) setIsLoadingConversations(false);
       return;
     }
 
-    let isMounted = true;
     setIsLoadingConversations(true);
-
-    const setupConversations = async () => {
-      try {
-        // If a recipient is specified in the URL, ensure the conversation exists first.
-        if (recipientId) {
-            const { conversationId, match } = await getOrCreateConversationAndMatch(user.uid, recipientId, requestId, tripId);
-            if (isMounted) {
-                setExistingMatch(match);
-            }
-        }
-
-        // Then, fetch the complete and up-to-date list of all conversations.
-        const allConversations = await getConversations(user.uid);
+    const unsubscribe = getConversations(user.uid, async (allConversations) => {
         
-        if (!isMounted) return;
-
-        setConversations(allConversations);
-
-        // Now, determine which conversation to select from the clean list.
         if (recipientId) {
-          const targetConversation = allConversations.find(c => c.users.includes(recipientId));
-          setSelectedConversation(targetConversation || null);
-        } else if (allConversations.length > 0) {
-          // If no recipient is specified, select the most recent conversation.
-          setSelectedConversation(allConversations[0]);
-        } else {
-          // No conversations exist.
-          setSelectedConversation(null);
+            try {
+                const { conversationId, match } = await getOrCreateConversationAndMatch(user.uid, recipientId, requestId, tripId);
+                setExistingMatch(match);
+                const targetConversation = allConversations.find(c => c.id === conversationId);
+                setSelectedConversation(targetConversation || null);
+            } catch (error) {
+                console.error("Failed to ensure conversation exists:", error);
+                toast({ variant: "destructive", title: "خطا", description: "امکان ایجاد یا یافتن گفتگو وجود نداشت." });
+            }
+        } else if (allConversations.length > 0 && !selectedConversation) {
+            setSelectedConversation(allConversations[0]);
         }
-      } catch (error) {
-        console.error("Failed to setup conversations:", error);
-        toast({ variant: "destructive", title: "خطا", description: "امکان بارگذاری گفتگوها وجود نداشت." });
-      } finally {
-        if (isMounted) {
-          setIsLoadingConversations(false);
-        }
-      }
-    };
+        
+        setConversations(allConversations);
+        setIsLoadingConversations(false);
+    });
 
-    setupConversations();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [user, recipientId, requestId, tripId, toast]);
+    return () => unsubscribe();
+  }, [user, authLoading, recipientId, requestId, tripId, toast]);
 
 
   // Listen for messages in the selected conversation
