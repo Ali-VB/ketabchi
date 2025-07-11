@@ -490,7 +490,7 @@ export const getPlatformStats = async () => {
     completedMatchesSnapshot,
   ] = await Promise.all([
     getDocs(matchesQuery),
-    getDocs(disputedMatchesSnapshot),
+    getDocs(disputedMatchesQuery),
     getDocs(completedMatchesQuery),
   ]);
 
