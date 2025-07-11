@@ -20,6 +20,8 @@ import {
   getUserProfile, 
 } from '@/lib/firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
 
 export default function MessagesPage() {
   const { user, loading: authLoading } = useAuth();
@@ -150,6 +152,7 @@ export default function MessagesPage() {
             return;
         }
 
+        // The requester is the one who initiates payment
         if (request.userId !== user.uid) {
             toast({ variant: 'destructive', title: 'خطای مجوز', description: 'شما مجاز به ایجاد این تراکنش نیستید.' });
             return;
@@ -174,7 +177,7 @@ export default function MessagesPage() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
-                amount, 
+                amount,
                 matchId, 
                 bookTitles 
             }),
@@ -215,6 +218,7 @@ export default function MessagesPage() {
     if (existingMatch?.status === 'active') return "تراکنش فعال است";
     if (existingMatch?.status === 'completed') return "تراکنش تکمیل شده";
     if (existingMatch?.status === 'disputed') return "تراکنش مورد اختلاف";
+    if (existingMatch?.status === 'cancelled') return "تراکنش لغو شده";
     if (existingMatch?.status === 'pending_payment') return "ادامه پرداخت";
     return "پرداخت و شروع تراکنش";
   }
@@ -224,10 +228,13 @@ export default function MessagesPage() {
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 h-[calc(100vh-120px)] rounded-lg border bg-card text-card-foreground shadow-sm">
       <div className="col-span-1 border-e flex flex-col">
         <div className="p-4 border-b">
+           <h2 className="text-xl font-bold">گفتگوها</h2>
         </div>
         <ScrollArea className="flex-1">
           {isLoadingConversations ? (
              <div className="p-4 text-center text-sm text-muted-foreground">در حال بارگذاری...</div>
+          ) : conversations.length === 0 ? (
+             <div className="p-4 text-center text-sm text-muted-foreground">هیچ گفتگویی یافت نشد.</div>
           ) : (
             conversations.map((convo) => (
               <button 
@@ -238,6 +245,10 @@ export default function MessagesPage() {
                 )}
                 onClick={() => setSelectedConversation(convo)}
               >
+                 <Avatar>
+                    <AvatarImage src={convo.otherUser.photoURL ?? `https://placehold.co/40x40.png`} data-ai-hint="user portrait" />
+                    <AvatarFallback>{convo.otherUser.displayName?.charAt(0) || 'U'}</AvatarFallback>
+                </Avatar>
                 <div className="flex-1 overflow-hidden">
                   <p className="font-semibold truncate">{convo.otherUser.displayName}</p>
                   <p className="text-sm text-muted-foreground truncate">{convo.lastMessage}</p>
@@ -250,11 +261,15 @@ export default function MessagesPage() {
       <div className="col-span-1 md:col-span-2 lg:col-span-3 flex flex-col">
         {selectedConversation ? (
           <>
-            <div className="p-3 border-b">
+            <div className="p-3 border-b flex items-center gap-3">
+               <Avatar>
+                    <AvatarImage src={selectedConversation.otherUser.photoURL ?? `https://placehold.co/40x40.png`} data-ai-hint="user portrait" />
+                    <AvatarFallback>{selectedConversation.otherUser.displayName?.charAt(0) || 'U'}</AvatarFallback>
+                </Avatar>
               <h3 className="text-lg font-semibold">{selectedConversation.otherUser.displayName}</h3>
             </div>
             <div className="flex-1 overflow-y-auto p-4 lg:p-6 bg-muted/20">
-              <div className="space-y-4 overflow-y-auto h-[calc(100vh-400px)]">
+              <div className="space-y-4">
                 {isLoadingMessages ? (
                   <div className="flex justify-center items-center h-full"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
                 ) : (
@@ -293,12 +308,12 @@ export default function MessagesPage() {
                 </Button>
               </form>
             </div>
-            {requestId && tripId && user?.uid === selectedConversation.otherUser.uid && (
+            {requestId && tripId && user?.uid !== selectedConversation.otherUser.uid && (
                 <div className="p-4 border-t bg-accent/10">
                     <div className="flex items-center justify-between gap-4">
-                        <div className="text-accent">
+                        <div className="text-accent-foreground/80">
                             <p className="font-bold">شروع تراکنش با {selectedConversation.otherUser.displayName}</p>
-                            <p className="text-sm text-accent/80">پس از توافق، برای امن‌سازی پرداخت روی دکمه کلیک کنید.</p>
+                            <p className="text-sm">پس از توافق، برای امن‌سازی پرداخت روی دکمه کلیک کنید.</p>
                         </div>
                         <Button 
                             onClick={handleCreateMatchAndPay} 

@@ -309,7 +309,8 @@ export const getOrCreateConversationAndMatch = async (
 export const getConversations = async (userId: string): Promise<Conversation[]> => {
     const q = query(
         conversationsCollection,
-        where('users', 'array-contains', userId)
+        where('users', 'array-contains', userId),
+        orderBy('lastMessageTimestamp', 'desc')
     );
     const querySnapshot = await getDocs(q);
     
@@ -330,10 +331,7 @@ export const getConversations = async (userId: string): Promise<Conversation[]> 
         } as Conversation;
     });
 
-    // Sort by timestamp client-side to avoid complex queries that require indexes
-    return conversations
-        .filter(c => c.otherUser.uid)
-        .sort((a,b) => new Date(b.lastMessageTimestamp).getTime() - new Date(a.lastMessageTimestamp).getTime());
+    return conversations.filter(c => c.otherUser.uid);
 };
 
 export const getMessages = (conversationId: string, callback: (messages: Message[]) => void): (() => void) => {
