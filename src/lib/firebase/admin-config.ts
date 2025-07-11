@@ -1,3 +1,4 @@
+'use server';
 import * as admin from 'firebase-admin';
 
 // Ensure this file is only run on the server
