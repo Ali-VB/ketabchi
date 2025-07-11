@@ -22,6 +22,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { useSearchParams, useRouter } from "next/navigation";
+
 
 const formatPersianDate = (dateString: string) => {
     if (!dateString) return '';
@@ -34,6 +36,7 @@ const formatPersianDate = (dateString: string) => {
 };
 
 const statusConfig = {
+    pending_payment: { text: 'در انتظار پرداخت', icon: HelpCircle, color: 'bg-orange-500' },
     active: { text: 'فعال', icon: HelpCircle, color: 'bg-yellow-500' },
     completed: { text: 'تکمیل شده', icon: CheckCircle, color: 'bg-green-500' },
     disputed: { text: 'اعتراض ثبت شده', icon: ShieldAlert, color: 'bg-red-500' },
@@ -255,6 +258,9 @@ export default function MatchesPage() {
     const { user, loading: authLoading } = useAuth();
     const [matches, setMatches] = useState<Match[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const { toast } = useToast();
 
     const fetchMatches = useCallback(() => {
         if (user) {
@@ -269,6 +275,47 @@ export default function MatchesPage() {
     useEffect(() => {
         fetchMatches();
     }, [fetchMatches]);
+    
+    useEffect(() => {
+        const sessionId = searchParams.get('session_id');
+        if (sessionId) {
+            const verifySession = async () => {
+                try {
+                    const res = await fetch('/api/verify_session', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ session_id: sessionId }),
+                    });
+                    
+                    if (!res.ok) {
+                         const { error } = await res.json();
+                         throw new Error(error || 'Failed to verify session.');
+                    }
+
+                    toast({
+                        title: 'پرداخت موفق',
+                        description: 'پرداخت شما با موفقیت تایید شد و تراکنش فعال گردید.',
+                        variant: 'default',
+                    });
+                    
+                    // Refetch matches to show the updated status
+                    fetchMatches();
+
+                } catch (error) {
+                     toast({
+                        title: 'خطا در تایید پرداخت',
+                        description: (error as Error).message || 'مشکلی در تایید پرداخت شما پیش آمد.',
+                        variant: 'destructive',
+                    });
+                } finally {
+                    // Remove session_id from URL to prevent re-triggering
+                    router.replace('/dashboard/matches', {scroll: false});
+                }
+            };
+            verifySession();
+        }
+    }, [searchParams, router, toast, fetchMatches]);
+
 
     if (authLoading) {
         return (
