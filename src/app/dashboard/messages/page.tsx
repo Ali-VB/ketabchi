@@ -62,9 +62,9 @@ export default function MessagesPage() {
     let unsubscribeConversations: (() => void) | undefined;
   
     const handleInitialLoad = async () => {
+      setIsLoadingConversations(true);
       try {
         if (recipientId && user.uid !== recipientId) {
-          setIsLoadingConversations(true);
           const conversation = await getOrCreateConversation(user.uid, recipientId);
           setSelectedConversation(conversation);
           if (requestId && tripId) {
@@ -76,23 +76,19 @@ export default function MessagesPage() {
         console.error("Failed to create/get conversation:", error);
         toast({ variant: "destructive", title: "خطا", description: "امکان بارگزاری گفتگو وجود ندارد." });
       } finally {
-        // We set loading to false here, but the listener below will also do it.
-        // This ensures the UI updates even if there are no existing conversations.
-        setIsLoadingConversations(false); 
+        unsubscribeConversations = getConversations(user.uid, (allConversations) => {
+          setConversations(allConversations);
+          
+          if (!selectedConversation && recipientId) {
+             const conversationId = [user.uid, recipientId].sort().join('_');
+             const found = allConversations.find(c => c.id === conversationId);
+             if(found) setSelectedConversation(found);
+          } else if (!selectedConversation && !recipientId && allConversations.length > 0) {
+              setSelectedConversation(allConversations[0]);
+          }
+          setIsLoadingConversations(false);
+        });
       }
-  
-      unsubscribeConversations = getConversations(user.uid, (allConversations) => {
-        setConversations(allConversations);
-        if (!selectedConversation && recipientId) {
-           const conversationId = [user.uid, recipientId].sort().join('_');
-           const found = allConversations.find(c => c.id === conversationId);
-           if(found) setSelectedConversation(found);
-        } else if (!selectedConversation && !recipientId && allConversations.length > 0) {
-            // Default to selecting the first conversation if none is specified in URL
-            setSelectedConversation(allConversations[0]);
-        }
-        setIsLoadingConversations(false);
-      });
     };
   
     handleInitialLoad();
@@ -102,7 +98,7 @@ export default function MessagesPage() {
         unsubscribeConversations();
       }
     };
-  }, [user, authLoading, recipientId, requestId, tripId, toast, selectedConversation]);
+  }, [user, authLoading, recipientId, requestId, tripId, toast]);
 
 
   // Listen for messages in the selected conversation
@@ -125,13 +121,14 @@ export default function MessagesPage() {
     
     setIsSending(true);
     try {
-      await sendMessage(selectedConversation.id, {
+      await sendMessage(selectedConversation.id, selectedConversation.users, {
         text: newMessage,
         senderId: user.uid,
       });
       setNewMessage('');
     } catch (error) {
       console.error("Failed to send message:", error);
+      toast({ variant: "destructive", title: "خطا", description: "خطا در ارسال پیام."});
     } finally {
       setIsSending(false);
     }
@@ -194,8 +191,6 @@ export default function MessagesPage() {
         const { url } = await res.json();
         
         if (url) {
-            // Instead of opening a new tab, redirect the current page to Stripe.
-            // This is often a better UX for payment flows.
             window.location.href = url;
         } else {
              throw new Error('Checkout URL not received from server.');

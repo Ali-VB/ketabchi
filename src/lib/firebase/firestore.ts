@@ -252,42 +252,20 @@ export const getOrCreateConversation = async (
         const otherUser = await getUserProfile(otherUserId);
         return { id: conversationId, ...processSerializable(conversationData), otherUser } as Conversation;
     } else {
-        const [currentUserProfile, recipientProfile] = await Promise.all([
-            getUserProfile(currentUserId),
-            getUserProfile(recipientId)
-        ]);
-
-        if (!currentUserProfile || !recipientProfile) {
-            throw new Error("Could not find user profiles to create conversation.");
+        // Conversation doesn't exist. We won't create it here.
+        // It will be created on the first message send.
+        // We just return the potential structure.
+        const otherUser = await getUserProfile(recipientId);
+        if (!otherUser) {
+            throw new Error("Recipient user profile not found.");
         }
-
-        const newConversationData = {
-            users: [currentUserId, recipientId],
-            userProfiles: {
-                [currentUserId]: {
-                    displayName: currentUserProfile.displayName,
-                    photoURL: currentUserProfile.photoURL,
-                },
-                [recipientId]: {
-                    displayName: recipientProfile.displayName,
-                    photoURL: recipientProfile.photoURL,
-                },
-            },
-            lastMessage: '',
-            lastMessageTimestamp: serverTimestamp(),
-        };
-
-        await setDoc(conversationRef, newConversationData);
-        
-        const otherUser = recipientProfile;
-        
-        // Fetch the just-created doc to get server-generated timestamps
-        const newSnap = await getDoc(conversationRef);
         return {
             id: conversationId,
-            ...processSerializable(newSnap.data()),
-            otherUser
-        } as Conversation;
+            users: [currentUserId, recipientId],
+            lastMessage: '',
+            lastMessageTimestamp: new Date().toISOString(),
+            otherUser: otherUser,
+        };
     }
 };
 
@@ -324,6 +302,10 @@ export const getMessages = (conversationId: string, callback: (messages: Message
     const q = query(messagesCollectionRef, orderBy('timestamp', 'asc'));
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        if (querySnapshot.empty) {
+            callback([]);
+            return;
+        }
         const messages = querySnapshot.docs.map(doc => ({
             id: doc.id,
             ...processSerializable(doc.data()),
@@ -335,12 +317,39 @@ export const getMessages = (conversationId: string, callback: (messages: Message
     return unsubscribe;
 };
 
-export const sendMessage = async (conversationId: string, message: { text: string, senderId: string }) => {
+export const sendMessage = async (conversationId: string, users: string[], message: { text: string, senderId: string }) => {
     const conversationRef = doc(conversationsCollection, conversationId);
     const messagesRef = collection(conversationRef, 'messages');
-
+    
+    const conversationSnap = await getDoc(conversationRef);
     const batch = writeBatch(db);
 
+    if (!conversationSnap.exists()) {
+        const [currentUserProfile, recipientProfile] = await Promise.all([
+            getUserProfile(users[0]),
+            getUserProfile(users[1])
+        ]);
+
+        if (!currentUserProfile || !recipientProfile) {
+            throw new Error("Could not find user profiles to create conversation.");
+        }
+
+        const newConversationData = {
+            users: users,
+            userProfiles: {
+                [users[0]]: {
+                    displayName: currentUserProfile.displayName,
+                    photoURL: currentUserProfile.photoURL,
+                },
+                [users[1]]: {
+                    displayName: recipientProfile.displayName,
+                    photoURL: recipientProfile.photoURL,
+                },
+            },
+        };
+        batch.set(conversationRef, newConversationData);
+    }
+    
     // Add new message to the messages subcollection
     const newMessageRef = doc(messagesRef);
     batch.set(newMessageRef, { ...message, timestamp: serverTimestamp() });
