@@ -309,8 +309,7 @@ export const getOrCreateConversationAndMatch = async (
 export const getConversations = async (userId: string): Promise<Conversation[]> => {
     const q = query(
         conversationsCollection,
-        where('users', 'array-contains', userId),
-        orderBy('lastMessageTimestamp', 'desc')
+        where('users', 'array-contains', userId)
     );
     const querySnapshot = await getDocs(q);
     
@@ -331,7 +330,10 @@ export const getConversations = async (userId: string): Promise<Conversation[]> 
         } as Conversation;
     });
 
-    return conversations.filter(c => c.otherUser.uid);
+    // Sort by timestamp client-side to avoid complex queries that require indexes
+    return conversations
+        .filter(c => c.otherUser.uid)
+        .sort((a,b) => new Date(b.lastMessageTimestamp).getTime() - new Date(a.lastMessageTimestamp).getTime());
 };
 
 export const getMessages = (conversationId: string, callback: (messages: Message[]) => void): (() => void) => {
@@ -408,8 +410,26 @@ export const createMatch = async (request: BookRequest, trip: Trip): Promise<str
     const matchData = {
         requesterId: request.userId,
         travelerId: trip.userId,
-        request,
-        trip,
+        request: {
+            id: request.id,
+            books: request.books,
+            from_city: request.from_city,
+            to_city: request.to_city,
+            user: {
+                displayName: request.user.displayName,
+                email: request.user.email,
+            }
+        },
+        trip: {
+            id: trip.id,
+            from_city: trip.from_city,
+            to_city: trip.to_city,
+            trip_date: trip.trip_date,
+            user: {
+                displayName: trip.user.displayName,
+                email: trip.user.email,
+            }
+        },
         status: 'pending_payment',
         paymentStatus: 'pending',
         amount: 50.00, // Placeholder amount

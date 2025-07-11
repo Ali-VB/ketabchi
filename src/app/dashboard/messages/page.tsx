@@ -144,24 +144,28 @@ export default function MessagesPage() {
     try {
         let matchId = existingMatch?.id;
 
+        const request = await getRequestById(requestId);
+        if (!request) {
+            toast({ variant: 'destructive', title: 'خطا', description: 'درخواست مورد نظر یافت نشد.' });
+            return;
+        }
+
+        if (request.userId !== user.uid) {
+            toast({ variant: 'destructive', title: 'خطای مجوز', description: 'شما مجاز به ایجاد این تراکنش نیستید.' });
+            return;
+        }
+        
         if (!matchId) {
-            const request = await getRequestById(requestId);
             const trip = await getTripById(tripId);
 
-            if (!request || !trip) {
-                toast({ variant: 'destructive', title: 'خطا', description: 'درخواست یا سفر مورد نظر یافت نشد.' });
-                return;
-            }
-
-            if (request.userId !== user.uid) {
-                toast({ variant: 'destructive', title: 'خطای مجوز', description: 'شما مجاز به ایجاد این تراکنش نیستید.' });
+            if (!trip) {
+                toast({ variant: 'destructive', title: 'خطا', description: 'سفر مورد نظر یافت نشد.' });
                 return;
             }
             
             matchId = await createMatch(request, trip);
         }
         
-        const request = await getRequestById(requestId);
         const bookTitles = request?.books?.map(b => b.title).join(', ') || 'کتاب';
         const amount = 50.00; // Placeholder amount
 
@@ -289,7 +293,7 @@ export default function MessagesPage() {
                 </Button>
               </form>
             </div>
-            {requestId && tripId && (
+            {requestId && tripId && user?.uid === selectedConversation.otherUser.uid && (
                 <div className="p-4 border-t bg-accent/10">
                     <div className="flex items-center justify-between gap-4">
                         <div className="text-accent">
