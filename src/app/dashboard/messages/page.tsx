@@ -67,7 +67,30 @@ export default function MessagesPage() {
                 const { conversationId, match } = await getOrCreateConversationAndMatch(user.uid, recipientId, requestId, tripId);
                 setExistingMatch(match);
                 const targetConversation = allConversations.find(c => c.id === conversationId);
-                setSelectedConversation(targetConversation || null);
+                if (targetConversation) {
+                    setSelectedConversation(targetConversation);
+                } else {
+                    // It's a new conversation, we need to find it in the freshly fetched list
+                    // which might not be immediately available. Let's wait for the main list update.
+                    const newConvo = await getUserProfile(recipientId);
+                    if(newConvo) {
+                        const newConversationObject: Conversation = {
+                            id: conversationId,
+                            users: [user.uid, recipientId],
+                            lastMessage: '',
+                            lastMessageTimestamp: new Date().toISOString(),
+                            otherUser: {
+                                uid: newConvo.uid,
+                                displayName: newConvo.displayName || 'New User',
+                                email: newConvo.email,
+                                photoURL: newConvo.photoURL
+                            }
+                        };
+                        const updatedConversations = [...allConversations, newConversationObject];
+                        setConversations(updatedConversations);
+                        setSelectedConversation(newConversationObject);
+                    }
+                }
             } catch (error) {
                 console.error("Failed to ensure conversation exists:", error);
                 toast({ variant: "destructive", title: "خطا", description: "امکان ایجاد یا یافتن گفتگو وجود نداشت." });
