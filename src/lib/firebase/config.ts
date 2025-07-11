@@ -12,18 +12,7 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Add checks for all required environment variables
-if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
-    throw new Error('Missing NEXT_PUBLIC_FIREBASE_API_KEY in .env.local');
-}
-if (!process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN) {
-    throw new Error('Missing NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN in .env.local');
-}
-if (!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
-    throw new Error('Missing NEXT_PUBLIC_FIREBASE_PROJECT_ID in .env.local');
-}
-
-
+// Initialize Firebase
 const app: FirebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const auth: Auth = getAuth(app);
 const db: Firestore = getFirestore(app);
