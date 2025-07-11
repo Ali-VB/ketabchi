@@ -172,11 +172,11 @@ export default function MatchManagementPage() {
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                     <div className="flex justify-end">
                         <TabsList>
-                            <TabsTrigger value="all">همه</TabsTrigger>
-                            <TabsTrigger value="completed">تکمیل‌شده</TabsTrigger>
-                            <TabsTrigger value="active">فعال</TabsTrigger>
-                            <TabsTrigger value="disputed">مورد اختلاف</TabsTrigger>
                             <TabsTrigger value="cancelled">لغو شده</TabsTrigger>
+                            <TabsTrigger value="disputed">مورد اختلاف</TabsTrigger>
+                            <TabsTrigger value="active">فعال</TabsTrigger>
+                            <TabsTrigger value="completed">تکمیل‌شده</TabsTrigger>
+                            <TabsTrigger value="all">همه</TabsTrigger>
                         </TabsList>
                     </div>
                     <TabsContent value={activeTab} className="mt-4">
@@ -215,3 +215,5 @@ export default function MatchManagementPage() {
         </>
     );
 }
+
+    
