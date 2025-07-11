@@ -1,4 +1,3 @@
-
 rules_version = '2';
 
 service cloud.firestore {
@@ -24,10 +23,32 @@ service cloud.firestore {
 
     // Users can interact with conversations they are part of.
     match /conversations/{conversationId} {
-      allow read, create, update: if request.auth != null && request.auth.uid in resource.data.users;
+      allow read, update: if request.auth != null && request.auth.uid in resource.data.users;
+
+      // Corrected create rule for conversations
+      allow create: if request.auth != null &&
+                       request.auth.uid in request.resource.data.users &&
+                       request.resource.data.users.size() == 2 &&
+                       // Verify the conversationId matches the participants in the request data
+                       conversationId == [request.resource.data.users[0], request.resource.data.users[1]].sort().join('_');
 
       match /messages/{messageId} {
-        allow read, create: if request.auth != null && request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.users;
+        allow read: if request.auth != null &&
+                       request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.users;
+
+        // Enhanced create rule for messages
+        allow create: if request.auth != null &&
+                         // User must be a participant of the conversation
+                         request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.users &&
+                         // SenderId in the message data must be the authenticated user
+                         request.resource.data.senderId == request.auth.uid &&
+                         // Enforce specific fields and their count for a new message
+                         request.resource.data.keys().hasAll(['text', 'senderId', 'timestamp']) &&
+                         request.resource.data.size() == 3 &&
+                         // Validate text field type
+                         request.resource.data.text is string &&
+                         // Ensure server timestamp is used for the timestamp field
+                         request.resource.data.timestamp == request.time;
       }
     }
     
