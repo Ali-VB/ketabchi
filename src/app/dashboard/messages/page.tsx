@@ -166,7 +166,6 @@ export default function MessagesPage() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
                 amount, 
-                customerEmail: user.email, 
                 matchId, 
                 bookTitles 
             }),

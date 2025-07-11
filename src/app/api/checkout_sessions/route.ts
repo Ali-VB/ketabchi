@@ -17,10 +17,10 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-        const { amount, customerEmail, matchId, bookTitles } = await req.json();
+        const { amount, matchId, bookTitles } = await req.json();
 
         // Basic validation
-        if (!amount || !customerEmail || !matchId || !bookTitles) {
+        if (!amount || !matchId || !bookTitles) {
             return NextResponse.json({ error: 'Missing required parameters.' }, { status: 400 });
         }
 
@@ -40,7 +40,6 @@ export async function POST(req: NextRequest) {
                 },
             ],
             mode: 'payment',
-            customer_email: customerEmail,
             success_url: `${req.headers.get('origin')}/dashboard/matches?session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${req.headers.get('origin')}/dashboard/matches?status=cancelled`,
             metadata: {
