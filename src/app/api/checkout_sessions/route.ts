@@ -1,16 +1,21 @@
 import { NextResponse, NextRequest } from 'next/server';
 import Stripe from 'stripe';
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY is not set in the environment variables.');
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+
+if (!stripeSecretKey) {
+  console.warn("STRIPE_SECRET_KEY is not set. Stripe functionality will be disabled.");
 }
 
-// Make sure to add your STRIPE_SECRET_KEY to your .env.local file
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+const stripe = stripeSecretKey ? new Stripe(stripeSecretKey, {
     apiVersion: '2024-06-20',
-});
+}) : null;
 
 export async function POST(req: NextRequest) {
+    if (!stripe) {
+        return NextResponse.json({ error: 'Stripe is not configured. Missing STRIPE_SECRET_KEY.' }, { status: 500 });
+    }
+
     try {
         const { amount, customerEmail, matchId, bookTitles } = await req.json();
 
@@ -43,7 +48,7 @@ export async function POST(req: NextRequest) {
             }
         });
 
-        return NextResponse.json({ id: session.id });
+        return NextResponse.json({ id: session.id, url: session.url });
 
     } catch (err) {
         const error = err as Error;

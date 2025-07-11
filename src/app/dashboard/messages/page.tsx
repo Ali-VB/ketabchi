@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import { Send, Mail, Loader2 } from 'lucide-react';
+import { Send, Mail, Loader2, ExternalLink } from 'lucide-react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/components/auth-provider';
 import type { Conversation, Message, User } from '@/lib/types';
@@ -173,22 +173,20 @@ export default function MessagesPage() {
         });
         
         if (!res.ok) {
-           throw new Error('Failed to create checkout session');
+           const { error } = await res.json();
+           throw new Error(error || 'Failed to create checkout session');
         }
 
-        const { id: sessionId } = await res.json();
-        const stripe = await stripePromise;
-        if (!stripe) {
-            throw new Error('Stripe.js has not loaded yet.');
-        }
-
-        const { error } = await stripe.redirectToCheckout({ sessionId });
-        if (error) {
-            throw error;
+        const { url } = await res.json();
+        
+        if (url) {
+            window.open(url, '_blank');
+        } else {
+             throw new Error('Checkout URL not received from server.');
         }
 
     } catch (error) {
-        console.error("Error creating match and redirecting to Stripe:", error);
+        console.error("Error creating match and opening Stripe:", error);
         toast({
             variant: "destructive",
             title: "خطا در پرداخت",
@@ -288,7 +286,7 @@ export default function MessagesPage() {
                             disabled={isCreatingMatch} 
                             className="bg-accent text-accent-foreground hover:bg-accent/90 shrink-0"
                         >
-                            {isCreatingMatch && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
+                            {isCreatingMatch ? <Loader2 className="me-2 h-4 w-4 animate-spin" /> : <ExternalLink className="me-2 h-4 w-4" />}
                             پرداخت و شروع تراکنش
                         </Button>
                     </div>
