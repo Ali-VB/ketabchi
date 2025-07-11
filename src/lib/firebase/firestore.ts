@@ -363,8 +363,8 @@ export const createMatch = async (request: BookRequest, trip: Trip): Promise<str
         travelerId: trip.userId,
         request,
         trip,
-        status: 'active', // Assuming payment is completed upon creation for this implementation
-        paymentStatus: 'held',
+        status: 'pending_payment',
+        paymentStatus: 'pending',
         amount: 50.00, // Placeholder amount
         deliveryCode,
         createdAt: serverTimestamp(),

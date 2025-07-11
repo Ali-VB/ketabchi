@@ -73,10 +73,11 @@ export interface Match {
   travelerId: string;
   request: BookRequest;
   trip: Trip;
-  status: 'active' | 'completed' | 'disputed' | 'cancelled';
-  paymentStatus: 'held' | 'released' | 'refunded' | 'disputed';
+  status: 'pending_payment' | 'active' | 'completed' | 'disputed' | 'cancelled';
+  paymentStatus: 'pending' | 'held' | 'released' | 'refunded' | 'disputed';
   deliveryCode: string;
   createdAt: string;
   updatedAt: string;
   amount?: number; // For future payment integration
+  stripeCheckoutId?: string;
 }

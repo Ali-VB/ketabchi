@@ -20,7 +20,9 @@ import {
   createMatch 
 } from '@/lib/firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
+import { loadStripe } from '@stripe/stripe-js';
 
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 export default function MessagesPage() {
   const { user, loading: authLoading } = useAuth();
@@ -134,8 +136,8 @@ export default function MessagesPage() {
     }
   };
 
-  const handleCreateMatch = async () => {
-    if (!requestId || !tripId || !user) return;
+  const handleCreateMatchAndPay = async () => {
+    if (!requestId || !tripId || !user || !user.email) return;
 
     setIsCreatingMatch(true);
     try {
@@ -144,32 +146,53 @@ export default function MessagesPage() {
 
         if (!request || !trip) {
             toast({ variant: 'destructive', title: 'خطا', description: 'درخواست یا سفر مورد نظر یافت نشد.' });
-            throw new Error("Request or Trip not found.");
-        }
-
-        // A user can only accept a match for their own request
-        if (request.userId !== user.uid) {
-            toast({
-                variant: 'destructive',
-                title: 'خطای مجوز',
-                description: 'شما مجاز به ایجاد این تراکنش نیستید.',
-            });
             return;
         }
 
-        await createMatch(request, trip);
-        toast({
-            title: "تراکنش با موفقیت ایجاد شد!",
-            description: "اکنون می‌توانید وضعیت آن را در صفحه تطبیق‌ها ببینید.",
+        if (request.userId !== user.uid) {
+            toast({ variant: 'destructive', title: 'خطای مجوز', description: 'شما مجاز به ایجاد این تراکنش نیستید.' });
+            return;
+        }
+        
+        // This now creates the match in Firestore first to get a matchId
+        const matchId = await createMatch(request, trip);
+        
+        const bookTitles = request.books?.map(b => b.title).join(', ') || 'کتاب';
+        const amount = 50.00; // Placeholder amount
+
+        // Create a checkout session
+        const res = await fetch('/api/checkout_sessions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                amount, 
+                customerEmail: user.email, 
+                matchId, 
+                bookTitles 
+            }),
         });
-        router.push('/dashboard/matches');
+        
+        if (!res.ok) {
+           throw new Error('Failed to create checkout session');
+        }
+
+        const { id: sessionId } = await res.json();
+        const stripe = await stripePromise;
+        if (!stripe) {
+            throw new Error('Stripe.js has not loaded yet.');
+        }
+
+        const { error } = await stripe.redirectToCheckout({ sessionId });
+        if (error) {
+            throw error;
+        }
 
     } catch (error) {
-        console.error("Error creating match:", error);
+        console.error("Error creating match and redirecting to Stripe:", error);
         toast({
             variant: "destructive",
-            title: "خطا در ایجاد تراکنش",
-            description: "متاسفانه مشکلی در هنگام ایجاد تراکنش پیش آمد.",
+            title: "خطا در پرداخت",
+            description: (error as Error).message || "متاسفانه مشکلی در هنگام شروع فرآیند پرداخت پیش آمد.",
         });
     } finally {
         setIsCreatingMatch(false);
@@ -261,12 +284,12 @@ export default function MessagesPage() {
                             <p className="text-sm text-accent/80">پس از توافق، برای امن‌سازی پرداخت روی دکمه کلیک کنید.</p>
                         </div>
                         <Button 
-                            onClick={handleCreateMatch} 
+                            onClick={handleCreateMatchAndPay} 
                             disabled={isCreatingMatch} 
                             className="bg-accent text-accent-foreground hover:bg-accent/90 shrink-0"
                         >
                             {isCreatingMatch && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
-                            شروع تراکنش
+                            پرداخت و شروع تراکنش
                         </Button>
                     </div>
                 </div>
