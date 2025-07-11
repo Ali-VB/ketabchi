@@ -129,7 +129,7 @@ export default function MatchManagementPage() {
             </CardHeader>
             <CardContent>
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
-                    <div className="flex justify-start">
+                    <div className="flex justify-end">
                         <TabsList>
                             <TabsTrigger value="all">همه</TabsTrigger>
                             <TabsTrigger value="active">فعال</TabsTrigger>
