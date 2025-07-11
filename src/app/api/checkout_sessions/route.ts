@@ -1,8 +1,12 @@
 import { NextResponse, NextRequest } from 'next/server';
 import Stripe from 'stripe';
 
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error('STRIPE_SECRET_KEY is not set in the environment variables.');
+}
+
 // Make sure to add your STRIPE_SECRET_KEY to your .env.local file
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
     apiVersion: '2024-06-20',
 });
 
@@ -43,7 +47,7 @@ export async function POST(req: NextRequest) {
 
     } catch (err) {
         const error = err as Error;
-        console.error(error.message);
-        return NextResponse.json({ error: 'Error creating checkout session' }, { status: 500 });
+        console.error("Stripe API Error:", error.message);
+        return NextResponse.json({ error: `Error creating checkout session: ${error.message}` }, { status: 500 });
     }
 }
