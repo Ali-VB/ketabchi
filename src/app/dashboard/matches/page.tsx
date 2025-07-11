@@ -318,12 +318,12 @@ export default function MatchesPage() {
                     <TabsTrigger value="requests">درخواست‌های من ({myRequests.length})</TabsTrigger>
                     <TabsTrigger value="deliveries">تحویل‌های من ({myDeliveries.length})</TabsTrigger>
                 </TabsList>
-                <TabsContent value="requests" className="space-y-4 pt-4">
+                <TabsContent value="requests" className="space-y-4 pt-4 min-h-[400px]">
                     {myRequests.length > 0 ? myRequests.map(match => (
                         <RequesterMatchCard key={match.id} match={match} onUpdate={fetchMatches} />
                     )) : <p className="text-center text-muted-foreground p-8">تراکنشی برای درخواست‌های شما یافت نشد.</p>}
                 </TabsContent>
-                <TabsContent value="deliveries" className="space-y-4 pt-4">
+                <TabsContent value="deliveries" className="space-y-4 pt-4 min-h-[400px]">
                      {myDeliveries.length > 0 ? myDeliveries.map(match => (
                         <TravelerMatchCard key={match.id} match={match} onUpdate={fetchMatches} />
                     )) : <p className="text-center text-muted-foreground p-8">تراکنشی برای تحویل‌های شما یافت نشد.</p>}

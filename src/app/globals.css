@@ -81,4 +81,8 @@
   body {
     @apply bg-background text-foreground;
   }
+  .flex.min-h-screen.bg-background.text-foreground {
+    flex-grow: 1;
+    /* other existing styles */
+  }
 }
