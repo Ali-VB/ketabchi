@@ -680,5 +680,3 @@ export const cleanDatabase = async (adminUserId: string) => {
 
     await batch.commit();
 };
-
-    
